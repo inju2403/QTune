@@ -11,7 +11,15 @@ import SwiftUI
 struct QTuneApp: App {
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            NavigationStack {
+                RequestVerseView(
+                    viewModel: RequestVerseViewModel(
+                        generateVerseUseCase: GenerateVerseInteractor(
+                            repository: VerseRepositoryImpl()
+                        )
+                    )
+                )
+            }
         }
     }
 }
