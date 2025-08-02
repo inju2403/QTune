@@ -67,7 +67,7 @@ struct RequestVerseView: View {
         reason: "하나님의 사랑을 느끼고 위로받을 수 있는 말씀이에요."
     )
 
-    let repository = VerseRepositoryImpl()
+    let repository = DefaultVerseRepository()
     let useCase = GenerateVerseInteractor(repository: repository)
     let viewModel = RequestVerseViewModel(generateVerseUseCase: useCase)
 

@@ -25,7 +25,7 @@
 		6E9D25012E34C68C004C9A4B /* RequestVerseView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E9D25002E34C68C004C9A4B /* RequestVerseView.swift */; };
 		6E9D25052E34C905004C9A4B /* GenerateVerseInteractor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E9D25042E34C905004C9A4B /* GenerateVerseInteractor.swift */; };
 		6E9D25082E34C93C004C9A4B /* VerseRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E9D25072E34C93C004C9A4B /* VerseRepository.swift */; };
-		6E9D250D2E34C989004C9A4B /* VerseRepositoryImpl.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E9D250C2E34C989004C9A4B /* VerseRepositoryImpl.swift */; };
+		6E9D250D2E34C989004C9A4B /* DefaultVerseRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E9D250C2E34C989004C9A4B /* DefaultVerseRepository.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -67,7 +67,7 @@
 		6E9D25002E34C68C004C9A4B /* RequestVerseView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RequestVerseView.swift; sourceTree = "<group>"; };
 		6E9D25042E34C905004C9A4B /* GenerateVerseInteractor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GenerateVerseInteractor.swift; sourceTree = "<group>"; };
 		6E9D25072E34C93C004C9A4B /* VerseRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VerseRepository.swift; sourceTree = "<group>"; };
-		6E9D250C2E34C989004C9A4B /* VerseRepositoryImpl.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VerseRepositoryImpl.swift; sourceTree = "<group>"; };
+		6E9D250C2E34C989004C9A4B /* DefaultVerseRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DefaultVerseRepository.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -230,17 +230,17 @@
 		6E9D250A2E34C95D004C9A4B /* Verse */ = {
 			isa = PBXGroup;
 			children = (
-				6E9D250B2E34C96F004C9A4B /* RepositoryImpl */,
+				6E9D250B2E34C96F004C9A4B /* Repository */,
 			);
 			path = Verse;
 			sourceTree = "<group>";
 		};
-		6E9D250B2E34C96F004C9A4B /* RepositoryImpl */ = {
+		6E9D250B2E34C96F004C9A4B /* Repository */ = {
 			isa = PBXGroup;
 			children = (
-				6E9D250C2E34C989004C9A4B /* VerseRepositoryImpl.swift */,
+				6E9D250C2E34C989004C9A4B /* DefaultVerseRepository.swift */,
 			);
-			path = RepositoryImpl;
+			path = Repository;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -379,7 +379,7 @@
 				6E9D24FF2E34C454004C9A4B /* GeneratedVerse.swift in Sources */,
 				6E9D24C32E34B4CC004C9A4B /* ContentView.swift in Sources */,
 				6E9D24FB2E34C0FB004C9A4B /* Verse.swift in Sources */,
-				6E9D250D2E34C989004C9A4B /* VerseRepositoryImpl.swift in Sources */,
+				6E9D250D2E34C989004C9A4B /* DefaultVerseRepository.swift in Sources */,
 				6E9D25012E34C68C004C9A4B /* RequestVerseView.swift in Sources */,
 				6E9D25052E34C905004C9A4B /* GenerateVerseInteractor.swift in Sources */,
 				6E9D24C12E34B4CC004C9A4B /* QTuneApp.swift in Sources */,

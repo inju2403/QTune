@@ -15,7 +15,7 @@ struct QTuneApp: App {
                 RequestVerseView(
                     viewModel: RequestVerseViewModel(
                         generateVerseUseCase: GenerateVerseInteractor(
-                            repository: VerseRepositoryImpl()
+                            repository: DefaultVerseRepository()
                         )
                     )
                 )
