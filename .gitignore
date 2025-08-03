@@ -34,3 +34,6 @@ GoogleService-Info.plist
 # Env / Secret
 .env
 *.secrets
+
+# Tuist
+**/Derived/

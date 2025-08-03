@@ -7,85 +7,117 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		6E9D24C12E34B4CC004C9A4B /* QTuneApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E9D24C02E34B4CC004C9A4B /* QTuneApp.swift */; };
-		6E9D24C32E34B4CC004C9A4B /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E9D24C22E34B4CC004C9A4B /* ContentView.swift */; };
-		6E9D24C52E34B4CE004C9A4B /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 6E9D24C42E34B4CE004C9A4B /* Assets.xcassets */; };
-		6E9D24C82E34B4CE004C9A4B /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 6E9D24C72E34B4CE004C9A4B /* Preview Assets.xcassets */; };
-		6E9D24D22E34B4CE004C9A4B /* QTuneTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E9D24D12E34B4CE004C9A4B /* QTuneTests.swift */; };
-		6E9D24DC2E34B4CE004C9A4B /* QTuneUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E9D24DB2E34B4CE004C9A4B /* QTuneUITests.swift */; };
-		6E9D24DE2E34B4CE004C9A4B /* QTuneUITestsLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E9D24DD2E34B4CE004C9A4B /* QTuneUITestsLaunchTests.swift */; };
-		6E9D24ED2E34BDE8004C9A4B /* RequestVerseState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E9D24EC2E34BDE8004C9A4B /* RequestVerseState.swift */; };
-		6E9D24EF2E34BDFA004C9A4B /* RequestVerseAction.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E9D24EE2E34BDFA004C9A4B /* RequestVerseAction.swift */; };
-		6E9D24F12E34BEEF004C9A4B /* RequestVerseViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E9D24F02E34BEEF004C9A4B /* RequestVerseViewModel.swift */; };
-		6E9D24F32E34BF05004C9A4B /* RequestVerseEffect.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E9D24F22E34BF05004C9A4B /* RequestVerseEffect.swift */; };
-		6E9D24F82E34C003004C9A4B /* GenerateVerseUseCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E9D24F72E34C003004C9A4B /* GenerateVerseUseCase.swift */; };
-		6E9D24FB2E34C0FB004C9A4B /* Verse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E9D24FA2E34C0FB004C9A4B /* Verse.swift */; };
-		6E9D24FD2E34C11D004C9A4B /* QT.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E9D24FC2E34C11D004C9A4B /* QT.swift */; };
-		6E9D24FF2E34C454004C9A4B /* GeneratedVerse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E9D24FE2E34C454004C9A4B /* GeneratedVerse.swift */; };
-		6E9D25012E34C68C004C9A4B /* RequestVerseView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E9D25002E34C68C004C9A4B /* RequestVerseView.swift */; };
-		6E9D25052E34C905004C9A4B /* GenerateVerseInteractor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E9D25042E34C905004C9A4B /* GenerateVerseInteractor.swift */; };
-		6E9D25082E34C93C004C9A4B /* VerseRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E9D25072E34C93C004C9A4B /* VerseRepository.swift */; };
-		6E9D250D2E34C989004C9A4B /* DefaultVerseRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E9D250C2E34C989004C9A4B /* DefaultVerseRepository.swift */; };
+		14323DE8008BAA45B09C3AFE /* QT.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C9E02F516474EDE8EA17F26 /* QT.swift */; };
+		1695BC30BB8BA2C2C43997A2 /* GenerateVerseUseCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8A05B7216703818524AA562 /* GenerateVerseUseCase.swift */; };
+		1D7F8C56F59645FAF2A13BB8 /* QTuneUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E32CA490ECD6D56787DB98E /* QTuneUITests.swift */; };
+		1E72C2152DC3D3C3955A99E7 /* VerseRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B66B495C81819B0AA90FA82 /* VerseRepository.swift */; };
+		49EBDE61A8E13C6AB09767DD /* GeneratedVerse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B8FC5D64425159F84F330DE /* GeneratedVerse.swift */; };
+		7A168320CBD397E5FB215764 /* RequestVerseState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 99B4EF67559F315373B1EAB4 /* RequestVerseState.swift */; };
+		8D6C61689602BA0F4D659FE9 /* RequestVerseAction.swift in Sources */ = {isa = PBXBuildFile; fileRef = 53EE824A9352BB04D3F59DF7 /* RequestVerseAction.swift */; };
+		A04070D3F4419DC99996A5AC /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 964272A9D3F76CB7C0C0F39B /* ContentView.swift */; };
+		A626126E5B0517E3BE87B112 /* GenerateVerseInteractor.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1192DA6DCBD9E1041763CCD /* GenerateVerseInteractor.swift */; };
+		BCD82D02887DD125E382C50A /* RequestVerseView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAA88A5A83E8E3EA75866FC1 /* RequestVerseView.swift */; };
+		C595EBA2BAD92BC51FBEBBA8 /* Verse.swift in Sources */ = {isa = PBXBuildFile; fileRef = A14C886F4F28A27699CA3836 /* Verse.swift */; };
+		CFA09EF2BC2553A3A1AD4FC6 /* QTuneUITestsLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4178F7A4F95430E419714979 /* QTuneUITestsLaunchTests.swift */; };
+		D4AFFACB3B26472A2C7C998C /* RequestVerseEffect.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D5756CED96D310764F6EF60 /* RequestVerseEffect.swift */; };
+		D998B0887FE010054E44FF3A /* DefaultVerseRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = F86A42E3DF6B837AFB197601 /* DefaultVerseRepository.swift */; };
+		E64A201303E391A50D1DAC01 /* QTuneApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = BA3C7F1DDDF90A0D91392831 /* QTuneApp.swift */; };
+		F555F92569F99FA9B1DABBE2 /* QTuneTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1400D45FFBFBB4E5BF9393E4 /* QTuneTests.swift */; };
+		FE99A152294B7E308798CA65 /* RequestVerseViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 67423BCE1F2CB0ABB3FDA36E /* RequestVerseViewModel.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
-		6E9D24CE2E34B4CE004C9A4B /* PBXContainerItemProxy */ = {
+		0771366CCABFA7EF9B91B249 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
-			containerPortal = 6E9D24B52E34B4CC004C9A4B /* Project object */;
+			containerPortal = EE113889D3D796516A1378BF /* Project object */;
 			proxyType = 1;
-			remoteGlobalIDString = 6E9D24BC2E34B4CC004C9A4B;
+			remoteGlobalIDString = E74D4B1D31D4593EA26F7BC6;
 			remoteInfo = QTune;
 		};
-		6E9D24D82E34B4CE004C9A4B /* PBXContainerItemProxy */ = {
+		2AEF835AB87CC34280F7D531 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
-			containerPortal = 6E9D24B52E34B4CC004C9A4B /* Project object */;
+			containerPortal = EE113889D3D796516A1378BF /* Project object */;
 			proxyType = 1;
-			remoteGlobalIDString = 6E9D24BC2E34B4CC004C9A4B;
+			remoteGlobalIDString = E74D4B1D31D4593EA26F7BC6;
 			remoteInfo = QTune;
 		};
 /* End PBXContainerItemProxy section */
 
+/* Begin PBXCopyFilesBuildPhase section */
+		90DC87E0861195EA75385FA3 /* Embed Frameworks */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+			);
+			name = "Embed Frameworks";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		AB5D669CA2BCCE9D8B91FBCF /* Embed Frameworks */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+			);
+			name = "Embed Frameworks";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		D84D42EBD9105B419A4E15D0 /* Embed Frameworks */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+			);
+			name = "Embed Frameworks";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
 /* Begin PBXFileReference section */
-		6E9D24BD2E34B4CC004C9A4B /* QTune.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = QTune.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		6E9D24C02E34B4CC004C9A4B /* QTuneApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QTuneApp.swift; sourceTree = "<group>"; };
-		6E9D24C22E34B4CC004C9A4B /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
-		6E9D24C42E34B4CE004C9A4B /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
-		6E9D24C72E34B4CE004C9A4B /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
-		6E9D24CD2E34B4CE004C9A4B /* QTuneTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = QTuneTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		6E9D24D12E34B4CE004C9A4B /* QTuneTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QTuneTests.swift; sourceTree = "<group>"; };
-		6E9D24D72E34B4CE004C9A4B /* QTuneUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = QTuneUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		6E9D24DB2E34B4CE004C9A4B /* QTuneUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QTuneUITests.swift; sourceTree = "<group>"; };
-		6E9D24DD2E34B4CE004C9A4B /* QTuneUITestsLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QTuneUITestsLaunchTests.swift; sourceTree = "<group>"; };
-		6E9D24EC2E34BDE8004C9A4B /* RequestVerseState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RequestVerseState.swift; sourceTree = "<group>"; };
-		6E9D24EE2E34BDFA004C9A4B /* RequestVerseAction.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RequestVerseAction.swift; sourceTree = "<group>"; };
-		6E9D24F02E34BEEF004C9A4B /* RequestVerseViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RequestVerseViewModel.swift; sourceTree = "<group>"; };
-		6E9D24F22E34BF05004C9A4B /* RequestVerseEffect.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RequestVerseEffect.swift; sourceTree = "<group>"; };
-		6E9D24F72E34C003004C9A4B /* GenerateVerseUseCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GenerateVerseUseCase.swift; sourceTree = "<group>"; };
-		6E9D24FA2E34C0FB004C9A4B /* Verse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Verse.swift; sourceTree = "<group>"; };
-		6E9D24FC2E34C11D004C9A4B /* QT.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QT.swift; sourceTree = "<group>"; };
-		6E9D24FE2E34C454004C9A4B /* GeneratedVerse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GeneratedVerse.swift; sourceTree = "<group>"; };
-		6E9D25002E34C68C004C9A4B /* RequestVerseView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RequestVerseView.swift; sourceTree = "<group>"; };
-		6E9D25042E34C905004C9A4B /* GenerateVerseInteractor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GenerateVerseInteractor.swift; sourceTree = "<group>"; };
-		6E9D25072E34C93C004C9A4B /* VerseRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VerseRepository.swift; sourceTree = "<group>"; };
-		6E9D250C2E34C989004C9A4B /* DefaultVerseRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DefaultVerseRepository.swift; sourceTree = "<group>"; };
+		030FBB9C0662DD6E945F5D05 /* QTuneUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = QTuneUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		1400D45FFBFBB4E5BF9393E4 /* QTuneTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QTuneTests.swift; sourceTree = "<group>"; };
+		1D5756CED96D310764F6EF60 /* RequestVerseEffect.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RequestVerseEffect.swift; sourceTree = "<group>"; };
+		2B8FC5D64425159F84F330DE /* GeneratedVerse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GeneratedVerse.swift; sourceTree = "<group>"; };
+		2BA86ED62C32D6CB57B919F8 /* QTuneTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = QTuneTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		2C9E02F516474EDE8EA17F26 /* QT.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QT.swift; sourceTree = "<group>"; };
+		4178F7A4F95430E419714979 /* QTuneUITestsLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QTuneUITestsLaunchTests.swift; sourceTree = "<group>"; };
+		53EE824A9352BB04D3F59DF7 /* RequestVerseAction.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RequestVerseAction.swift; sourceTree = "<group>"; };
+		67423BCE1F2CB0ABB3FDA36E /* RequestVerseViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RequestVerseViewModel.swift; sourceTree = "<group>"; };
+		6773726599952B3772512B4F /* QTune-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = "QTune-Info.plist"; sourceTree = "<group>"; };
+		7B66B495C81819B0AA90FA82 /* VerseRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VerseRepository.swift; sourceTree = "<group>"; };
+		964272A9D3F76CB7C0C0F39B /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		99B4EF67559F315373B1EAB4 /* RequestVerseState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RequestVerseState.swift; sourceTree = "<group>"; };
+		9E32CA490ECD6D56787DB98E /* QTuneUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QTuneUITests.swift; sourceTree = "<group>"; };
+		A14C886F4F28A27699CA3836 /* Verse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Verse.swift; sourceTree = "<group>"; };
+		BA3C7F1DDDF90A0D91392831 /* QTuneApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QTuneApp.swift; sourceTree = "<group>"; };
+		C8A05B7216703818524AA562 /* GenerateVerseUseCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GenerateVerseUseCase.swift; sourceTree = "<group>"; };
+		CAA88A5A83E8E3EA75866FC1 /* RequestVerseView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RequestVerseView.swift; sourceTree = "<group>"; };
+		DDCECF9829DE532FB2FAC11C /* QTune.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = QTune.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		E1192DA6DCBD9E1041763CCD /* GenerateVerseInteractor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GenerateVerseInteractor.swift; sourceTree = "<group>"; };
+		E26EF54F0AA9366E3039C6B7 /* QTuneTests-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = "QTuneTests-Info.plist"; sourceTree = "<group>"; };
+		F86A42E3DF6B837AFB197601 /* DefaultVerseRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DefaultVerseRepository.swift; sourceTree = "<group>"; };
+		F8DDC665C2DE07B02FF6B622 /* QTuneUITests-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = "QTuneUITests-Info.plist"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
-		6E9D24BA2E34B4CC004C9A4B /* Frameworks */ = {
+		3DEC9A369C7111174A3DC093 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		6E9D24CA2E34B4CE004C9A4B /* Frameworks */ = {
+		960E21DC9DA3AA9E5AACC1DB /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		6E9D24D42E34B4CE004C9A4B /* Frameworks */ = {
+		F09F281927F37D61BDB8D4DD /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -95,271 +127,296 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		6E9D24B42E34B4CC004C9A4B = {
+		13834215CD6AB9E13526871F /* Verse */ = {
 			isa = PBXGroup;
 			children = (
-				6E9D24BF2E34B4CC004C9A4B /* QTune */,
-				6E9D24D02E34B4CE004C9A4B /* QTuneTests */,
-				6E9D24DA2E34B4CE004C9A4B /* QTuneUITests */,
-				6E9D24BE2E34B4CC004C9A4B /* Products */,
+				FBD114CDD7D3F352F7B42E4F /* Entity */,
+				6B3BF834B15C6AD5247283F4 /* Repository */,
+				5E2B754B17F8C23326F3AF7D /* UseCase */,
 			);
+			path = Verse;
 			sourceTree = "<group>";
 		};
-		6E9D24BE2E34B4CC004C9A4B /* Products */ = {
+		1D52728B7CA3FD7550EB660D /* Derived */ = {
 			isa = PBXGroup;
 			children = (
-				6E9D24BD2E34B4CC004C9A4B /* QTune.app */,
-				6E9D24CD2E34B4CE004C9A4B /* QTuneTests.xctest */,
-				6E9D24D72E34B4CE004C9A4B /* QTuneUITests.xctest */,
+				4B12C3CFE3C0B4AFD6FB8245 /* InfoPlists */,
 			);
-			name = Products;
+			path = Derived;
 			sourceTree = "<group>";
 		};
-		6E9D24BF2E34B4CC004C9A4B /* QTune */ = {
+		21B2E51F4F2E0405EF8B352C /* QTuneTests */ = {
 			isa = PBXGroup;
 			children = (
-				6E9D25092E34C951004C9A4B /* Data */,
-				6E9D24F52E34BF95004C9A4B /* Domain */,
-				6E9D24F42E34BF87004C9A4B /* Presentation */,
-				6E9D24C02E34B4CC004C9A4B /* QTuneApp.swift */,
-				6E9D24C22E34B4CC004C9A4B /* ContentView.swift */,
-				6E9D24C42E34B4CE004C9A4B /* Assets.xcassets */,
-				6E9D24C62E34B4CE004C9A4B /* Preview Content */,
-			);
-			path = QTune;
-			sourceTree = "<group>";
-		};
-		6E9D24C62E34B4CE004C9A4B /* Preview Content */ = {
-			isa = PBXGroup;
-			children = (
-				6E9D24C72E34B4CE004C9A4B /* Preview Assets.xcassets */,
-			);
-			path = "Preview Content";
-			sourceTree = "<group>";
-		};
-		6E9D24D02E34B4CE004C9A4B /* QTuneTests */ = {
-			isa = PBXGroup;
-			children = (
-				6E9D24D12E34B4CE004C9A4B /* QTuneTests.swift */,
+				1400D45FFBFBB4E5BF9393E4 /* QTuneTests.swift */,
 			);
 			path = QTuneTests;
 			sourceTree = "<group>";
 		};
-		6E9D24DA2E34B4CE004C9A4B /* QTuneUITests */ = {
+		3515149919AC286A2AF91851 /* QTune */ = {
 			isa = PBXGroup;
 			children = (
-				6E9D24DB2E34B4CE004C9A4B /* QTuneUITests.swift */,
-				6E9D24DD2E34B4CE004C9A4B /* QTuneUITestsLaunchTests.swift */,
+				97AD5F181A1DD1ADCEF2A6E8 /* QTune */,
 			);
-			path = QTuneUITests;
+			path = QTune;
 			sourceTree = "<group>";
 		};
-		6E9D24EB2E34BDD6004C9A4B /* RequestVerse */ = {
+		4B12C3CFE3C0B4AFD6FB8245 /* InfoPlists */ = {
 			isa = PBXGroup;
 			children = (
-				6E9D24EC2E34BDE8004C9A4B /* RequestVerseState.swift */,
-				6E9D24EE2E34BDFA004C9A4B /* RequestVerseAction.swift */,
-				6E9D24F22E34BF05004C9A4B /* RequestVerseEffect.swift */,
-				6E9D24F02E34BEEF004C9A4B /* RequestVerseViewModel.swift */,
-				6E9D25002E34C68C004C9A4B /* RequestVerseView.swift */,
+				6773726599952B3772512B4F /* QTune-Info.plist */,
+				E26EF54F0AA9366E3039C6B7 /* QTuneTests-Info.plist */,
+				F8DDC665C2DE07B02FF6B622 /* QTuneUITests-Info.plist */,
 			);
-			path = RequestVerse;
+			path = InfoPlists;
 			sourceTree = "<group>";
 		};
-		6E9D24F42E34BF87004C9A4B /* Presentation */ = {
+		4EB8DB6473C69A1F64D77C10 /* Data */ = {
 			isa = PBXGroup;
 			children = (
-				6E9D24EB2E34BDD6004C9A4B /* RequestVerse */,
-			);
-			path = Presentation;
-			sourceTree = "<group>";
-		};
-		6E9D24F52E34BF95004C9A4B /* Domain */ = {
-			isa = PBXGroup;
-			children = (
-				6E9D24F62E34BFC8004C9A4B /* Verse */,
-			);
-			path = Domain;
-			sourceTree = "<group>";
-		};
-		6E9D24F62E34BFC8004C9A4B /* Verse */ = {
-			isa = PBXGroup;
-			children = (
-				6E9D25062E34C92E004C9A4B /* Repository */,
-				6E9D25032E34C8F7004C9A4B /* UseCase */,
-				6E9D24F92E34C0E7004C9A4B /* Entity */,
-			);
-			path = Verse;
-			sourceTree = "<group>";
-		};
-		6E9D24F92E34C0E7004C9A4B /* Entity */ = {
-			isa = PBXGroup;
-			children = (
-				6E9D24FA2E34C0FB004C9A4B /* Verse.swift */,
-				6E9D24FE2E34C454004C9A4B /* GeneratedVerse.swift */,
-				6E9D24FC2E34C11D004C9A4B /* QT.swift */,
-			);
-			path = Entity;
-			sourceTree = "<group>";
-		};
-		6E9D25032E34C8F7004C9A4B /* UseCase */ = {
-			isa = PBXGroup;
-			children = (
-				6E9D24F72E34C003004C9A4B /* GenerateVerseUseCase.swift */,
-				6E9D25042E34C905004C9A4B /* GenerateVerseInteractor.swift */,
-			);
-			path = UseCase;
-			sourceTree = "<group>";
-		};
-		6E9D25062E34C92E004C9A4B /* Repository */ = {
-			isa = PBXGroup;
-			children = (
-				6E9D25072E34C93C004C9A4B /* VerseRepository.swift */,
-			);
-			path = Repository;
-			sourceTree = "<group>";
-		};
-		6E9D25092E34C951004C9A4B /* Data */ = {
-			isa = PBXGroup;
-			children = (
-				6E9D250A2E34C95D004C9A4B /* Verse */,
+				E629923E8298254B5F061677 /* Verse */,
 			);
 			path = Data;
 			sourceTree = "<group>";
 		};
-		6E9D250A2E34C95D004C9A4B /* Verse */ = {
+		5E2B754B17F8C23326F3AF7D /* UseCase */ = {
 			isa = PBXGroup;
 			children = (
-				6E9D250B2E34C96F004C9A4B /* Repository */,
+				E1192DA6DCBD9E1041763CCD /* GenerateVerseInteractor.swift */,
+				C8A05B7216703818524AA562 /* GenerateVerseUseCase.swift */,
+			);
+			path = UseCase;
+			sourceTree = "<group>";
+		};
+		6003B7D7263071CE9CE713FF /* Project */ = {
+			isa = PBXGroup;
+			children = (
+				1D52728B7CA3FD7550EB660D /* Derived */,
+				3515149919AC286A2AF91851 /* QTune */,
+				21B2E51F4F2E0405EF8B352C /* QTuneTests */,
+				68AB6B6F020E7B631791EE8C /* QTuneUITests */,
+			);
+			name = Project;
+			sourceTree = "<group>";
+		};
+		68AB6B6F020E7B631791EE8C /* QTuneUITests */ = {
+			isa = PBXGroup;
+			children = (
+				9E32CA490ECD6D56787DB98E /* QTuneUITests.swift */,
+				4178F7A4F95430E419714979 /* QTuneUITestsLaunchTests.swift */,
+			);
+			path = QTuneUITests;
+			sourceTree = "<group>";
+		};
+		68D1623A138D79F9BD80A5FD = {
+			isa = PBXGroup;
+			children = (
+				6003B7D7263071CE9CE713FF /* Project */,
+				91ECC99EB3D2F324FDEA6086 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		6B3BF834B15C6AD5247283F4 /* Repository */ = {
+			isa = PBXGroup;
+			children = (
+				7B66B495C81819B0AA90FA82 /* VerseRepository.swift */,
+			);
+			path = Repository;
+			sourceTree = "<group>";
+		};
+		815EAC73FC680108A55E6DD7 /* Domain */ = {
+			isa = PBXGroup;
+			children = (
+				13834215CD6AB9E13526871F /* Verse */,
+			);
+			path = Domain;
+			sourceTree = "<group>";
+		};
+		91ECC99EB3D2F324FDEA6086 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				DDCECF9829DE532FB2FAC11C /* QTune.app */,
+				2BA86ED62C32D6CB57B919F8 /* QTuneTests.xctest */,
+				030FBB9C0662DD6E945F5D05 /* QTuneUITests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		97AD5F181A1DD1ADCEF2A6E8 /* QTune */ = {
+			isa = PBXGroup;
+			children = (
+				4EB8DB6473C69A1F64D77C10 /* Data */,
+				815EAC73FC680108A55E6DD7 /* Domain */,
+				ED7C0B39059DB2C0541DF749 /* Presentation */,
+				964272A9D3F76CB7C0C0F39B /* ContentView.swift */,
+				BA3C7F1DDDF90A0D91392831 /* QTuneApp.swift */,
+			);
+			path = QTune;
+			sourceTree = "<group>";
+		};
+		B6B99A407C7FE64F89711B98 /* RequestVerse */ = {
+			isa = PBXGroup;
+			children = (
+				53EE824A9352BB04D3F59DF7 /* RequestVerseAction.swift */,
+				1D5756CED96D310764F6EF60 /* RequestVerseEffect.swift */,
+				99B4EF67559F315373B1EAB4 /* RequestVerseState.swift */,
+				CAA88A5A83E8E3EA75866FC1 /* RequestVerseView.swift */,
+				67423BCE1F2CB0ABB3FDA36E /* RequestVerseViewModel.swift */,
+			);
+			path = RequestVerse;
+			sourceTree = "<group>";
+		};
+		C986B56C0A918AC42E6BBF2B /* Repository */ = {
+			isa = PBXGroup;
+			children = (
+				F86A42E3DF6B837AFB197601 /* DefaultVerseRepository.swift */,
+			);
+			path = Repository;
+			sourceTree = "<group>";
+		};
+		E629923E8298254B5F061677 /* Verse */ = {
+			isa = PBXGroup;
+			children = (
+				C986B56C0A918AC42E6BBF2B /* Repository */,
 			);
 			path = Verse;
 			sourceTree = "<group>";
 		};
-		6E9D250B2E34C96F004C9A4B /* Repository */ = {
+		ED7C0B39059DB2C0541DF749 /* Presentation */ = {
 			isa = PBXGroup;
 			children = (
-				6E9D250C2E34C989004C9A4B /* DefaultVerseRepository.swift */,
+				B6B99A407C7FE64F89711B98 /* RequestVerse */,
 			);
-			path = Repository;
+			path = Presentation;
+			sourceTree = "<group>";
+		};
+		FBD114CDD7D3F352F7B42E4F /* Entity */ = {
+			isa = PBXGroup;
+			children = (
+				2B8FC5D64425159F84F330DE /* GeneratedVerse.swift */,
+				2C9E02F516474EDE8EA17F26 /* QT.swift */,
+				A14C886F4F28A27699CA3836 /* Verse.swift */,
+			);
+			path = Entity;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		6E9D24BC2E34B4CC004C9A4B /* QTune */ = {
+		3C2540A71468EED3324A28BF /* QTuneUITests */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 6E9D24E12E34B4CE004C9A4B /* Build configuration list for PBXNativeTarget "QTune" */;
+			buildConfigurationList = D1C32D8FFE07FD108C880295 /* Build configuration list for PBXNativeTarget "QTuneUITests" */;
 			buildPhases = (
-				6E9D24B92E34B4CC004C9A4B /* Sources */,
-				6E9D24BA2E34B4CC004C9A4B /* Frameworks */,
-				6E9D24BB2E34B4CC004C9A4B /* Resources */,
+				A4A544A4AD84BD1394377995 /* Sources */,
+				086756CC7617AE368E3CD3B3 /* Resources */,
+				960E21DC9DA3AA9E5AACC1DB /* Frameworks */,
+				90DC87E0861195EA75385FA3 /* Embed Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				B42FC65616CB582334425A4A /* PBXTargetDependency */,
+			);
+			name = QTuneUITests;
+			packageProductDependencies = (
+			);
+			productName = QTuneUITests;
+			productReference = 030FBB9C0662DD6E945F5D05 /* QTuneUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
+		E74D4B1D31D4593EA26F7BC6 /* QTune */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = C062237E1961D93CF8370146 /* Build configuration list for PBXNativeTarget "QTune" */;
+			buildPhases = (
+				B738A16194917E9500161B0F /* Sources */,
+				D9F048FF0E6EAB932224694A /* Resources */,
+				3DEC9A369C7111174A3DC093 /* Frameworks */,
+				D84D42EBD9105B419A4E15D0 /* Embed Frameworks */,
 			);
 			buildRules = (
 			);
 			dependencies = (
 			);
 			name = QTune;
+			packageProductDependencies = (
+			);
 			productName = QTune;
-			productReference = 6E9D24BD2E34B4CC004C9A4B /* QTune.app */;
+			productReference = DDCECF9829DE532FB2FAC11C /* QTune.app */;
 			productType = "com.apple.product-type.application";
 		};
-		6E9D24CC2E34B4CE004C9A4B /* QTuneTests */ = {
+		E849D3CD17743AF16DD4EA82 /* QTuneTests */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 6E9D24E42E34B4CE004C9A4B /* Build configuration list for PBXNativeTarget "QTuneTests" */;
+			buildConfigurationList = E9BAF98DD0BDD2649F4AAAC2 /* Build configuration list for PBXNativeTarget "QTuneTests" */;
 			buildPhases = (
-				6E9D24C92E34B4CE004C9A4B /* Sources */,
-				6E9D24CA2E34B4CE004C9A4B /* Frameworks */,
-				6E9D24CB2E34B4CE004C9A4B /* Resources */,
+				D25147D5DE511E294C166BDA /* Sources */,
+				A7EC32B4ED1E479CA153D74E /* Resources */,
+				F09F281927F37D61BDB8D4DD /* Frameworks */,
+				AB5D669CA2BCCE9D8B91FBCF /* Embed Frameworks */,
 			);
 			buildRules = (
 			);
 			dependencies = (
-				6E9D24CF2E34B4CE004C9A4B /* PBXTargetDependency */,
+				3983C329B96B1D4E752FCF87 /* PBXTargetDependency */,
 			);
 			name = QTuneTests;
+			packageProductDependencies = (
+			);
 			productName = QTuneTests;
-			productReference = 6E9D24CD2E34B4CE004C9A4B /* QTuneTests.xctest */;
+			productReference = 2BA86ED62C32D6CB57B919F8 /* QTuneTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
-		};
-		6E9D24D62E34B4CE004C9A4B /* QTuneUITests */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = 6E9D24E72E34B4CE004C9A4B /* Build configuration list for PBXNativeTarget "QTuneUITests" */;
-			buildPhases = (
-				6E9D24D32E34B4CE004C9A4B /* Sources */,
-				6E9D24D42E34B4CE004C9A4B /* Frameworks */,
-				6E9D24D52E34B4CE004C9A4B /* Resources */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-				6E9D24D92E34B4CE004C9A4B /* PBXTargetDependency */,
-			);
-			name = QTuneUITests;
-			productName = QTuneUITests;
-			productReference = 6E9D24D72E34B4CE004C9A4B /* QTuneUITests.xctest */;
-			productType = "com.apple.product-type.bundle.ui-testing";
 		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
-		6E9D24B52E34B4CC004C9A4B /* Project object */ = {
+		EE113889D3D796516A1378BF /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				BuildIndependentTargetsInParallel = 1;
-				LastSwiftUpdateCheck = 1500;
-				LastUpgradeCheck = 1500;
+				BuildIndependentTargetsInParallel = YES;
 				TargetAttributes = {
-					6E9D24BC2E34B4CC004C9A4B = {
-						CreatedOnToolsVersion = 15.0.1;
+					3C2540A71468EED3324A28BF = {
+						TestTargetID = E74D4B1D31D4593EA26F7BC6;
 					};
-					6E9D24CC2E34B4CE004C9A4B = {
-						CreatedOnToolsVersion = 15.0.1;
-						TestTargetID = 6E9D24BC2E34B4CC004C9A4B;
-					};
-					6E9D24D62E34B4CE004C9A4B = {
-						CreatedOnToolsVersion = 15.0.1;
-						TestTargetID = 6E9D24BC2E34B4CC004C9A4B;
+					E849D3CD17743AF16DD4EA82 = {
+						TestTargetID = E74D4B1D31D4593EA26F7BC6;
 					};
 				};
 			};
-			buildConfigurationList = 6E9D24B82E34B4CC004C9A4B /* Build configuration list for PBXProject "QTune" */;
+			buildConfigurationList = DE543EA24CB6A6047E55BCD5 /* Build configuration list for PBXProject "QTune" */;
 			compatibilityVersion = "Xcode 14.0";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
-				en,
 				Base,
+				en,
 			);
-			mainGroup = 6E9D24B42E34B4CC004C9A4B;
-			productRefGroup = 6E9D24BE2E34B4CC004C9A4B /* Products */;
+			mainGroup = 68D1623A138D79F9BD80A5FD;
+			productRefGroup = 91ECC99EB3D2F324FDEA6086 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				6E9D24BC2E34B4CC004C9A4B /* QTune */,
-				6E9D24CC2E34B4CE004C9A4B /* QTuneTests */,
-				6E9D24D62E34B4CE004C9A4B /* QTuneUITests */,
+				E74D4B1D31D4593EA26F7BC6 /* QTune */,
+				E849D3CD17743AF16DD4EA82 /* QTuneTests */,
+				3C2540A71468EED3324A28BF /* QTuneUITests */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
-		6E9D24BB2E34B4CC004C9A4B /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				6E9D24C82E34B4CE004C9A4B /* Preview Assets.xcassets in Resources */,
-				6E9D24C52E34B4CE004C9A4B /* Assets.xcassets in Resources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		6E9D24CB2E34B4CE004C9A4B /* Resources */ = {
+		086756CC7617AE368E3CD3B3 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		6E9D24D52E34B4CE004C9A4B /* Resources */ = {
+		A7EC32B4ED1E479CA153D74E /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		D9F048FF0E6EAB932224694A /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -369,68 +426,147 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
-		6E9D24B92E34B4CC004C9A4B /* Sources */ = {
+		A4A544A4AD84BD1394377995 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				6E9D24F12E34BEEF004C9A4B /* RequestVerseViewModel.swift in Sources */,
-				6E9D24ED2E34BDE8004C9A4B /* RequestVerseState.swift in Sources */,
-				6E9D24FD2E34C11D004C9A4B /* QT.swift in Sources */,
-				6E9D24FF2E34C454004C9A4B /* GeneratedVerse.swift in Sources */,
-				6E9D24C32E34B4CC004C9A4B /* ContentView.swift in Sources */,
-				6E9D24FB2E34C0FB004C9A4B /* Verse.swift in Sources */,
-				6E9D250D2E34C989004C9A4B /* DefaultVerseRepository.swift in Sources */,
-				6E9D25012E34C68C004C9A4B /* RequestVerseView.swift in Sources */,
-				6E9D25052E34C905004C9A4B /* GenerateVerseInteractor.swift in Sources */,
-				6E9D24C12E34B4CC004C9A4B /* QTuneApp.swift in Sources */,
-				6E9D25082E34C93C004C9A4B /* VerseRepository.swift in Sources */,
-				6E9D24F82E34C003004C9A4B /* GenerateVerseUseCase.swift in Sources */,
-				6E9D24F32E34BF05004C9A4B /* RequestVerseEffect.swift in Sources */,
-				6E9D24EF2E34BDFA004C9A4B /* RequestVerseAction.swift in Sources */,
+				1D7F8C56F59645FAF2A13BB8 /* QTuneUITests.swift in Sources */,
+				CFA09EF2BC2553A3A1AD4FC6 /* QTuneUITestsLaunchTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		6E9D24C92E34B4CE004C9A4B /* Sources */ = {
+		B738A16194917E9500161B0F /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				6E9D24D22E34B4CE004C9A4B /* QTuneTests.swift in Sources */,
+				A04070D3F4419DC99996A5AC /* ContentView.swift in Sources */,
+				D998B0887FE010054E44FF3A /* DefaultVerseRepository.swift in Sources */,
+				49EBDE61A8E13C6AB09767DD /* GeneratedVerse.swift in Sources */,
+				14323DE8008BAA45B09C3AFE /* QT.swift in Sources */,
+				C595EBA2BAD92BC51FBEBBA8 /* Verse.swift in Sources */,
+				1E72C2152DC3D3C3955A99E7 /* VerseRepository.swift in Sources */,
+				A626126E5B0517E3BE87B112 /* GenerateVerseInteractor.swift in Sources */,
+				1695BC30BB8BA2C2C43997A2 /* GenerateVerseUseCase.swift in Sources */,
+				8D6C61689602BA0F4D659FE9 /* RequestVerseAction.swift in Sources */,
+				D4AFFACB3B26472A2C7C998C /* RequestVerseEffect.swift in Sources */,
+				7A168320CBD397E5FB215764 /* RequestVerseState.swift in Sources */,
+				BCD82D02887DD125E382C50A /* RequestVerseView.swift in Sources */,
+				FE99A152294B7E308798CA65 /* RequestVerseViewModel.swift in Sources */,
+				E64A201303E391A50D1DAC01 /* QTuneApp.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		6E9D24D32E34B4CE004C9A4B /* Sources */ = {
+		D25147D5DE511E294C166BDA /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				6E9D24DE2E34B4CE004C9A4B /* QTuneUITestsLaunchTests.swift in Sources */,
-				6E9D24DC2E34B4CE004C9A4B /* QTuneUITests.swift in Sources */,
+				F555F92569F99FA9B1DABBE2 /* QTuneTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
-		6E9D24CF2E34B4CE004C9A4B /* PBXTargetDependency */ = {
+		3983C329B96B1D4E752FCF87 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = 6E9D24BC2E34B4CC004C9A4B /* QTune */;
-			targetProxy = 6E9D24CE2E34B4CE004C9A4B /* PBXContainerItemProxy */;
+			name = QTune;
+			target = E74D4B1D31D4593EA26F7BC6 /* QTune */;
+			targetProxy = 0771366CCABFA7EF9B91B249 /* PBXContainerItemProxy */;
 		};
-		6E9D24D92E34B4CE004C9A4B /* PBXTargetDependency */ = {
+		B42FC65616CB582334425A4A /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = 6E9D24BC2E34B4CC004C9A4B /* QTune */;
-			targetProxy = 6E9D24D82E34B4CE004C9A4B /* PBXContainerItemProxy */;
+			name = QTune;
+			target = E74D4B1D31D4593EA26F7BC6 /* QTune */;
+			targetProxy = 2AEF835AB87CC34280F7D531 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
-		6E9D24DF2E34B4CE004C9A4B /* Debug */ = {
+		0CF1BF80342101E466ECBA8E /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				INFOPLIST_FILE = "Derived/InfoPlists/QTuneUITests-Info.plist";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.yourcompany.QTuneUITests;
+				PRODUCT_NAME = QTuneUITests;
+				SDKROOT = iphoneos;
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+				TEST_TARGET_NAME = QTune;
+			};
+			name = Release;
+		};
+		24C9A23D0FA916333684A4AC /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				ENABLE_PREVIEWS = YES;
+				INFOPLIST_FILE = "Derived/InfoPlists/QTune-Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.yourcompany.QTune;
+				PRODUCT_NAME = QTune;
+				SDKROOT = iphoneos;
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) DEBUG";
+				SWIFT_COMPILATION_MODE = singlefile;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Debug;
+		};
+		3B6FF93CC8B49AFD135A67EA /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				INFOPLIST_FILE = "Derived/InfoPlists/QTuneUITests-Info.plist";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.yourcompany.QTuneUITests;
+				PRODUCT_NAME = QTuneUITests;
+				SDKROOT = iphoneos;
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) DEBUG";
+				SWIFT_COMPILATION_MODE = singlefile;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+				TEST_TARGET_NAME = QTune;
+			};
+			name = Debug;
+		};
+		3D289435A6A9ED4C1CE018D3 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
-				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_ENABLE_OBJC_ARC = YES;
 				CLANG_ENABLE_OBJC_WEAK = YES;
@@ -457,11 +593,91 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
+				DEAD_CODE_STRIPPING = YES;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		58426E769250C3D1173643CE /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				INFOPLIST_FILE = "Derived/InfoPlists/QTuneTests-Info.plist";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.yourcompany.QTuneTests;
+				PRODUCT_NAME = QTuneTests;
+				SDKROOT = iphoneos;
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) DEBUG";
+				SWIFT_COMPILATION_MODE = singlefile;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/QTune.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/QTune";
+				TEST_TARGET_NAME = QTune;
+			};
+			name = Debug;
+		};
+		81DE253CFCC152E2138A3600 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEAD_CODE_STRIPPING = YES;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
-				ENABLE_USER_SCRIPT_SANDBOXING = YES;
-				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_OPTIMIZATION_LEVEL = 0;
@@ -475,197 +691,60 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
-				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
-				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
-				MTL_FAST_MATH = YES;
+				MTL_ENABLE_DEBUG_INFO = YES;
 				ONLY_ACTIVE_ARCH = YES;
-				SDKROOT = iphoneos;
-				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
-				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Debug;
 		};
-		6E9D24E02E34B4CE004C9A4B /* Release */ = {
+		B849319D8EC3EE7C33A1E3B2 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ALWAYS_SEARCH_USER_PATHS = NO;
-				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
-				CLANG_ANALYZER_NONNULL = YES;
-				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
-				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
-				CLANG_ENABLE_MODULES = YES;
-				CLANG_ENABLE_OBJC_ARC = YES;
-				CLANG_ENABLE_OBJC_WEAK = YES;
-				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
-				CLANG_WARN_BOOL_CONVERSION = YES;
-				CLANG_WARN_COMMA = YES;
-				CLANG_WARN_CONSTANT_CONVERSION = YES;
-				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
-				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
-				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
-				CLANG_WARN_EMPTY_BODY = YES;
-				CLANG_WARN_ENUM_CONVERSION = YES;
-				CLANG_WARN_INFINITE_RECURSION = YES;
-				CLANG_WARN_INT_CONVERSION = YES;
-				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
-				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
-				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
-				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
-				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
-				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
-				CLANG_WARN_STRICT_PROTOTYPES = YES;
-				CLANG_WARN_SUSPICIOUS_MOVE = YES;
-				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
-				CLANG_WARN_UNREACHABLE_CODE = YES;
-				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
-				COPY_PHASE_STRIP = NO;
-				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
-				ENABLE_NS_ASSERTIONS = NO;
-				ENABLE_STRICT_OBJC_MSGSEND = YES;
-				ENABLE_USER_SCRIPT_SANDBOXING = YES;
-				GCC_C_LANGUAGE_STANDARD = gnu17;
-				GCC_NO_COMMON_BLOCKS = YES;
-				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
-				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
-				GCC_WARN_UNDECLARED_SELECTOR = YES;
-				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
-				GCC_WARN_UNUSED_FUNCTION = YES;
-				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
-				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
-				MTL_ENABLE_DEBUG_INFO = NO;
-				MTL_FAST_MATH = YES;
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				ENABLE_PREVIEWS = YES;
+				INFOPLIST_FILE = "Derived/InfoPlists/QTune-Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.yourcompany.QTune;
+				PRODUCT_NAME = QTune;
 				SDKROOT = iphoneos;
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_COMPILATION_MODE = wholemodule;
-				VALIDATE_PRODUCT = YES;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Release;
 		};
-		6E9D24E22E34B4CE004C9A4B /* Debug */ = {
+		D66A10318776307FABC61B87 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_ASSET_PATHS = "\"QTune/Preview Content\"";
-				ENABLE_PREVIEWS = YES;
-				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
-				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
-				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				INFOPLIST_FILE = "Derived/InfoPlists/QTuneTests-Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.inju.QTune;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_EMIT_LOC_STRINGS = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = com.yourcompany.QTuneTests;
+				PRODUCT_NAME = QTuneTests;
+				SDKROOT = iphoneos;
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
-			};
-			name = Debug;
-		};
-		6E9D24E32E34B4CE004C9A4B /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_ASSET_PATHS = "\"QTune/Preview Content\"";
-				ENABLE_PREVIEWS = YES;
-				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
-				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
-				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-				);
-				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.inju.QTune;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_EMIT_LOC_STRINGS = YES;
-				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
-			};
-			name = Release;
-		};
-		6E9D24E52E34B4CE004C9A4B /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
-				BUNDLE_LOADER = "$(TEST_HOST)";
-				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
-				GENERATE_INFOPLIST_FILE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
-				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.inju.QTuneTests;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_EMIT_LOC_STRINGS = NO;
-				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = 1;
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/QTune.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/QTune";
-			};
-			name = Debug;
-		};
-		6E9D24E62E34B4CE004C9A4B /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
-				BUNDLE_LOADER = "$(TEST_HOST)";
-				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
-				GENERATE_INFOPLIST_FILE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
-				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.inju.QTuneTests;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_EMIT_LOC_STRINGS = NO;
-				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/QTune.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/QTune";
-			};
-			name = Release;
-		};
-		6E9D24E82E34B4CE004C9A4B /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
-				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
-				GENERATE_INFOPLIST_FILE = YES;
-				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.inju.QTuneUITests;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_EMIT_LOC_STRINGS = NO;
-				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_TARGET_NAME = QTune;
-			};
-			name = Debug;
-		};
-		6E9D24E92E34B4CE004C9A4B /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
-				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
-				GENERATE_INFOPLIST_FILE = YES;
-				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.inju.QTuneUITests;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_EMIT_LOC_STRINGS = NO;
-				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
 				TEST_TARGET_NAME = QTune;
 			};
 			name = Release;
@@ -673,43 +752,43 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		6E9D24B82E34B4CC004C9A4B /* Build configuration list for PBXProject "QTune" */ = {
+		C062237E1961D93CF8370146 /* Build configuration list for PBXNativeTarget "QTune" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				6E9D24DF2E34B4CE004C9A4B /* Debug */,
-				6E9D24E02E34B4CE004C9A4B /* Release */,
+				24C9A23D0FA916333684A4AC /* Debug */,
+				B849319D8EC3EE7C33A1E3B2 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		6E9D24E12E34B4CE004C9A4B /* Build configuration list for PBXNativeTarget "QTune" */ = {
+		D1C32D8FFE07FD108C880295 /* Build configuration list for PBXNativeTarget "QTuneUITests" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				6E9D24E22E34B4CE004C9A4B /* Debug */,
-				6E9D24E32E34B4CE004C9A4B /* Release */,
+				3B6FF93CC8B49AFD135A67EA /* Debug */,
+				0CF1BF80342101E466ECBA8E /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		6E9D24E42E34B4CE004C9A4B /* Build configuration list for PBXNativeTarget "QTuneTests" */ = {
+		DE543EA24CB6A6047E55BCD5 /* Build configuration list for PBXProject "QTune" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				6E9D24E52E34B4CE004C9A4B /* Debug */,
-				6E9D24E62E34B4CE004C9A4B /* Release */,
+				81DE253CFCC152E2138A3600 /* Debug */,
+				3D289435A6A9ED4C1CE018D3 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		6E9D24E72E34B4CE004C9A4B /* Build configuration list for PBXNativeTarget "QTuneUITests" */ = {
+		E9BAF98DD0BDD2649F4AAAC2 /* Build configuration list for PBXNativeTarget "QTuneTests" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				6E9D24E82E34B4CE004C9A4B /* Debug */,
-				6E9D24E92E34B4CE004C9A4B /* Release */,
+				58426E769250C3D1173643CE /* Debug */,
+				D66A10318776307FABC61B87 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};
-	rootObject = 6E9D24B52E34B4CC004C9A4B /* Project object */;
+	rootObject = EE113889D3D796516A1378BF /* Project object */;
 }
