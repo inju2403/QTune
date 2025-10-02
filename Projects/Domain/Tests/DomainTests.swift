@@ -6,7 +6,7 @@
 //
 
 import XCTest
-@testable import QTune
+@testable import Domain
 
 final class DomainTests: XCTestCase {
 

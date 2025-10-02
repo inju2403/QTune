@@ -1,7 +1,7 @@
 # macOS
 .DS_Store
 
-# Xcode
+# Xcode user-specific + build
 build/
 DerivedData/
 *.pbxuser
@@ -17,8 +17,14 @@ xcuserdata/
 *.xccheckout
 *.xcscmblueprint
 
+# Xcode generated
+*.xcodeproj/
+*.xcworkspace/
+
 # SwiftPM
 .build/
+.swiftpm/
+Package.resolved
 Packages/
 
 # CocoaPods
@@ -36,4 +42,5 @@ GoogleService-Info.plist
 *.secrets
 
 # Tuist
+Tuist/Cache/
 **/Derived/
