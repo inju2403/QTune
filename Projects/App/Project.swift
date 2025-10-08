@@ -17,8 +17,12 @@ let project = Project(
         ],
         "UIViewControllerBasedStatusBarAppearance": true
       ]),
-      sources: ["Sources/**"],
-      resources: ["Sources/Assets.xcassets", "Sources/Preview Content/**"],
+      sources: nil,
+      resources: [
+        "Resources/Assets.xcassets",
+        "Resources/Preview Content/**"
+      ],
+      buildableFolders: [.folder("Sources")],
       dependencies: [
         .project(target: "Presentation", path: "../Presentation"),
         .project(target: "Domain", path: "../Domain"),

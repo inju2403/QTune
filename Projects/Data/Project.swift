@@ -10,7 +10,8 @@ let project = Project(
       bundleId: "com.qtune.data",
       deploymentTargets: .iOS("16.0"),
       infoPlist: .default,
-      sources: ["Sources/**"],
+      sources: nil,
+      buildableFolders: [.folder("Sources")],
       dependencies: [
         .project(target: "Domain", path: "../Domain")
       ]

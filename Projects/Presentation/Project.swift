@@ -10,7 +10,8 @@ let project = Project(
       bundleId: "com.qtune.presentation",
       deploymentTargets: .iOS("16.0"),
       infoPlist: .default,
-      sources: ["Sources/**"],
+      sources: nil,
+      buildableFolders: [.folder("Sources")],
       dependencies: [
         .project(target: "Domain", path: "../Domain")
       ]
@@ -22,7 +23,8 @@ let project = Project(
       bundleId: "com.qtune.presentationTests",
       deploymentTargets: .iOS("16.0"),
       infoPlist: .default,
-      sources: ["Tests/**"],
+      sources: nil,
+      buildableFolders: [.folder("Tests")],
       dependencies: [
         .target(name: "Presentation")
       ]
