@@ -6,8 +6,12 @@
 //
 
 import Foundation
+import Domain
 
 enum RequestVerseAction {
+    case onAppear(userId: String)
     case updateInput(String)
     case tapRequest
+    case tapResumeDraft
+    case tapDiscardDraft
 }

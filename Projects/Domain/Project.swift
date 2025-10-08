@@ -22,7 +22,13 @@ let project = Project(
       sources: ["Tests/**"],
       dependencies: [
         .target(name: "Domain")
-      ]
+      ],
+      settings: .settings(
+        base: [
+          "TEST_HOST": "",
+          "BUNDLE_LOADER": ""
+        ]
+      )
     )
   ]
 )

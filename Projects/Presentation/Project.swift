@@ -14,6 +14,18 @@ let project = Project(
       dependencies: [
         .project(target: "Domain", path: "../Domain")
       ]
+    ),
+    .target(
+      name: "PresentationTests",
+      destinations: [.iPhone],
+      product: .unitTests,
+      bundleId: "com.qtune.presentationTests",
+      deploymentTargets: .iOS("16.0"),
+      infoPlist: .default,
+      sources: ["Tests/**"],
+      dependencies: [
+        .target(name: "Presentation")
+      ]
     )
   ]
 )

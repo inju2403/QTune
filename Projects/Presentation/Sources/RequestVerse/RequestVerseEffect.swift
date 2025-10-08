@@ -10,5 +10,7 @@ import Domain
 
 enum RequestVerseEffect {
     case showError(String)
-    case navigateToResult(GeneratedVerse)
+    case showToast(String)
+    case presentDraftConflict
+    case navigateToEditor(QuietTime)
 }

@@ -8,8 +8,8 @@
 import Foundation
 
 public struct GeneratedVerse: Equatable {
-    let verse: Verse
-    let reason: String
+    public let verse: Verse
+    public let reason: String
 
     public init(verse: Verse, reason: String) {
         self.verse = verse

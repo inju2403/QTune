@@ -9,7 +9,14 @@ let project = Project(
       product: .app,
       bundleId: "com.yourcompany.app",
       deploymentTargets: .iOS("16.0"),
-      infoPlist: .default,
+      infoPlist: .extendingDefault(with: [
+        "UILaunchScreen": [
+          "UIColorName": "",
+          "UIImageName": "",
+          "UILaunchScreen": [:]
+        ],
+        "UIViewControllerBasedStatusBarAppearance": true
+      ]),
       sources: ["Sources/**"],
       resources: ["Sources/Assets.xcassets", "Sources/Preview Content/**"],
       dependencies: [

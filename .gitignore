@@ -44,3 +44,8 @@ GoogleService-Info.plist
 # Tuist
 Tuist/Cache/
 **/Derived/
+
+# Claude settings
+.claude/
+CLAUDE.md
+

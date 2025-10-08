@@ -22,19 +22,46 @@ public final class RequestVerseViewModel: ObservableObject {
 
     func send(_ action: RequestVerseAction) {
         switch action {
+        case .onAppear(let userId):
+            Task { await loadTodayDraft(userId: userId) }
+
         case .updateInput(let text):
-            state.inputText = text
+            state.inputText = String(text.prefix(500))
 
         case .tapRequest:
-            Task {
-                await requestVerse()
-            }
+            Task { await requestVerse() }
+
+        case .tapResumeDraft:
+            guard let draft = state.todayDraft else { return }
+            effect.send(.navigateToEditor(draft))
+
+        case .tapDiscardDraft:
+            Task { await discardDraft() }
         }
     }
 
+    private func loadTodayDraft(userId: String) async {
+        let draft = await DraftManager.shared.loadTodayDraft(userId: userId)
+        state.todayDraft = draft
+        state.showDraftBanner = (draft != nil)
+    }
+
+    private func discardDraft() async {
+        await DraftManager.shared.clearTodayDraft(userId: "me")
+        state.todayDraft = nil
+        state.showDraftBanner = false
+    }
+
     private func requestVerse() async {
+        // 입력 검증: 텍스트 필수
         guard !state.inputText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
-            effect.send(.showError("입력된 내용이 없어요"))
+            effect.send(.showError("오늘의 생각이나 상황을 먼저 입력해 주세요"))
+            return
+        }
+
+        // 기존 드래프트가 있으면 모달로 충돌 처리
+        if state.todayDraft != nil {
+            effect.send(.presentDraftConflict)
             return
         }
 
@@ -43,10 +70,17 @@ public final class RequestVerseViewModel: ObservableObject {
 
         do {
             let generated = try await generateVerseUseCase.execute(prompt: state.inputText)
-            effect.send(.navigateToResult(generated))
+            let draft = QuietTime(
+                verse: generated.verse,
+                memo: "",
+                date: Date(),
+                status: .draft,
+                tags: []
+            )
+            await DraftManager.shared.saveDraft(draft, userId: "me")
+            effect.send(.navigateToEditor(draft))
         } catch {
             effect.send(.showError("말씀 추천에 실패했어요"))
         }
     }
-
 }
