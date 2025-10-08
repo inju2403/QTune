@@ -10,15 +10,17 @@ import Combine
 import Domain
 @testable import Presentation
 
-// MARK: - Fake UseCase for Testing
-final class FakeGenerateVerseUseCase: GenerateVerseUseCase {
+// MARK: - Fake Interactor for Testing
+final class FakeGenerateVerseInteractor: GenerateVerseUseCase {
     var shouldFail = false
     var executeCallCount = 0
-    var lastPrompt: String?
+    var lastNormalizedText: String?
+    var lastUserId: String?
 
-    func execute(prompt: String) async throws -> GeneratedVerse {
+    func execute(normalizedText: String, userId: String) async throws -> GeneratedVerse {
         executeCallCount += 1
-        lastPrompt = prompt
+        lastNormalizedText = normalizedText
+        lastUserId = userId
 
         if shouldFail {
             throw NSError(domain: "test", code: -1)
@@ -43,24 +45,24 @@ final class FakeGenerateVerseUseCase: GenerateVerseUseCase {
 @MainActor
 final class RequestVerseViewModelTests: XCTestCase {
     var viewModel: RequestVerseViewModel!
-    var fakeUseCase: FakeGenerateVerseUseCase!
+    var fakeInteractor: FakeGenerateVerseInteractor!
     var cancellables: Set<AnyCancellable>!
 
     override func setUp() async throws {
         try await super.setUp()
-        fakeUseCase = FakeGenerateVerseUseCase()
-        viewModel = RequestVerseViewModel(generateVerseUseCase: fakeUseCase)
+        fakeInteractor = FakeGenerateVerseInteractor()
+        viewModel = RequestVerseViewModel(generateVerseUseCase: fakeInteractor)
         cancellables = []
 
         // Clear draft manager for clean state
-        await DraftManager.shared.clearTodayDraft(userId: "me")
+        await DraftManager.shared.clearTodayDraft(userId: "me", now: Date(), tz: .current)
     }
 
     override func tearDown() async throws {
         viewModel = nil
-        fakeUseCase = nil
+        fakeInteractor = nil
         cancellables = nil
-        await DraftManager.shared.clearTodayDraft(userId: "me")
+        await DraftManager.shared.clearTodayDraft(userId: "me", now: Date(), tz: .current)
         try await super.tearDown()
     }
 
@@ -85,7 +87,7 @@ final class RequestVerseViewModelTests: XCTestCase {
         // Then
         await fulfillment(of: [expectation], timeout: 1.0)
         XCTAssertEqual(receivedError, "오늘의 생각이나 상황을 먼저 입력해 주세요")
-        XCTAssertEqual(fakeUseCase.executeCallCount, 0) // Should not call useCase
+        XCTAssertEqual(fakeInteractor.executeCallCount, 0) // Should not call useCase
     }
 
     // MARK: - Test Case 2: onAppear with existing draft -> showDraftBanner = true
@@ -93,13 +95,16 @@ final class RequestVerseViewModelTests: XCTestCase {
         // Given: Save a draft first
         let verse = Verse(book: "요한복음", chapter: 3, verse: 16, text: "하나님이 세상을 이처럼 사랑하사", translation: "개역개정")
         let draft = QuietTime(
+            id: UUID(),
             verse: verse,
             memo: "테스트 메모",
             date: Date(),
             status: .draft,
-            tags: []
+            tags: [],
+            isFavorite: false,
+            updatedAt: Date()
         )
-        await DraftManager.shared.saveDraft(draft, userId: "me")
+        await DraftManager.shared.saveDraft(draft, userId: "me", now: Date(), tz: .current)
 
         // When
         viewModel.send(.onAppear(userId: "me"))
@@ -117,13 +122,16 @@ final class RequestVerseViewModelTests: XCTestCase {
         // Given: Save a draft and load it
         let verse = Verse(book: "시편", chapter: 23, verse: 1, text: "여호와는 나의 목자시니", translation: "개역개정")
         let draft = QuietTime(
+            id: UUID(),
             verse: verse,
             memo: "",
             date: Date(),
             status: .draft,
-            tags: []
+            tags: [],
+            isFavorite: false,
+            updatedAt: Date()
         )
-        await DraftManager.shared.saveDraft(draft, userId: "me")
+        await DraftManager.shared.saveDraft(draft, userId: "me", now: Date(), tz: .current)
         viewModel.send(.onAppear(userId: "me"))
         try? await Task.sleep(nanoseconds: 100_000_000) // Wait for draft to load
 
@@ -147,7 +155,7 @@ final class RequestVerseViewModelTests: XCTestCase {
         // Then
         await fulfillment(of: [expectation], timeout: 1.0)
         XCTAssertTrue(conflictPresented)
-        XCTAssertEqual(fakeUseCase.executeCallCount, 0) // Should not call useCase
+        XCTAssertEqual(fakeInteractor.executeCallCount, 0) // Should not call useCase
     }
 
     // MARK: - Test Case 4: Normal flow -> navigateToEditor with draft status
@@ -177,11 +185,12 @@ final class RequestVerseViewModelTests: XCTestCase {
         XCTAssertEqual(capturedDraft?.status, .draft)
         XCTAssertEqual(capturedDraft?.memo, "")
         XCTAssertEqual(capturedDraft?.verse.book, "이사야")
-        XCTAssertEqual(fakeUseCase.executeCallCount, 1)
-        XCTAssertEqual(fakeUseCase.lastPrompt, "오늘 힘든 하루였어요. 위로가 필요합니다.")
+        XCTAssertEqual(fakeInteractor.executeCallCount, 1)
+        XCTAssertEqual(fakeInteractor.lastNormalizedText, "오늘 힘든 하루였어요. 위로가 필요합니다.")
+        XCTAssertEqual(fakeInteractor.lastUserId, "me")
 
         // Verify draft is saved in DraftManager
-        let savedDraft = await DraftManager.shared.loadTodayDraft(userId: "me")
+        let savedDraft = await DraftManager.shared.loadTodayDraft(userId: "me", now: Date(), tz: .current)
         XCTAssertNotNil(savedDraft)
         XCTAssertEqual(savedDraft?.status, .draft)
     }

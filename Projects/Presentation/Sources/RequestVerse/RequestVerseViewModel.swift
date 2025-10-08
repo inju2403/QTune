@@ -69,13 +69,20 @@ public final class RequestVerseViewModel: ObservableObject {
         defer { state.isLoading = false }
 
         do {
-            let generated = try await generateVerseUseCase.execute(prompt: state.inputText)
+            // TODO: ClientPreFilterUseCase 통합 필요
+            let generated = try await generateVerseUseCase.execute(
+                normalizedText: state.inputText,
+                userId: "me" // TODO: 실제 userId로 교체 필요
+            )
             let draft = QuietTime(
+                id: UUID(),
                 verse: generated.verse,
                 memo: "",
                 date: Date(),
                 status: .draft,
-                tags: []
+                tags: [],
+                isFavorite: false,
+                updatedAt: Date()
             )
             await DraftManager.shared.saveDraft(draft, userId: "me")
             effect.send(.navigateToEditor(draft))

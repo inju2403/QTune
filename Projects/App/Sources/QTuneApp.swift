@@ -67,7 +67,9 @@ struct QTuneApp: App {
                 RequestVerseView(
                     viewModel: RequestVerseViewModel(
                         generateVerseUseCase: GenerateVerseInteractor(
-                            repository: DefaultVerseRepository()
+                            verseRepository: DefaultVerseRepository(),
+                            rateLimiterRepository: MockRateLimiterRepository(),
+                            moderationRepository: MockModerationRepository()
                         )
                     ),
                     path: path
@@ -75,5 +77,25 @@ struct QTuneApp: App {
             }
             .background(Color(.systemBackground))
         }
+    }
+}
+
+// MARK: - Temporary Mock Repositories (TODO: Data 레이어 구현 시 실제 구현체로 교체)
+
+final class MockRateLimiterRepository: RateLimiterRepository {
+    func checkAndConsume(key: String, max: Int, per: TimeInterval) async throws -> Bool {
+        // TODO: 실제 구현 필요
+        return true // 임시로 모든 요청 허용
+    }
+}
+
+final class MockModerationRepository: ModerationRepository {
+    func analyze(text: String) async throws -> ModerationReport {
+        // TODO: 실제 구현 필요
+        return ModerationReport(
+            verdict: .allowed,
+            confidence: 1.0,
+            categories: []
+        )
     }
 }

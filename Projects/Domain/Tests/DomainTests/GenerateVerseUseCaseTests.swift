@@ -8,7 +8,7 @@
 import XCTest
 @testable import Domain
 
-final class GenerateVerseInteractorTests: XCTestCase {
+final class GenerateVerseUseCaseTests: XCTestCase {
     var useCase: GenerateVerseInteractor!
     var mockVerseRepository: MockVerseRepository!
     var mockRateLimiterRepository: MockRateLimiterRepository!
