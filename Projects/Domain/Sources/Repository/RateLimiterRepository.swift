@@ -15,23 +15,32 @@ import Foundation
 ///
 /// ## 사용 예시
 /// ```swift
-/// // 말씀 생성: 시간당 10회
-/// let canProceed = try await rateLimiter.checkAndConsume(
+/// // 말씀 생성: 하루 1회 (사용자 타임존 기준)
+/// let canProceed = try await rateLimiter.checkDailyLimit(
 ///     key: "generate_verse:\(userId)",
-///     max: 10,
-///     per: .hour
+///     date: Date(),
+///     timeZone: .current
 /// )
 /// if !canProceed {
 ///     throw DomainError.rateLimited
 /// }
 /// ```
 public protocol RateLimiterRepository {
-    /// 요청 가능 여부 확인 및 차감
+    /// 시간 기반 요청 제한 (시간당/분당)
     ///
     /// - Parameters:
-    ///   - key: 제한 키 (예: "generate_verse:user123")
+    ///   - key: 제한 키 (예: "api_call:user123")
     ///   - max: 최대 허용 횟수
     ///   - per: 기간 (초 단위)
     /// - Returns: 요청 가능 여부 (true: 가능, false: 제한 초과)
     func checkAndConsume(key: String, max: Int, per: TimeInterval) async throws -> Bool
+
+    /// 하루 1회 제한 (사용자 타임존 기준 00:00~23:59)
+    ///
+    /// - Parameters:
+    ///   - key: 제한 키 (예: "generate_verse:user123")
+    ///   - date: 현재 시간
+    ///   - timeZone: 사용자 타임존
+    /// - Returns: 요청 가능 여부 (true: 가능, false: 오늘 이미 사용)
+    func checkDailyLimit(key: String, date: Date, timeZone: TimeZone) async throws -> Bool
 }

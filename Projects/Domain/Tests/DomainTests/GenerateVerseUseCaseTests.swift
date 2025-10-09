@@ -22,8 +22,7 @@ final class GenerateVerseUseCaseTests: XCTestCase {
         useCase = GenerateVerseInteractor(
             verseRepository: mockVerseRepository,
             rateLimiterRepository: mockRateLimiterRepository,
-            moderationRepository: mockModerationRepository,
-            maxRequestsPerHour: 10
+            moderationRepository: mockModerationRepository
         )
     }
 
@@ -35,15 +34,15 @@ final class GenerateVerseUseCaseTests: XCTestCase {
         super.tearDown()
     }
 
-    // MARK: - Test Case 1: Rate Limit 초과 → DomainError.rateLimited
+    // MARK: - Test Case 1: Daily Limit 초과 → DomainError.rateLimited
 
-    func testRateLimitExceeded_ThrowsRateLimited() async throws {
-        // Given: Rate Limit 초과 상태
+    func testDailyLimitExceeded_ThrowsRateLimited() async throws {
+        // Given: 하루 1회 제한 초과 상태
         mockRateLimiterRepository.shouldAllow = false
 
         // When/Then
         do {
-            _ = try await useCase.execute(normalizedText: "오늘 힘든 하루였어요", userId: "user123")
+            _ = try await useCase.execute(normalizedText: "오늘 힘든 하루였어요", userId: "user123", timeZone: .current)
             XCTFail("Expected rateLimited error")
         } catch {
             guard case DomainError.rateLimited = error else {
@@ -53,11 +52,10 @@ final class GenerateVerseUseCaseTests: XCTestCase {
             // Success
         }
 
-        // Verify: Rate limiter가 호출되었는지 확인
-        XCTAssertEqual(mockRateLimiterRepository.checkCallCount, 1)
-        XCTAssertEqual(mockRateLimiterRepository.lastKey, "generate_verse:user123")
-        XCTAssertEqual(mockRateLimiterRepository.lastMax, 10)
-        XCTAssertEqual(mockRateLimiterRepository.lastPer, 3600)
+        // Verify: Daily limiter가 호출되었는지 확인
+        XCTAssertEqual(mockRateLimiterRepository.checkDailyCallCount, 1)
+        XCTAssertEqual(mockRateLimiterRepository.lastDailyKey, "generate_verse:user123")
+        XCTAssertNotNil(mockRateLimiterRepository.lastTimeZone)
 
         // Verify: Moderation과 Verse 생성은 호출되지 않았는지 확인
         XCTAssertEqual(mockModerationRepository.analyzeCallCount, 0)
@@ -73,7 +71,7 @@ final class GenerateVerseUseCaseTests: XCTestCase {
 
         // When/Then
         do {
-            _ = try await useCase.execute(normalizedText: "부적절한 내용", userId: "user123")
+            _ = try await useCase.execute(normalizedText: "부적절한 내용", userId: "user123", timeZone: .current)
             XCTFail("Expected moderationBlocked error")
         } catch {
             guard case DomainError.moderationBlocked(let reason) = error else {
@@ -83,8 +81,8 @@ final class GenerateVerseUseCaseTests: XCTestCase {
             XCTAssertEqual(reason, "inappropriate_content")
         }
 
-        // Verify: Rate limiter와 Moderation이 호출되었는지 확인
-        XCTAssertEqual(mockRateLimiterRepository.checkCallCount, 1)
+        // Verify: Daily limiter와 Moderation이 호출되었는지 확인
+        XCTAssertEqual(mockRateLimiterRepository.checkDailyCallCount, 1)
         XCTAssertEqual(mockModerationRepository.analyzeCallCount, 1)
         XCTAssertEqual(mockModerationRepository.lastText, "부적절한 내용")
 
@@ -110,7 +108,7 @@ final class GenerateVerseUseCaseTests: XCTestCase {
         )
 
         // When
-        let result = try await useCase.execute(normalizedText: "애매한 내용", userId: "user123")
+        let result = try await useCase.execute(normalizedText: "애매한 내용", userId: "user123", timeZone: .current)
 
         // Then: 정상 진행 (서버가 safe mode로 처리)
         XCTAssertEqual(result.verse.book, "잠언")
@@ -119,7 +117,7 @@ final class GenerateVerseUseCaseTests: XCTestCase {
         XCTAssertTrue(result.reason.contains("안전 모드"))
 
         // Verify: 모든 단계가 호출되었는지 확인
-        XCTAssertEqual(mockRateLimiterRepository.checkCallCount, 1)
+        XCTAssertEqual(mockRateLimiterRepository.checkDailyCallCount, 1)
         XCTAssertEqual(mockModerationRepository.analyzeCallCount, 1)
         XCTAssertEqual(mockVerseRepository.generateCallCount, 1)
         XCTAssertEqual(mockVerseRepository.lastPrompt, "애매한 내용")
@@ -143,7 +141,7 @@ final class GenerateVerseUseCaseTests: XCTestCase {
         )
 
         // When
-        let result = try await useCase.execute(normalizedText: "오늘 힘든 하루였어요", userId: "user123")
+        let result = try await useCase.execute(normalizedText: "오늘 힘든 하루였어요", userId: "user123", timeZone: .current)
 
         // Then
         XCTAssertEqual(result.verse.book, "시편")
@@ -153,7 +151,7 @@ final class GenerateVerseUseCaseTests: XCTestCase {
         XCTAssertTrue(result.reason.contains("위로"))
 
         // Verify: 모든 단계가 순서대로 호출되었는지 확인
-        XCTAssertEqual(mockRateLimiterRepository.checkCallCount, 1)
+        XCTAssertEqual(mockRateLimiterRepository.checkDailyCallCount, 1)
         XCTAssertEqual(mockModerationRepository.analyzeCallCount, 1)
         XCTAssertEqual(mockVerseRepository.generateCallCount, 1)
         XCTAssertEqual(mockVerseRepository.lastPrompt, "오늘 힘든 하루였어요")
@@ -171,13 +169,13 @@ final class GenerateVerseUseCaseTests: XCTestCase {
         )
 
         // When: 두 명의 다른 사용자가 요청
-        _ = try await useCase.execute(normalizedText: "텍스트1", userId: "user123")
-        _ = try await useCase.execute(normalizedText: "텍스트2", userId: "user456")
+        _ = try await useCase.execute(normalizedText: "텍스트1", userId: "user123", timeZone: .current)
+        _ = try await useCase.execute(normalizedText: "텍스트2", userId: "user456", timeZone: .current)
 
-        // Then: 각각 다른 키로 rate limit 체크
-        XCTAssertEqual(mockRateLimiterRepository.checkCallCount, 2)
+        // Then: 각각 다른 키로 daily limit 체크
+        XCTAssertEqual(mockRateLimiterRepository.checkDailyCallCount, 2)
         // 마지막 호출된 키 확인
-        XCTAssertEqual(mockRateLimiterRepository.lastKey, "generate_verse:user456")
+        XCTAssertEqual(mockRateLimiterRepository.lastDailyKey, "generate_verse:user456")
     }
 }
 
@@ -210,6 +208,10 @@ final class MockRateLimiterRepository: RateLimiterRepository {
     var lastKey: String?
     var lastMax: Int?
     var lastPer: TimeInterval?
+    var checkDailyCallCount = 0
+    var lastDailyKey: String?
+    var lastDate: Date?
+    var lastTimeZone: TimeZone?
     var shouldAllow = true
 
     func checkAndConsume(key: String, max: Int, per: TimeInterval) async throws -> Bool {
@@ -217,6 +219,14 @@ final class MockRateLimiterRepository: RateLimiterRepository {
         lastKey = key
         lastMax = max
         lastPer = per
+        return shouldAllow
+    }
+
+    func checkDailyLimit(key: String, date: Date, timeZone: TimeZone) async throws -> Bool {
+        checkDailyCallCount += 1
+        lastDailyKey = key
+        lastDate = date
+        lastTimeZone = timeZone
         return shouldAllow
     }
 }

@@ -72,7 +72,8 @@ public final class RequestVerseViewModel: ObservableObject {
             // TODO: ClientPreFilterUseCase 통합 필요
             let generated = try await generateVerseUseCase.execute(
                 normalizedText: state.inputText,
-                userId: "me" // TODO: 실제 userId로 교체 필요
+                userId: "me", // TODO: 실제 userId로 교체 필요
+                timeZone: .current
             )
             let draft = QuietTime(
                 id: UUID(),

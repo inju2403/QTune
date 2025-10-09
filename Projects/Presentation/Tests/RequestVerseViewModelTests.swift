@@ -16,11 +16,13 @@ final class FakeGenerateVerseInteractor: GenerateVerseUseCase {
     var executeCallCount = 0
     var lastNormalizedText: String?
     var lastUserId: String?
+    var lastTimeZone: TimeZone?
 
-    func execute(normalizedText: String, userId: String) async throws -> GeneratedVerse {
+    func execute(normalizedText: String, userId: String, timeZone: TimeZone) async throws -> GeneratedVerse {
         executeCallCount += 1
         lastNormalizedText = normalizedText
         lastUserId = userId
+        lastTimeZone = timeZone
 
         if shouldFail {
             throw NSError(domain: "test", code: -1)

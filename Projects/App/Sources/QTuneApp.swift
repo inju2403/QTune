@@ -87,6 +87,11 @@ final class MockRateLimiterRepository: RateLimiterRepository {
         // TODO: 실제 구현 필요
         return true // 임시로 모든 요청 허용
     }
+
+    func checkDailyLimit(key: String, date: Date, timeZone: TimeZone) async throws -> Bool {
+        // TODO: 실제 구현 필요 (UserDefaults 또는 서버 연동)
+        return true // 임시로 모든 요청 허용
+    }
 }
 
 final class MockModerationRepository: ModerationRepository {

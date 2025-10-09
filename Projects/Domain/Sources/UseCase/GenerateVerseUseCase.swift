@@ -21,7 +21,8 @@ import Foundation
 /// )
 /// let result = try await generateVerse.execute(
 ///     normalizedText: "오늘 힘든 하루였어요",
-///     userId: "user123"
+///     userId: "user123",
+///     timeZone: .current
 /// )
 /// ```
 public protocol GenerateVerseUseCase {
@@ -30,23 +31,24 @@ public protocol GenerateVerseUseCase {
     /// - Parameters:
     ///   - normalizedText: ClientPreFilterUseCase에서 정규화된 텍스트
     ///   - userId: 사용자 ID (rate limiting용)
+    ///   - timeZone: 사용자 타임존 (하루 1회 제한 계산용, 기본값: .current)
     /// - Returns: 생성된 말씀
     /// - Throws:
-    ///   - DomainError.rateLimited: 요청 제한 초과
+    ///   - DomainError.rateLimited: 요청 제한 초과 (하루 1회)
     ///   - DomainError.moderationBlocked: 부적절한 콘텐츠
     ///   - DomainError.network: 네트워크 오류
-    func execute(normalizedText: String, userId: String) async throws -> GeneratedVerse
+    func execute(normalizedText: String, userId: String, timeZone: TimeZone) async throws -> GeneratedVerse
 }
 
 /// 말씀 생성 유스케이스 구현체
 ///
 /// ## 역할
-/// 1. 요청 빈도 제한 (Rate Limiting)
+/// 1. 요청 빈도 제한 (Rate Limiting) - 하루 1회 (사용자 타임존 기준)
 /// 2. 서버 측 콘텐츠 검증 (Moderation)
 /// 3. 말씀 생성 요청 (LLM API)
 ///
 /// ## 의존성
-/// - RateLimiterRepository: 시간당 요청 횟수 제한
+/// - RateLimiterRepository: 하루 1회 제한 (00:00~23:59, 타임존 기준)
 /// - ModerationRepository: 서버 측 콘텐츠 분석
 /// - VerseRepository: LLM API 호출
 public final class GenerateVerseInteractor: GenerateVerseUseCase {
@@ -54,29 +56,24 @@ public final class GenerateVerseInteractor: GenerateVerseUseCase {
     private let rateLimiterRepository: RateLimiterRepository
     private let moderationRepository: ModerationRepository
 
-    /// 시간당 최대 요청 횟수
-    private let maxRequestsPerHour: Int
-
     public init(
         verseRepository: VerseRepository,
         rateLimiterRepository: RateLimiterRepository,
-        moderationRepository: ModerationRepository,
-        maxRequestsPerHour: Int = 10
+        moderationRepository: ModerationRepository
     ) {
         self.verseRepository = verseRepository
         self.rateLimiterRepository = rateLimiterRepository
         self.moderationRepository = moderationRepository
-        self.maxRequestsPerHour = maxRequestsPerHour
     }
 
-    public func execute(normalizedText: String, userId: String) async throws -> GeneratedVerse {
-        // MARK: - 1단계: Rate Limiting 체크
+    public func execute(normalizedText: String, userId: String, timeZone: TimeZone = .current) async throws -> GeneratedVerse {
+        // MARK: - 1단계: Rate Limiting 체크 (하루 1회)
 
         let rateLimitKey = "generate_verse:\(userId)"
-        let canProceed = try await rateLimiterRepository.checkAndConsume(
+        let canProceed = try await rateLimiterRepository.checkDailyLimit(
             key: rateLimitKey,
-            max: maxRequestsPerHour,
-            per: 3600 // 1시간 = 3600초
+            date: Date(),
+            timeZone: timeZone
         )
 
         guard canProceed else {
