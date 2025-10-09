@@ -122,10 +122,9 @@ final class QTManagementUseCasesTests: XCTestCase {
 
     func testFetchQTList_FavoritesOnly() async throws {
         // Given: 즐겨찾기 2개 포함
-        let qt1 = createCommittedQT(memo: "QT 1", isFavorite: false)
+        let qt1 = createCommittedQT(memo: "QT 1", isFavorite: true)
         let qt2 = createCommittedQT(memo: "QT 2", isFavorite: true)
-        let qt3 = createCommittedQT(memo: "QT 3", isFavorite: true)
-        mockQTRepository.qtList = [qt2, qt3] // 즐겨찾기만 반환
+        mockQTRepository.qtList = [qt1, qt2] // 즐겨찾기만 반환
 
         // When: 즐겨찾기 필터
         let result = try await fetchListUseCase.execute(query: .favoritesOnly(), session: testSession)

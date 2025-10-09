@@ -10,27 +10,27 @@ import XCTest
 
 final class GenerateVerseUseCaseTests: XCTestCase {
     var useCase: GenerateVerseInteractor!
-    var mockVerseRepository: MockVerseRepository!
-    var mockRateLimiterRepository: MockRateLimiterRepository!
-    var mockModerationRepository: MockModerationRepository!
+    var spyVerseRepository: SpyVerseRepository!
+    var spyRateLimiterRepository: SpyRateLimiterRepository!
+    var spyModerationRepository: SpyModerationRepository!
 
     override func setUp() {
         super.setUp()
-        mockVerseRepository = MockVerseRepository()
-        mockRateLimiterRepository = MockRateLimiterRepository()
-        mockModerationRepository = MockModerationRepository()
+        spyVerseRepository = SpyVerseRepository()
+        spyRateLimiterRepository = SpyRateLimiterRepository()
+        spyModerationRepository = SpyModerationRepository()
         useCase = GenerateVerseInteractor(
-            verseRepository: mockVerseRepository,
-            rateLimiterRepository: mockRateLimiterRepository,
-            moderationRepository: mockModerationRepository
+            verseRepository: spyVerseRepository,
+            rateLimiterRepository: spyRateLimiterRepository,
+            moderationRepository: spyModerationRepository
         )
     }
 
     override func tearDown() {
         useCase = nil
-        mockVerseRepository = nil
-        mockRateLimiterRepository = nil
-        mockModerationRepository = nil
+        spyVerseRepository = nil
+        spyRateLimiterRepository = nil
+        spyModerationRepository = nil
         super.tearDown()
     }
 
@@ -38,7 +38,7 @@ final class GenerateVerseUseCaseTests: XCTestCase {
 
     func testDailyLimitExceeded_ThrowsRateLimited() async throws {
         // Given: 하루 1회 제한 초과 상태
-        mockRateLimiterRepository.shouldAllow = false
+        spyRateLimiterRepository.shouldAllow = false
 
         // When/Then
         do {
@@ -52,22 +52,22 @@ final class GenerateVerseUseCaseTests: XCTestCase {
             // Success
         }
 
-        // Verify: Daily limiter가 호출되었는지 확인
-        XCTAssertEqual(mockRateLimiterRepository.checkDailyCallCount, 1)
-        XCTAssertEqual(mockRateLimiterRepository.lastDailyKey, "generate_verse:user123")
-        XCTAssertNotNil(mockRateLimiterRepository.lastTimeZone)
+        // Then: 행동 검증 - Daily limiter가 정확히 1번 호출되었는지 확인
+        XCTAssertEqual(spyRateLimiterRepository.checkDailyCallCount, 1)
+        XCTAssertEqual(spyRateLimiterRepository.lastDailyKey, "generate_verse:user123")
+        XCTAssertNotNil(spyRateLimiterRepository.lastTimeZone)
 
-        // Verify: Moderation과 Verse 생성은 호출되지 않았는지 확인
-        XCTAssertEqual(mockModerationRepository.analyzeCallCount, 0)
-        XCTAssertEqual(mockVerseRepository.generateCallCount, 0)
+        // Then: 행동 검증 - Moderation과 Verse 생성은 호출되지 않았는지 확인
+        XCTAssertEqual(spyModerationRepository.analyzeCallCount, 0)
+        XCTAssertEqual(spyVerseRepository.generateCallCount, 0)
     }
 
     // MARK: - Test Case 2: Moderation Blocked → DomainError.moderationBlocked
 
     func testModerationBlocked_ThrowsModerationBlocked() async throws {
         // Given: Rate Limit 통과, Moderation Blocked
-        mockRateLimiterRepository.shouldAllow = true
-        mockModerationRepository.verdict = .blocked(reason: "inappropriate_content")
+        spyRateLimiterRepository.shouldAllow = true
+        spyModerationRepository.verdict = .blocked(reason: "inappropriate_content")
 
         // When/Then
         do {
@@ -82,21 +82,21 @@ final class GenerateVerseUseCaseTests: XCTestCase {
         }
 
         // Verify: Daily limiter와 Moderation이 호출되었는지 확인
-        XCTAssertEqual(mockRateLimiterRepository.checkDailyCallCount, 1)
-        XCTAssertEqual(mockModerationRepository.analyzeCallCount, 1)
-        XCTAssertEqual(mockModerationRepository.lastText, "부적절한 내용")
+        XCTAssertEqual(spyRateLimiterRepository.checkDailyCallCount, 1)
+        XCTAssertEqual(spyModerationRepository.analyzeCallCount, 1)
+        XCTAssertEqual(spyModerationRepository.lastText, "부적절한 내용")
 
         // Verify: Verse 생성은 호출되지 않았는지 확인
-        XCTAssertEqual(mockVerseRepository.generateCallCount, 0)
+        XCTAssertEqual(spyVerseRepository.generateCallCount, 0)
     }
 
     // MARK: - Test Case 3: Moderation NeedsReview → 진행 허용 (safe mode)
 
     func testModerationNeedsReview_Proceeds() async throws {
         // Given: Rate Limit 통과, Moderation NeedsReview
-        mockRateLimiterRepository.shouldAllow = true
-        mockModerationRepository.verdict = .needsReview(reason: "borderline_content")
-        mockVerseRepository.generatedVerse = GeneratedVerse(
+        spyRateLimiterRepository.shouldAllow = true
+        spyModerationRepository.verdict = .needsReview(reason: "borderline_content")
+        spyVerseRepository.generatedVerse = GeneratedVerse(
             verse: Verse(
                 book: "잠언",
                 chapter: 3,
@@ -117,19 +117,19 @@ final class GenerateVerseUseCaseTests: XCTestCase {
         XCTAssertTrue(result.reason.contains("안전 모드"))
 
         // Verify: 모든 단계가 호출되었는지 확인
-        XCTAssertEqual(mockRateLimiterRepository.checkDailyCallCount, 1)
-        XCTAssertEqual(mockModerationRepository.analyzeCallCount, 1)
-        XCTAssertEqual(mockVerseRepository.generateCallCount, 1)
-        XCTAssertEqual(mockVerseRepository.lastPrompt, "애매한 내용")
+        XCTAssertEqual(spyRateLimiterRepository.checkDailyCallCount, 1)
+        XCTAssertEqual(spyModerationRepository.analyzeCallCount, 1)
+        XCTAssertEqual(spyVerseRepository.generateCallCount, 1)
+        XCTAssertEqual(spyVerseRepository.lastPrompt, "애매한 내용")
     }
 
     // MARK: - Test Case 4: Moderation Allowed → 정상 생성
 
     func testModerationAllowed_GeneratesVerse() async throws {
         // Given: 모든 검증 통과
-        mockRateLimiterRepository.shouldAllow = true
-        mockModerationRepository.verdict = .allowed
-        mockVerseRepository.generatedVerse = GeneratedVerse(
+        spyRateLimiterRepository.shouldAllow = true
+        spyModerationRepository.verdict = .allowed
+        spyVerseRepository.generatedVerse = GeneratedVerse(
             verse: Verse(
                 book: "시편",
                 chapter: 23,
@@ -151,19 +151,19 @@ final class GenerateVerseUseCaseTests: XCTestCase {
         XCTAssertTrue(result.reason.contains("위로"))
 
         // Verify: 모든 단계가 순서대로 호출되었는지 확인
-        XCTAssertEqual(mockRateLimiterRepository.checkDailyCallCount, 1)
-        XCTAssertEqual(mockModerationRepository.analyzeCallCount, 1)
-        XCTAssertEqual(mockVerseRepository.generateCallCount, 1)
-        XCTAssertEqual(mockVerseRepository.lastPrompt, "오늘 힘든 하루였어요")
+        XCTAssertEqual(spyRateLimiterRepository.checkDailyCallCount, 1)
+        XCTAssertEqual(spyModerationRepository.analyzeCallCount, 1)
+        XCTAssertEqual(spyVerseRepository.generateCallCount, 1)
+        XCTAssertEqual(spyVerseRepository.lastPrompt, "오늘 힘든 하루였어요")
     }
 
     // MARK: - Test Case 5: 다른 사용자는 독립적인 Rate Limit
 
     func testDifferentUsers_IndependentRateLimits() async throws {
         // Given
-        mockRateLimiterRepository.shouldAllow = true
-        mockModerationRepository.verdict = .allowed
-        mockVerseRepository.generatedVerse = GeneratedVerse(
+        spyRateLimiterRepository.shouldAllow = true
+        spyModerationRepository.verdict = .allowed
+        spyVerseRepository.generatedVerse = GeneratedVerse(
             verse: Verse(book: "시편", chapter: 1, verse: 1, text: "복 있는 사람", translation: "개역개정"),
             reason: "테스트"
         )
@@ -173,15 +173,17 @@ final class GenerateVerseUseCaseTests: XCTestCase {
         _ = try await useCase.execute(normalizedText: "텍스트2", userId: "user456", timeZone: .current)
 
         // Then: 각각 다른 키로 daily limit 체크
-        XCTAssertEqual(mockRateLimiterRepository.checkDailyCallCount, 2)
+        XCTAssertEqual(spyRateLimiterRepository.checkDailyCallCount, 2)
         // 마지막 호출된 키 확인
-        XCTAssertEqual(mockRateLimiterRepository.lastDailyKey, "generate_verse:user456")
+        XCTAssertEqual(spyRateLimiterRepository.lastDailyKey, "generate_verse:user456")
     }
 }
 
-// MARK: - Mock Repositories
+// MARK: - Test Doubles (Spy pattern)
+// Spy: 호출 기록(파라미터, 횟수) + 선택적 응답 제공
+// 행동 검증(behavior verification)에 사용
 
-final class MockVerseRepository: VerseRepository {
+final class SpyVerseRepository: VerseRepository {
     var generateCallCount = 0
     var lastPrompt: String?
     var generatedVerse: GeneratedVerse?
@@ -203,7 +205,7 @@ final class MockVerseRepository: VerseRepository {
     }
 }
 
-final class MockRateLimiterRepository: RateLimiterRepository {
+final class SpyRateLimiterRepository: RateLimiterRepository {
     var checkCallCount = 0
     var lastKey: String?
     var lastMax: Int?
@@ -231,7 +233,7 @@ final class MockRateLimiterRepository: RateLimiterRepository {
     }
 }
 
-final class MockModerationRepository: ModerationRepository {
+final class SpyModerationRepository: ModerationRepository {
     var analyzeCallCount = 0
     var lastText: String?
     var verdict: ModerationVerdict = .allowed

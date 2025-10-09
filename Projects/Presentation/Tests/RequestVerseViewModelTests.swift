@@ -10,8 +10,10 @@ import Combine
 import Domain
 @testable import Presentation
 
-// MARK: - Fake Interactor for Testing
-final class FakeGenerateVerseInteractor: GenerateVerseUseCase {
+// MARK: - Test Double (Spy pattern)
+// Spy: 호출 기록(파라미터, 횟수) + 고정 응답 제공
+// ViewModel 테스트에서 행동 검증(executeCallCount, lastNormalizedText 등)에 사용
+final class SpyGenerateVerseInteractor: GenerateVerseUseCase {
     var shouldFail = false
     var executeCallCount = 0
     var lastNormalizedText: String?
@@ -47,13 +49,13 @@ final class FakeGenerateVerseInteractor: GenerateVerseUseCase {
 @MainActor
 final class RequestVerseViewModelTests: XCTestCase {
     var viewModel: RequestVerseViewModel!
-    var fakeInteractor: FakeGenerateVerseInteractor!
+    var spyInteractor: SpyGenerateVerseInteractor!
     var cancellables: Set<AnyCancellable>!
 
     override func setUp() async throws {
         try await super.setUp()
-        fakeInteractor = FakeGenerateVerseInteractor()
-        viewModel = RequestVerseViewModel(generateVerseUseCase: fakeInteractor)
+        spyInteractor = SpyGenerateVerseInteractor()
+        viewModel = RequestVerseViewModel(generateVerseUseCase: spyInteractor)
         cancellables = []
 
         // Clear draft manager for clean state
@@ -62,7 +64,7 @@ final class RequestVerseViewModelTests: XCTestCase {
 
     override func tearDown() async throws {
         viewModel = nil
-        fakeInteractor = nil
+        spyInteractor = nil
         cancellables = nil
         await DraftManager.shared.clearTodayDraft(userId: "me", now: Date(), tz: .current)
         try await super.tearDown()
@@ -86,10 +88,12 @@ final class RequestVerseViewModelTests: XCTestCase {
         // When: Empty text
         viewModel.send(.tapRequest)
 
-        // Then
+        // Then: 상태 검증 - 에러 메시지 확인
         await fulfillment(of: [expectation], timeout: 1.0)
         XCTAssertEqual(receivedError, "오늘의 생각이나 상황을 먼저 입력해 주세요")
-        XCTAssertEqual(fakeInteractor.executeCallCount, 0) // Should not call useCase
+
+        // Then: 행동 검증 - UseCase가 호출되지 않았는지 확인
+        XCTAssertEqual(spyInteractor.executeCallCount, 0)
     }
 
     // MARK: - Test Case 2: onAppear with existing draft -> showDraftBanner = true
@@ -154,10 +158,12 @@ final class RequestVerseViewModelTests: XCTestCase {
         // When
         viewModel.send(.tapRequest)
 
-        // Then
+        // Then: 상태 검증 - 충돌 모달이 표시되었는지 확인
         await fulfillment(of: [expectation], timeout: 1.0)
         XCTAssertTrue(conflictPresented)
-        XCTAssertEqual(fakeInteractor.executeCallCount, 0) // Should not call useCase
+
+        // Then: 행동 검증 - UseCase가 호출되지 않았는지 확인
+        XCTAssertEqual(spyInteractor.executeCallCount, 0)
     }
 
     // MARK: - Test Case 4: Normal flow -> navigateToEditor with draft status
@@ -180,18 +186,19 @@ final class RequestVerseViewModelTests: XCTestCase {
         // When
         viewModel.send(.tapRequest)
 
-        // Then
+        // Then: 상태 검증 - 생성된 Draft 확인
         await fulfillment(of: [expectation], timeout: 2.0)
-
         XCTAssertNotNil(capturedDraft)
         XCTAssertEqual(capturedDraft?.status, .draft)
         XCTAssertEqual(capturedDraft?.memo, "")
         XCTAssertEqual(capturedDraft?.verse.book, "이사야")
-        XCTAssertEqual(fakeInteractor.executeCallCount, 1)
-        XCTAssertEqual(fakeInteractor.lastNormalizedText, "오늘 힘든 하루였어요. 위로가 필요합니다.")
-        XCTAssertEqual(fakeInteractor.lastUserId, "me")
 
-        // Verify draft is saved in DraftManager
+        // Then: 행동 검증 - UseCase가 정확한 파라미터로 1번 호출되었는지 확인
+        XCTAssertEqual(spyInteractor.executeCallCount, 1)
+        XCTAssertEqual(spyInteractor.lastNormalizedText, "오늘 힘든 하루였어요. 위로가 필요합니다.")
+        XCTAssertEqual(spyInteractor.lastUserId, "me")
+
+        // Then: 상태 검증 - DraftManager에 저장되었는지 확인
         let savedDraft = await DraftManager.shared.loadTodayDraft(userId: "me", now: Date(), tz: .current)
         XCTAssertNotNil(savedDraft)
         XCTAssertEqual(savedDraft?.status, .draft)
