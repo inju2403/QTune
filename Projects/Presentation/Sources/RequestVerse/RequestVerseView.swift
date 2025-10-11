@@ -12,8 +12,6 @@ public struct RequestVerseView: View {
     // MARK: - State
     @StateObject private var viewModel: RequestVerseViewModel
     @State private var showConflict = false
-    @State private var showError = false
-    @State private var errorMessage = ""
     @Binding var path: NavigationPath
 
     // MARK: - Init
@@ -25,13 +23,15 @@ public struct RequestVerseView: View {
     // MARK: - Body
     public var body: some View {
         ScrollView {
-            VStack(spacing: 20) {
+            VStack(spacing: 24) {
                 draftBanner()
-                descriptionText()
-                inputArea()
-                counterRow()
+                descriptionSection()
+                inputSection()
+                errorSection()
                 loadingIndicator()
                 requestButton()
+                resultSection()
+                goToQTButton()
             }
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(.horizontal, 20)
@@ -45,21 +45,28 @@ public struct RequestVerseView: View {
         }
         .onReceive(viewModel.effect) { eff in
             switch eff {
-            case .showError(let msg):
-                errorMessage = msg
-                showError = true
+            case .showError:
+                break // errorMessage는 state에서 처리
             case .presentDraftConflict:
                 showConflict = true
             case .navigateToEditor(let draft):
                 path.append(draft)
+            case .navigateToQTEditor(let verse, let rationale):
+                // QT 작성 화면으로 이동 (rationale을 memo에 임시 저장)
+                let draft = QuietTime(
+                    id: UUID(),
+                    verse: verse,
+                    memo: rationale,  // 추천 이유를 memo에 저장
+                    date: Date(),
+                    status: .draft,
+                    tags: [],
+                    isFavorite: false,
+                    updatedAt: Date()
+                )
+                path.append(draft)
             case .showToast:
                 break
             }
-        }
-        .alert("오류", isPresented: $showError) {
-            Button("확인", role: .cancel) {}
-        } message: {
-            Text(errorMessage)
         }
         .confirmationDialog("작성 중인 QT가 있어요",
                             isPresented: $showConflict,
@@ -98,7 +105,7 @@ private extension RequestVerseView {
         }
     }
 
-    func descriptionText() -> some View {
+    func descriptionSection() -> some View {
         VStack(alignment: .leading, spacing: 8) {
             Text("오늘 하루는 어떠셨나요?")
                 .font(.title3)
@@ -111,13 +118,50 @@ private extension RequestVerseView {
         .frame(maxWidth: .infinity, alignment: .leading)
     }
 
-    func inputArea() -> some View {
-        let inputBinding = Binding<String>(
-            get: { viewModel.state.inputText },
-            set: { viewModel.send(.updateInput($0)) }
+    func inputSection() -> some View {
+        VStack(alignment: .leading, spacing: 16) {
+            // 감정/상황 입력 (필수)
+            VStack(alignment: .leading, spacing: 8) {
+                Text("감정/상황 (필수)")
+                    .font(.subheadline)
+                    .fontWeight(.medium)
+
+                moodInputArea()
+
+                HStack {
+                    Spacer()
+                    Text("\(viewModel.state.moodText.count)/500")
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
+                }
+            }
+
+            // 추가 메모 (선택)
+            VStack(alignment: .leading, spacing: 8) {
+                Text("추가 메모 (선택)")
+                    .font(.subheadline)
+                    .fontWeight(.medium)
+
+                noteInputArea()
+
+                HStack {
+                    Spacer()
+                    Text("\(viewModel.state.noteText.count)/200")
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
+                }
+            }
+        }
+    }
+
+    func moodInputArea() -> some View {
+        let binding = Binding<String>(
+            get: { viewModel.state.moodText },
+            set: { viewModel.send(.updateMood($0)) }
         )
+
         return ZStack(alignment: .topLeading) {
-            if viewModel.state.inputText.isEmpty {
+            if viewModel.state.moodText.isEmpty {
                 Text("예) 오늘은 중요한 시험을 앞두고 너무 긴장되고 불안해요...")
                     .font(.body)
                     .foregroundStyle(.secondary.opacity(0.5))
@@ -125,8 +169,8 @@ private extension RequestVerseView {
                     .padding(.vertical, 8)
             }
 
-            TextEditor(text: inputBinding)
-                .frame(minHeight: 180, alignment: .topLeading)
+            TextEditor(text: binding)
+                .frame(minHeight: 120, alignment: .topLeading)
                 .scrollContentBackground(.hidden)
                 .textInputAutocapitalization(.sentences)
                 .disableAutocorrection(false)
@@ -136,36 +180,149 @@ private extension RequestVerseView {
         .clipShape(RoundedRectangle(cornerRadius: 12))
     }
 
-    func counterRow() -> some View {
-        HStack {
-            Spacer()
-            Text("\(viewModel.state.inputText.count)/500")
-                .font(.footnote)
-                .foregroundStyle(.secondary)
+    func noteInputArea() -> some View {
+        let binding = Binding<String>(
+            get: { viewModel.state.noteText },
+            set: { viewModel.send(.updateNote($0)) }
+        )
+
+        return ZStack(alignment: .topLeading) {
+            if viewModel.state.noteText.isEmpty {
+                Text("예) 최선을 다했지만 결과가 걱정돼요")
+                    .font(.body)
+                    .foregroundStyle(.secondary.opacity(0.5))
+                    .padding(.horizontal, 5)
+                    .padding(.vertical, 8)
+            }
+
+            TextEditor(text: binding)
+                .frame(minHeight: 80, alignment: .topLeading)
+                .scrollContentBackground(.hidden)
+                .textInputAutocapitalization(.sentences)
+                .disableAutocorrection(false)
+        }
+        .padding(8)
+        .background(Color(.systemGray6))
+        .clipShape(RoundedRectangle(cornerRadius: 12))
+    }
+
+    @ViewBuilder
+    func errorSection() -> some View {
+        if let errorMessage = viewModel.state.errorMessage {
+            HStack(spacing: 12) {
+                Image(systemName: "exclamationmark.triangle.fill")
+                    .foregroundColor(.orange)
+
+                Text(errorMessage)
+                    .font(.subheadline)
+                    .foregroundColor(.primary)
+
+                Spacer()
+
+                Button(action: { viewModel.send(.dismissError) }) {
+                    Image(systemName: "xmark.circle.fill")
+                        .foregroundColor(.secondary)
+                }
+            }
+            .padding(12)
+            .background(Color.orange.opacity(0.1))
+            .clipShape(RoundedRectangle(cornerRadius: 12))
         }
     }
 
     @ViewBuilder
     func loadingIndicator() -> some View {
         if viewModel.state.isLoading {
-            ProgressView().padding(.vertical, 4)
+            HStack {
+                Spacer()
+                ProgressView()
+                    .controlSize(.regular)
+                Text("말씀을 추천하고 있어요...")
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+                Spacer()
+            }
+            .padding(.vertical, 12)
         }
     }
 
     func requestButton() -> some View {
-        let disabled = viewModel.state.inputText
-            .trimmingCharacters(in: .whitespacesAndNewlines)
-            .isEmpty
-
-        return Button(action: { viewModel.send(.tapRequest) }) {
+        Button(action: { viewModel.send(.tapRequest) }) {
             Text("오늘의 말씀 추천받기")
                 .bold()
                 .frame(maxWidth: .infinity)
                 .padding()
         }
-        .disabled(disabled)
+        .disabled(!viewModel.state.isValidInput || viewModel.state.isLoading)
         .buttonStyle(.borderedProminent)
         .controlSize(.large)
     }
-}
 
+    @ViewBuilder
+    func resultSection() -> some View {
+        if let result = viewModel.state.generatedResult, result.isSafe {
+            VStack(alignment: .leading, spacing: 16) {
+                Divider()
+                    .padding(.vertical, 8)
+
+                // 결과 헤더
+                HStack {
+                    Image(systemName: "checkmark.circle.fill")
+                        .foregroundColor(.green)
+                    Text("추천 말씀")
+                        .font(.title3)
+                        .fontWeight(.bold)
+                }
+
+                // verseRef
+                Text(result.verseRef)
+                    .font(.headline)
+                    .foregroundColor(.blue)
+
+                // verseText
+                Text(result.verseText)
+                    .font(.body)
+                    .padding()
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .background(Color(.systemGray6))
+                    .clipShape(RoundedRectangle(cornerRadius: 12))
+
+                // rationale
+                if !result.rationale.isEmpty {
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("추천 이유")
+                            .font(.subheadline)
+                            .fontWeight(.medium)
+                            .foregroundColor(.secondary)
+
+                        Text(result.rationale)
+                            .font(.body)
+                            .foregroundColor(.primary)
+                    }
+                    .padding()
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .background(Color.blue.opacity(0.05))
+                    .clipShape(RoundedRectangle(cornerRadius: 12))
+                }
+            }
+        }
+    }
+
+    @ViewBuilder
+    func goToQTButton() -> some View {
+        if viewModel.state.hasResult {
+            Button(action: { viewModel.send(.tapGoToQT) }) {
+                HStack {
+                    Text("QT 하러 가기")
+                        .bold()
+                    Image(systemName: "arrow.right")
+                }
+                .frame(maxWidth: .infinity)
+                .padding()
+            }
+            .buttonStyle(.borderedProminent)
+            .controlSize(.large)
+            .tint(.green)
+        }
+    }
+}

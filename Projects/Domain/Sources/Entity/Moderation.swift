@@ -2,7 +2,7 @@
 //  Moderation.swift
 //  Domain
 //
-//  Created by Claude Code on 10/8/25.
+//  Created by 이승주 on 10/8/25.
 //
 
 import Foundation

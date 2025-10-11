@@ -61,46 +61,35 @@ class SceneDelegate: NSObject, UIWindowSceneDelegate {
 struct QTuneApp: App {
     @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
 
+    /// 의존성 주입 컨테이너
+    private let container = AppDependencyContainer()
+
     var body: some Scene {
         WindowGroup {
-            RootNavigationView { path in
-                RequestVerseView(
-                    viewModel: RequestVerseViewModel(
-                        generateVerseUseCase: GenerateVerseInteractor(
-                            verseRepository: DefaultVerseRepository(),
-                            rateLimiterRepository: MockRateLimiterRepository(),
-                            moderationRepository: MockModerationRepository()
-                        )
-                    ),
-                    path: path
-                )
+            Group {
+                switch container.apiKeyStatus {
+                case .valid:
+                    // API 키가 설정된 경우: 정상 앱 실행
+                    if let useCase = container.makeGenerateVerseUseCase() {
+                        RootNavigationView { path in
+                            RequestVerseView(
+                                viewModel: RequestVerseViewModel(
+                                    generateVerseUseCase: useCase
+                                ),
+                                path: path
+                            )
+                        }
+                    } else {
+                        // UseCase 생성 실패 (이론적으로 발생하지 않아야 함)
+                        APIKeyMissingView()
+                    }
+
+                case .missing:
+                    // API 키가 없는 경우: 안내 화면
+                    APIKeyMissingView()
+                }
             }
             .background(Color(.systemBackground))
         }
-    }
-}
-
-// MARK: - Temporary Mock Repositories (TODO: Data 레이어 구현 시 실제 구현체로 교체)
-
-final class MockRateLimiterRepository: RateLimiterRepository {
-    func checkAndConsume(key: String, max: Int, per: TimeInterval) async throws -> Bool {
-        // TODO: 실제 구현 필요
-        return true // 임시로 모든 요청 허용
-    }
-
-    func checkDailyLimit(key: String, date: Date, timeZone: TimeZone) async throws -> Bool {
-        // TODO: 실제 구현 필요 (UserDefaults 또는 서버 연동)
-        return true // 임시로 모든 요청 허용
-    }
-}
-
-final class MockModerationRepository: ModerationRepository {
-    func analyze(text: String) async throws -> ModerationReport {
-        // TODO: 실제 구현 필요
-        return ModerationReport(
-            verdict: .allowed,
-            confidence: 1.0,
-            categories: []
-        )
     }
 }

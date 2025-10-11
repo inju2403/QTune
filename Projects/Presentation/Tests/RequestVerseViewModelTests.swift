@@ -141,7 +141,7 @@ final class RequestVerseViewModelTests: XCTestCase {
         viewModel.send(.onAppear(userId: "me"))
         try? await Task.sleep(nanoseconds: 100_000_000) // Wait for draft to load
 
-        viewModel.send(.updateInput("새로운 입력"))
+        viewModel.send(.updateMood("새로운 입력"))
 
         let expectation = XCTestExpectation(description: "presentDraftConflict effect")
         var conflictPresented = false
@@ -169,7 +169,7 @@ final class RequestVerseViewModelTests: XCTestCase {
     // MARK: - Test Case 4: Normal flow -> navigateToEditor with draft status
     func testNormalFlow_NavigatesToEditorWithDraftStatus() async {
         // Given
-        viewModel.send(.updateInput("오늘 힘든 하루였어요. 위로가 필요합니다."))
+        viewModel.send(.updateMood("오늘 힘든 하루였어요. 위로가 필요합니다."))
 
         let expectation = XCTestExpectation(description: "navigateToEditor effect")
         var capturedDraft: QuietTime?

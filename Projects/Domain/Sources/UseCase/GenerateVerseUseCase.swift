@@ -43,64 +43,90 @@ public protocol GenerateVerseUseCase {
 /// 말씀 생성 유스케이스 구현체
 ///
 /// ## 역할
-/// 1. 요청 빈도 제한 (Rate Limiting) - 하루 1회 (사용자 타임존 기준)
-/// 2. 서버 측 콘텐츠 검증 (Moderation)
-/// 3. 말씀 생성 요청 (LLM API)
+/// 1. 입력 검증 (InputValidator)
+/// 2. 요청 빈도 제한 (Rate Limiting) - 하루 1회 (사용자 타임존 기준)
+/// 3. 말씀 생성 요청 (AI API)
 ///
 /// ## 의존성
 /// - RateLimiterRepository: 하루 1회 제한 (00:00~23:59, 타임존 기준)
-/// - ModerationRepository: 서버 측 콘텐츠 분석
-/// - VerseRepository: LLM API 호출
+/// - AIRepository: OpenAI API 호출 (내부적으로 safety 검증 포함)
+///
+/// ## 주의
+/// - Moderation은 OpenAI API 내부에서 safety 필드로 검증됨
+/// - 기존 ModerationRepository는 deprecated 예정
 public final class GenerateVerseInteractor: GenerateVerseUseCase {
-    private let verseRepository: VerseRepository
+    private let aiRepository: AIRepository
     private let rateLimiterRepository: RateLimiterRepository
-    private let moderationRepository: ModerationRepository
 
     public init(
-        verseRepository: VerseRepository,
-        rateLimiterRepository: RateLimiterRepository,
-        moderationRepository: ModerationRepository
+        aiRepository: AIRepository,
+        rateLimiterRepository: RateLimiterRepository
     ) {
-        self.verseRepository = verseRepository
+        self.aiRepository = aiRepository
         self.rateLimiterRepository = rateLimiterRepository
-        self.moderationRepository = moderationRepository
     }
 
     public func execute(normalizedText: String, userId: String, timeZone: TimeZone = .current) async throws -> GeneratedVerse {
-        // MARK: - 1단계: Rate Limiting 체크 (하루 1회)
+        // MARK: - 1단계: 입력 검증
 
+        do {
+            try InputValidator.validate(mood: normalizedText, note: nil)
+        } catch let error as InputValidationError {
+            switch error {
+            case .tooLong(let maxLength):
+                throw DomainError.validationFailed("입력이 너무 깁니다. (최대 \(maxLength)자)")
+            case .tooShort(let minLength):
+                throw DomainError.validationFailed("입력이 너무 짧습니다. (최소 \(minLength)자)")
+            case .containsSpam:
+                throw DomainError.validationFailed("스팸으로 의심되는 내용이 포함되어 있습니다.")
+            case .containsForbiddenContent:
+                throw DomainError.validationFailed("부적절한 내용이 포함되어 있습니다.")
+            }
+        }
+
+        // MARK: - 2단계: Rate Limiting 체크 (하루 1회)
+
+        // TODO: - 배포 시 주석 해제 (테스트 시에는 주석 처리)
+        /*
         let rateLimitKey = "generate_verse:\(userId)"
+        print("📊 [GenerateVerseUseCase] Checking rate limit for user: \(userId)")
+        print("   Key: \(rateLimitKey)")
+
         let canProceed = try await rateLimiterRepository.checkDailyLimit(
             key: rateLimitKey,
             date: Date(),
             timeZone: timeZone
         )
 
+        print("   Result: \(canProceed ? "ALLOWED ✅" : "BLOCKED ❌")")
+
         guard canProceed else {
+            print("   Throwing DomainError.rateLimited")
             throw DomainError.rateLimited
         }
+        */
 
-        // MARK: - 2단계: 서버 측 Moderation 검증
+        // MARK: - 3단계: 말씀 생성 (AI API 호출)
+        // OpenAI API는 내부적으로 safety 검증을 수행하고,
+        // blocked인 경우 AIRepositoryError.contentBlocked를 throw함
 
-        let moderationReport = try await moderationRepository.analyze(text: normalizedText)
+        let request = AIGenerateVerseRequest(
+            locale: Locale.current.identifier,
+            mood: normalizedText,
+            note: nil
+        )
 
-        switch moderationReport.verdict {
-        case .blocked(let reason):
-            throw DomainError.moderationBlocked(reason)
-
-        case .needsReview(let reason):
-            // needsReview: 경고하지만 진행 허용
-            // 서버가 safe mode prompt로 생성 진행
-            // UI에서는 별도 처리 없음 (서버가 알아서 안전 모드 적용)
-            break
-
-        case .allowed:
-            // 정상 진행
-            break
+        do {
+            return try await aiRepository.generateVerse(request)
+        } catch let error as AIRepositoryError {
+            switch error {
+            case .contentBlocked(let reason):
+                throw DomainError.moderationBlocked(reason)
+            case .invalidResponse:
+                throw DomainError.network("응답 형식이 올바르지 않습니다")
+            case .apiKeyNotConfigured:
+                throw DomainError.configurationError("API 키가 설정되지 않았습니다")
+            }
         }
-
-        // MARK: - 3단계: 말씀 생성 (LLM API 호출)
-
-        return try await verseRepository.generate(prompt: normalizedText)
     }
 }

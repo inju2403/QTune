@@ -2,7 +2,7 @@
 //  DomainError.swift
 //  Domain
 //
-//  Created by Claude Code on 10/8/25.
+//  Created by 이승주 on 10/8/25.
 //
 
 import Foundation
@@ -16,6 +16,7 @@ import Foundation
 /// - notFound: 리소스 없음
 /// - rateLimited: 요청 횟수 제한 초과
 /// - network: 네트워크 관련 오류
+/// - configurationError: 설정 오류 (API 키 등)
 /// - unknown: 알 수 없는 오류
 public enum DomainError: Error, Equatable {
     case validationFailed(String)
@@ -24,6 +25,7 @@ public enum DomainError: Error, Equatable {
     case notFound
     case rateLimited
     case network(String)
+    case configurationError(String)
     case unknown
 
     /// 사용자에게 표시할 메시지
@@ -41,6 +43,8 @@ public enum DomainError: Error, Equatable {
             return "요청이 너무 많습니다. 잠시 후 다시 시도해주세요"
         case .network(let message):
             return "네트워크 오류: \(message)"
+        case .configurationError(let message):
+            return "설정 오류: \(message)"
         case .unknown:
             return "알 수 없는 오류가 발생했습니다"
         }

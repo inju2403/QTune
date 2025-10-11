@@ -2,7 +2,7 @@
 //  GenerateVerseInteractorTests.swift
 //  DomainTests
 //
-//  Created by Claude Code on 10/8/25.
+//  Created by 이승주 on 10/8/25.
 //
 
 import XCTest
@@ -10,31 +10,50 @@ import XCTest
 
 final class GenerateVerseUseCaseTests: XCTestCase {
     var useCase: GenerateVerseInteractor!
-    var spyVerseRepository: SpyVerseRepository!
+    var spyAIRepository: SpyAIRepository!
     var spyRateLimiterRepository: SpyRateLimiterRepository!
-    var spyModerationRepository: SpyModerationRepository!
 
     override func setUp() {
         super.setUp()
-        spyVerseRepository = SpyVerseRepository()
+        spyAIRepository = SpyAIRepository()
         spyRateLimiterRepository = SpyRateLimiterRepository()
-        spyModerationRepository = SpyModerationRepository()
         useCase = GenerateVerseInteractor(
-            verseRepository: spyVerseRepository,
-            rateLimiterRepository: spyRateLimiterRepository,
-            moderationRepository: spyModerationRepository
+            aiRepository: spyAIRepository,
+            rateLimiterRepository: spyRateLimiterRepository
         )
     }
 
     override func tearDown() {
         useCase = nil
-        spyVerseRepository = nil
+        spyAIRepository = nil
         spyRateLimiterRepository = nil
-        spyModerationRepository = nil
         super.tearDown()
     }
 
-    // MARK: - Test Case 1: Daily Limit 초과 → DomainError.rateLimited
+    // MARK: - Test Case 1: 입력 검증 실패 (너무 짧음)
+
+    func testInputTooShort_ThrowsValidationError() async throws {
+        // Given: 너무 짧은 입력
+        spyRateLimiterRepository.shouldAllow = true
+
+        // When/Then
+        do {
+            _ = try await useCase.execute(normalizedText: "a", userId: "user123", timeZone: .current)
+            XCTFail("Expected validationFailed error")
+        } catch {
+            guard case DomainError.validationFailed(let message) = error else {
+                XCTFail("Expected validationFailed, got \(error)")
+                return
+            }
+            XCTAssertTrue(message.contains("짧습니다"))
+        }
+
+        // Then: 행동 검증 - Rate limiter가 호출되지 않았는지 확인
+        XCTAssertEqual(spyRateLimiterRepository.checkDailyCallCount, 0)
+        XCTAssertEqual(spyAIRepository.generateVerseCallCount, 0)
+    }
+
+    // MARK: - Test Case 2: Daily Limit 초과 → DomainError.rateLimited
 
     func testDailyLimitExceeded_ThrowsRateLimited() async throws {
         // Given: 하루 1회 제한 초과 상태
@@ -57,17 +76,17 @@ final class GenerateVerseUseCaseTests: XCTestCase {
         XCTAssertEqual(spyRateLimiterRepository.lastDailyKey, "generate_verse:user123")
         XCTAssertNotNil(spyRateLimiterRepository.lastTimeZone)
 
-        // Then: 행동 검증 - Moderation과 Verse 생성은 호출되지 않았는지 확인
-        XCTAssertEqual(spyModerationRepository.analyzeCallCount, 0)
-        XCTAssertEqual(spyVerseRepository.generateCallCount, 0)
+        // Then: 행동 검증 - AIRepository는 호출되지 않았는지 확인
+        XCTAssertEqual(spyAIRepository.generateVerseCallCount, 0)
     }
 
-    // MARK: - Test Case 2: Moderation Blocked → DomainError.moderationBlocked
+    // MARK: - Test Case 3: Content Blocked → DomainError.moderationBlocked
 
-    func testModerationBlocked_ThrowsModerationBlocked() async throws {
-        // Given: Rate Limit 통과, Moderation Blocked
+    func testContentBlocked_ThrowsModerationBlocked() async throws {
+        // Given: Rate Limit 통과, AI가 blocked 반환
         spyRateLimiterRepository.shouldAllow = true
-        spyModerationRepository.verdict = .blocked(reason: "inappropriate_content")
+        spyAIRepository.shouldBlockContent = true
+        spyAIRepository.blockReason = "inappropriate_content"
 
         // When/Then
         do {
@@ -81,55 +100,17 @@ final class GenerateVerseUseCaseTests: XCTestCase {
             XCTAssertEqual(reason, "inappropriate_content")
         }
 
-        // Verify: Daily limiter와 Moderation이 호출되었는지 확인
+        // Verify: Daily limiter와 AI Repository가 호출되었는지 확인
         XCTAssertEqual(spyRateLimiterRepository.checkDailyCallCount, 1)
-        XCTAssertEqual(spyModerationRepository.analyzeCallCount, 1)
-        XCTAssertEqual(spyModerationRepository.lastText, "부적절한 내용")
-
-        // Verify: Verse 생성은 호출되지 않았는지 확인
-        XCTAssertEqual(spyVerseRepository.generateCallCount, 0)
+        XCTAssertEqual(spyAIRepository.generateVerseCallCount, 1)
     }
 
-    // MARK: - Test Case 3: Moderation NeedsReview → 진행 허용 (safe mode)
+    // MARK: - Test Case 4: 정상 생성
 
-    func testModerationNeedsReview_Proceeds() async throws {
-        // Given: Rate Limit 통과, Moderation NeedsReview
-        spyRateLimiterRepository.shouldAllow = true
-        spyModerationRepository.verdict = .needsReview(reason: "borderline_content")
-        spyVerseRepository.generatedVerse = GeneratedVerse(
-            verse: Verse(
-                book: "잠언",
-                chapter: 3,
-                verse: 5,
-                text: "너는 마음을 다하여 여호와를 신뢰하고 네 명철을 의지하지 말라",
-                translation: "개역개정"
-            ),
-            reason: "의심스러운 내용이 감지되었으나 안전 모드로 생성되었습니다"
-        )
-
-        // When
-        let result = try await useCase.execute(normalizedText: "애매한 내용", userId: "user123", timeZone: .current)
-
-        // Then: 정상 진행 (서버가 safe mode로 처리)
-        XCTAssertEqual(result.verse.book, "잠언")
-        XCTAssertEqual(result.verse.chapter, 3)
-        XCTAssertEqual(result.verse.verse, 5)
-        XCTAssertTrue(result.reason.contains("안전 모드"))
-
-        // Verify: 모든 단계가 호출되었는지 확인
-        XCTAssertEqual(spyRateLimiterRepository.checkDailyCallCount, 1)
-        XCTAssertEqual(spyModerationRepository.analyzeCallCount, 1)
-        XCTAssertEqual(spyVerseRepository.generateCallCount, 1)
-        XCTAssertEqual(spyVerseRepository.lastPrompt, "애매한 내용")
-    }
-
-    // MARK: - Test Case 4: Moderation Allowed → 정상 생성
-
-    func testModerationAllowed_GeneratesVerse() async throws {
+    func testSuccessfulGeneration() async throws {
         // Given: 모든 검증 통과
         spyRateLimiterRepository.shouldAllow = true
-        spyModerationRepository.verdict = .allowed
-        spyVerseRepository.generatedVerse = GeneratedVerse(
+        spyAIRepository.generatedVerse = GeneratedVerse(
             verse: Verse(
                 book: "시편",
                 chapter: 23,
@@ -152,9 +133,8 @@ final class GenerateVerseUseCaseTests: XCTestCase {
 
         // Verify: 모든 단계가 순서대로 호출되었는지 확인
         XCTAssertEqual(spyRateLimiterRepository.checkDailyCallCount, 1)
-        XCTAssertEqual(spyModerationRepository.analyzeCallCount, 1)
-        XCTAssertEqual(spyVerseRepository.generateCallCount, 1)
-        XCTAssertEqual(spyVerseRepository.lastPrompt, "오늘 힘든 하루였어요")
+        XCTAssertEqual(spyAIRepository.generateVerseCallCount, 1)
+        XCTAssertEqual(spyAIRepository.lastRequest?.mood, "오늘 힘든 하루였어요")
     }
 
     // MARK: - Test Case 5: 다른 사용자는 독립적인 Rate Limit
@@ -162,8 +142,7 @@ final class GenerateVerseUseCaseTests: XCTestCase {
     func testDifferentUsers_IndependentRateLimits() async throws {
         // Given
         spyRateLimiterRepository.shouldAllow = true
-        spyModerationRepository.verdict = .allowed
-        spyVerseRepository.generatedVerse = GeneratedVerse(
+        spyAIRepository.generatedVerse = GeneratedVerse(
             verse: Verse(book: "시편", chapter: 1, verse: 1, text: "복 있는 사람", translation: "개역개정"),
             reason: "테스트"
         )
@@ -180,25 +159,24 @@ final class GenerateVerseUseCaseTests: XCTestCase {
 }
 
 // MARK: - Test Doubles (Spy pattern)
-// Spy: 호출 기록(파라미터, 횟수) + 선택적 응답 제공
-// 행동 검증(behavior verification)에 사용
 
-final class SpyVerseRepository: VerseRepository {
-    var generateCallCount = 0
-    var lastPrompt: String?
+final class SpyAIRepository: AIRepository {
+    var generateVerseCallCount = 0
+    var lastRequest: AIGenerateVerseRequest?
     var generatedVerse: GeneratedVerse?
-    var shouldThrowError: Error?
+    var shouldBlockContent = false
+    var blockReason = ""
 
-    func generate(prompt: String) async throws -> GeneratedVerse {
-        generateCallCount += 1
-        lastPrompt = prompt
+    func generateVerse(_ request: AIGenerateVerseRequest) async throws -> GeneratedVerse {
+        generateVerseCallCount += 1
+        lastRequest = request
 
-        if let error = shouldThrowError {
-            throw error
+        if shouldBlockContent {
+            throw AIRepositoryError.contentBlocked(reason: blockReason)
         }
 
         guard let verse = generatedVerse else {
-            throw DomainError.unknown
+            throw AIRepositoryError.invalidResponse
         }
 
         return verse
@@ -230,21 +208,5 @@ final class SpyRateLimiterRepository: RateLimiterRepository {
         lastDate = date
         lastTimeZone = timeZone
         return shouldAllow
-    }
-}
-
-final class SpyModerationRepository: ModerationRepository {
-    var analyzeCallCount = 0
-    var lastText: String?
-    var verdict: ModerationVerdict = .allowed
-
-    func analyze(text: String) async throws -> ModerationReport {
-        analyzeCallCount += 1
-        lastText = text
-        return ModerationReport(
-            verdict: verdict,
-            confidence: 0.95,
-            categories: []
-        )
     }
 }

@@ -9,12 +9,39 @@ import Foundation
 import Domain
 
 struct RequestVerseState {
-    var inputText: String = ""
+    // 입력
+    var moodText: String = ""        // 감정/상황 (필수)
+    var noteText: String = ""        // 추가 메모 (선택)
+
+    // 상태
     var isLoading: Bool = false
     var errorMessage: String? = nil
+
+    // 결과
+    var generatedResult: GeneratedVerseResult? = nil
 
     // Draft
     var todayDraft: QuietTime? = nil
     var showDraftBanner: Bool = false
     var showDraftConflict: Bool = false
+
+    /// 입력값 검증
+    var isValidInput: Bool {
+        !moodText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+    }
+
+    /// 결과가 있는지 여부
+    var hasResult: Bool {
+        generatedResult != nil
+    }
+}
+
+/// 생성된 말씀 결과
+struct GeneratedVerseResult: Equatable {
+    let verseRef: String        // 예: "시편 23:1"
+    let verseText: String       // 말씀 본문
+    let verseTextEN: String?    // 영어 텍스트 (선택)
+    let rationale: String       // 추천 이유
+    let verse: Verse            // Domain 모델 (QT 작성 화면으로 전달용)
+    let isSafe: Bool            // safety 검증 결과 (차단되지 않았는지)
 }
