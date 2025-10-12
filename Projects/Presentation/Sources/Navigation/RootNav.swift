@@ -12,8 +12,13 @@ import Domain
 public struct RootNavigationView<Content: View>: View {
     @State private var path = NavigationPath()
     let content: (Binding<NavigationPath>) -> Content
+    let editorViewModelFactory: () -> QTEditorViewModel
 
-    public init(@ViewBuilder content: @escaping (Binding<NavigationPath>) -> Content) {
+    public init(
+        editorViewModelFactory: @escaping () -> QTEditorViewModel,
+        @ViewBuilder content: @escaping (Binding<NavigationPath>) -> Content
+    ) {
+        self.editorViewModelFactory = editorViewModelFactory
         self.content = content
     }
 
@@ -30,8 +35,11 @@ public struct RootNavigationView<Content: View>: View {
                     content($path)
                         .background(Color(.systemBackground))
                         .navigationDestination(for: QuietTime.self) { qt in
-                            QTEditorView(draft: qt)
-                                .background(Color(.systemBackground))
+                            QTEditorView(
+                                draft: qt,
+                                viewModel: editorViewModelFactory()
+                            )
+                            .background(Color(.systemBackground))
                         }
                 }
             }

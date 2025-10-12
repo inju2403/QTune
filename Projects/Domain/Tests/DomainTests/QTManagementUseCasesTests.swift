@@ -286,11 +286,15 @@ final class MockQTRepository: QTRepository {
     var fetchListCallCount = 0
     var getCallCount = 0
     var toggleFavoriteCallCount = 0
+    var updateCallCount = 0
+    var deleteCallCount = 0
 
     var lastCommittedDraft: QuietTime?
     var lastQuery: QTQuery?
     var lastGetId: UUID?
     var lastToggleFavoriteId: UUID?
+    var lastUpdatedQT: QuietTime?
+    var lastDeletedId: UUID?
 
     var committedQT: QuietTime?
     var qtList: [QuietTime] = []
@@ -336,5 +340,16 @@ final class MockQTRepository: QTRepository {
         toggleFavoriteCallCount += 1
         lastToggleFavoriteId = id
         return newFavoriteState
+    }
+
+    func update(_ qt: QuietTime, session: UserSession) async throws -> QuietTime {
+        updateCallCount += 1
+        lastUpdatedQT = qt
+        return qt
+    }
+
+    func delete(id: UUID, session: UserSession) async throws {
+        deleteCallCount += 1
+        lastDeletedId = id
     }
 }

@@ -24,26 +24,48 @@ public enum QuietTimeStatus: Equatable, Hashable {
 public struct QuietTime: Identifiable, Equatable, Hashable {
     public let id: UUID
     public var verse: Verse
-    public var memo: String
-    public var korean: String?      // GPT 한글 해설 (선택)
-    public var rationale: String?   // 추천 이유 (선택)
+    public var memo: String          // Deprecated: 템플릿 필드로 대체됨
+    public var korean: String?       // GPT 한글 해설
+    public var rationale: String?    // 추천 이유
     public var date: Date
     public var status: QuietTimeStatus
     public var tags: [String]
     public var isFavorite: Bool
     public var updatedAt: Date
 
+    // MARK: - 템플릿
+    public var template: String      // "SOAP" | "ACTS"
+
+    // MARK: - SOAP 필드
+    public var soapObservation: String?
+    public var soapApplication: String?
+    public var soapPrayer: String?
+
+    // MARK: - ACTS 필드
+    public var actsAdoration: String?
+    public var actsConfession: String?
+    public var actsThanksgiving: String?
+    public var actsSupplication: String?
+
     public init(
         id: UUID = UUID(),
         verse: Verse,
-        memo: String,
+        memo: String = "",
         korean: String? = nil,
         rationale: String? = nil,
         date: Date,
         status: QuietTimeStatus,
         tags: [String] = [],
         isFavorite: Bool = false,
-        updatedAt: Date = .now
+        updatedAt: Date = .now,
+        template: String = "SOAP",
+        soapObservation: String? = nil,
+        soapApplication: String? = nil,
+        soapPrayer: String? = nil,
+        actsAdoration: String? = nil,
+        actsConfession: String? = nil,
+        actsThanksgiving: String? = nil,
+        actsSupplication: String? = nil
     ) {
         self.id = id
         self.verse = verse
@@ -55,6 +77,14 @@ public struct QuietTime: Identifiable, Equatable, Hashable {
         self.tags = tags
         self.isFavorite = isFavorite
         self.updatedAt = updatedAt
+        self.template = template
+        self.soapObservation = soapObservation
+        self.soapApplication = soapApplication
+        self.soapPrayer = soapPrayer
+        self.actsAdoration = actsAdoration
+        self.actsConfession = actsConfession
+        self.actsThanksgiving = actsThanksgiving
+        self.actsSupplication = actsSupplication
     }
 }
 

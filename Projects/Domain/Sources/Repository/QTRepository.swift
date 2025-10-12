@@ -95,4 +95,19 @@ public protocol QTRepository {
     ///   - session: 현재 사용자 세션
     /// - Returns: 토글 후의 isFavorite 상태 (true/false)
     func toggleFavorite(id: UUID, session: UserSession) async throws -> Bool
+
+    /// QT 전체 업데이트 (템플릿 필드 포함)
+    ///
+    /// - Parameters:
+    ///   - qt: 업데이트할 QuietTime
+    ///   - session: 현재 사용자 세션
+    /// - Returns: 업데이트된 QuietTime
+    func update(_ qt: QuietTime, session: UserSession) async throws -> QuietTime
+
+    /// QT 삭제
+    ///
+    /// - Parameters:
+    ///   - id: QT ID
+    ///   - session: 현재 사용자 세션
+    func delete(id: UUID, session: UserSession) async throws
 }

@@ -10,11 +10,15 @@ import Domain
 
 public struct QTEditorView: View {
     public let draft: QuietTime
-    @StateObject private var viewModel = QTEditorViewModel()
+    @StateObject private var viewModel: QTEditorViewModel
     @Environment(\.dismiss) private var dismiss
 
-    public init(draft: QuietTime) {
+    public init(
+        draft: QuietTime,
+        viewModel: QTEditorViewModel
+    ) {
         self.draft = draft
+        _viewModel = StateObject(wrappedValue: viewModel)
     }
 
     public var body: some View {
@@ -31,9 +35,31 @@ public struct QTEditorView: View {
             } else {
                 actsTemplateSections()
             }
+
+            // 저장 버튼
+            saveButtonSection()
         }
         .navigationTitle("QT 작성")
         .navigationBarTitleDisplayMode(.inline)
+        .alert("저장 실패", isPresented: $viewModel.showSaveErrorAlert) {
+            Button("확인", role: .cancel) {}
+        } message: {
+            Text("저장에 실패했어요. 다시 시도해 주세요.")
+        }
+        .overlay(alignment: .bottom) {
+            if viewModel.showSaveSuccessToast {
+                successToast()
+                    .transition(.move(edge: .bottom).combined(with: .opacity))
+                    .onAppear {
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+                            withAnimation {
+                                viewModel.showSaveSuccessToast = false
+                                dismiss()
+                            }
+                        }
+                    }
+            }
+        }
     }
 }
 
@@ -305,5 +331,43 @@ private extension QTEditorView {
                 .font(.caption)
                 .foregroundColor(viewModel.isOverLimit(for: text) ? .red : .secondary)
         }
+    }
+
+    // 저장 버튼 섹션
+    @ViewBuilder
+    func saveButtonSection() -> some View {
+        Section {
+            Button(action: {
+                Task {
+                    await viewModel.saveQT(draft: draft)
+                }
+            }) {
+                HStack {
+                    Spacer()
+                    Text("저장하기")
+                        .bold()
+                    Spacer()
+                }
+            }
+            .buttonStyle(.borderless)
+            .foregroundColor(.blue)
+        }
+    }
+
+    // 성공 토스트
+    @ViewBuilder
+    func successToast() -> some View {
+        HStack {
+            Image(systemName: "checkmark.circle.fill")
+                .foregroundColor(.green)
+            Text("기록이 저장되었습니다")
+                .font(.subheadline)
+                .foregroundColor(.primary)
+        }
+        .padding()
+        .background(.thinMaterial)
+        .clipShape(RoundedRectangle(cornerRadius: 12))
+        .shadow(radius: 4)
+        .padding(.bottom, 50)
     }
 }
