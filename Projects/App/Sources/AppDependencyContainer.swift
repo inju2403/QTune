@@ -28,6 +28,13 @@ final class AppDependencyContainer {
     }
 
     let apiKeyStatus: APIKeyStatus
+    let dummySession: UserSession
+
+    /// QTRepository 인스턴스 (lazy 캐싱)
+    private var _qtRepository: QTRepository?
+
+    /// AIRepository 인스턴스 (lazy 캐싱)
+    private var _aiRepository: AIRepository?
 
     // MARK: - Initialization
 
@@ -39,32 +46,38 @@ final class AppDependencyContainer {
         } else {
             self.apiKeyStatus = .missing
         }
+
+        // 2. 더미 UserSession 생성 (익명 세션)
+        self.dummySession = UserSession.anonymous(deviceId: "local_device")
     }
 
     // MARK: - Repository Factory
 
-    /// AIRepository 생성
+    /// AIRepository 생성 (lazy cached)
     func makeAIRepository() -> AIRepository? {
+        if let cached = _aiRepository {
+            return cached
+        }
+
         guard case .valid(let apiKey) = apiKeyStatus else {
             return nil
         }
 
-        // 2. HTTP 클라이언트 준비
-        // Bible API 클라이언트
+        // HTTP 클라이언트 준비
         let bibleAPIBaseURL = URL(string: "https://bible-api.com")!
         let bibleAPIClient = URLSessionHTTPClient(baseURL: bibleAPIBaseURL)
         let bibleDataSource = BibleAPIDataSource(client: bibleAPIClient)
 
-        // OpenAI API 클라이언트
         let openAIBaseURL = URL(string: "https://api.openai.com")!
         let openAIClient = URLSessionHTTPClient(baseURL: openAIBaseURL)
         let openAIDataSource = OpenAIDataSource(client: openAIClient, apiKey: apiKey)
 
-        // 3. AIRepository 생성
-        return DefaultAIRepository(
+        let repo = DefaultAIRepository(
             bibleDataSource: bibleDataSource,
             openAIDataSource: openAIDataSource
         )
+        _aiRepository = repo
+        return repo
     }
 
     /// RateLimiterRepository 생성
@@ -72,9 +85,26 @@ final class AppDependencyContainer {
         return UserDefaultsRateLimiterRepository()
     }
 
+    /// QTRepository 생성 (lazy cached)
+    @available(iOS 17, *)
+    func makeQTRepository() -> QTRepository? {
+        if let cached = _qtRepository {
+            return cached
+        }
+
+        do {
+            let repo = try PersistenceFactory.makeQTRepository()
+            _qtRepository = repo
+            return repo
+        } catch {
+            print("❌ Failed to init persistence: \(error)")
+            return nil
+        }
+    }
+
     // MARK: - UseCase Factory
 
-    /// 5. GenerateVerseUseCase 생성
+    /// GenerateVerseUseCase 생성
     func makeGenerateVerseUseCase() -> GenerateVerseUseCase? {
         guard let aiRepository = makeAIRepository() else {
             return nil
@@ -84,6 +114,56 @@ final class AppDependencyContainer {
             aiRepository: aiRepository,
             rateLimiterRepository: makeRateLimiterRepository()
         )
+    }
+
+    /// CommitQTUseCase 생성
+    @available(iOS 17, *)
+    func makeCommitQTUseCase() -> CommitQTUseCase? {
+        guard let qtRepository = makeQTRepository() else {
+            return nil
+        }
+
+        return CommitQTInteractor(qtRepository: qtRepository)
+    }
+
+    /// UpdateQTUseCase 생성
+    @available(iOS 17, *)
+    func makeUpdateQTUseCase() -> UpdateQTUseCase? {
+        guard let qtRepository = makeQTRepository() else {
+            return nil
+        }
+
+        return UpdateQTInteractor(qtRepository: qtRepository)
+    }
+
+    /// DeleteQTUseCase 생성
+    @available(iOS 17, *)
+    func makeDeleteQTUseCase() -> DeleteQTUseCase? {
+        guard let qtRepository = makeQTRepository() else {
+            return nil
+        }
+
+        return DeleteQTInteractor(qtRepository: qtRepository)
+    }
+
+    /// FetchQTListUseCase 생성
+    @available(iOS 17, *)
+    func makeFetchQTListUseCase() -> FetchQTListUseCase? {
+        guard let qtRepository = makeQTRepository() else {
+            return nil
+        }
+
+        return FetchQTListInteractor(qtRepository: qtRepository)
+    }
+
+    /// ToggleFavoriteUseCase 생성
+    @available(iOS 17, *)
+    func makeToggleFavoriteUseCase() -> ToggleFavoriteUseCase? {
+        guard let qtRepository = makeQTRepository() else {
+            return nil
+        }
+
+        return ToggleFavoriteInteractor(qtRepository: qtRepository)
     }
 }
 
@@ -112,7 +192,7 @@ final class UserDefaultsRateLimiterRepository: RateLimiterRepository {
         dateFormatter.dateFormat = "yyyy-MM-dd"
 
         let todayString = dateFormatter.string(from: date)
-        let storageKey = "\(key):lastUsedDate"
+        let storageKey = "rateLimiter.\(key).lastUsedDate"
 
         // 2. 저장된 마지막 사용 날짜 가져오기
         let lastUsedDate = userDefaults.string(forKey: storageKey)

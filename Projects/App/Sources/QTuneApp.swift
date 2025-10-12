@@ -68,19 +68,60 @@ struct QTuneApp: App {
         WindowGroup {
             Group {
                 switch container.apiKeyStatus {
-                case .valid:
+                case .valid(_):
                     // API 키가 설정된 경우: 정상 앱 실행
-                    if let useCase = container.makeGenerateVerseUseCase() {
-                        RootNavigationView { path in
-                            RequestVerseView(
-                                viewModel: RequestVerseViewModel(
-                                    generateVerseUseCase: useCase
-                                ),
-                                path: path
-                            )
+                    if #available(iOS 17, *),
+                       let generateVerseUseCase = container.makeGenerateVerseUseCase(),
+                       let commitQTUseCase = container.makeCommitQTUseCase(),
+                       let updateQTUseCase = container.makeUpdateQTUseCase(),
+                       let deleteQTUseCase = container.makeDeleteQTUseCase(),
+                       let fetchQTListUseCase = container.makeFetchQTListUseCase(),
+                       let toggleFavoriteUseCase = container.makeToggleFavoriteUseCase() {
+
+                        let qtListVM = QTListViewModel(
+                            fetchQTListUseCase: fetchQTListUseCase,
+                            toggleFavoriteUseCase: toggleFavoriteUseCase,
+                            deleteQTUseCase: deleteQTUseCase,
+                            session: container.dummySession
+                        )
+
+                        MainTabView(
+                            qtListViewModel: qtListVM,
+                            detailViewModelFactory: { qt in
+                                QTDetailViewModel(
+                                    qt: qt,
+                                    toggleFavoriteUseCase: toggleFavoriteUseCase,
+                                    deleteQTUseCase: deleteQTUseCase,
+                                    session: container.dummySession
+                                )
+                            },
+                            editorViewModelFactory: {
+                                QTEditorViewModel(
+                                    commitQTUseCase: commitQTUseCase,
+                                    updateQTUseCase: updateQTUseCase,
+                                    session: container.dummySession
+                                )
+                            }
+                        ) {
+                            RootNavigationView(
+                                editorViewModelFactory: {
+                                    QTEditorViewModel(
+                                        commitQTUseCase: commitQTUseCase,
+                                        updateQTUseCase: updateQTUseCase,
+                                        session: container.dummySession
+                                    )
+                                }
+                            ) { path in
+                                RequestVerseView(
+                                    viewModel: RequestVerseViewModel(
+                                        generateVerseUseCase: generateVerseUseCase
+                                    ),
+                                    path: path
+                                )
+                            }
                         }
                     } else {
-                        // UseCase 생성 실패 (이론적으로 발생하지 않아야 함)
+                        // iOS 17 미만
                         APIKeyMissingView()
                     }
 

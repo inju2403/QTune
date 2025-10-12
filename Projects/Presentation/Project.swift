@@ -12,6 +12,19 @@ let project = Project(
       infoPlist: .default,
       sources: nil,
       buildableFolders: [.folder("Sources")],
+      scripts: [
+        .pre(
+          script: """
+          if command -v swiftlint >/dev/null 2>&1; then
+            swiftlint --strict
+          else
+            echo "⚠️  SwiftLint not installed. Skipping."
+          fi
+          """,
+          name: "SwiftLint",
+          basedOnDependencyAnalysis: false
+        )
+      ],
       dependencies: [
         .project(target: "Domain", path: "../Domain")
       ]
