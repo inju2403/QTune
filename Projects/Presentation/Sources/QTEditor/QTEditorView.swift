@@ -22,22 +22,30 @@ public struct QTEditorView: View {
     }
 
     public var body: some View {
-        Form {
-            // 상단 고정 카드 (읽기 전용)
-            verseCardSection()
+        ZStack {
+            AppBackgroundView()
+                .ignoresSafeArea()
 
-            // 템플릿 스위처
-            templateSwitcherSection()
+            ScrollView {
+                VStack(spacing: DS.Spacing.xl) {
+                    // 상단 고정 카드 (읽기 전용)
+                    verseCardSection()
 
-            // 템플릿별 입력 섹션
-            if viewModel.selectedTemplate == .soap {
-                soapTemplateSections()
-            } else {
-                actsTemplateSections()
+                    // 템플릿 스위처
+                    templateSwitcherSection()
+
+                    // 템플릿별 입력 섹션
+                    if viewModel.selectedTemplate == .soap {
+                        soapTemplateSections()
+                    } else {
+                        actsTemplateSections()
+                    }
+
+                    // 저장 버튼
+                    saveButtonSection()
+                }
+                .padding(DS.Spacing.l)
             }
-
-            // 저장 버튼
-            saveButtonSection()
         }
         .navigationTitle("QT 작성")
         .navigationBarTitleDisplayMode(.inline)
@@ -50,9 +58,11 @@ public struct QTEditorView: View {
             if viewModel.showSaveSuccessToast {
                 successToast()
                     .transition(.move(edge: .bottom).combined(with: .opacity))
+                    .animation(Motion.appear, value: viewModel.showSaveSuccessToast)
                     .onAppear {
+                        Haptics.success()
                         DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
-                            withAnimation {
+                            withAnimation(Motion.appear) {
                                 viewModel.showSaveSuccessToast = false
                                 dismiss()
                             }
@@ -68,64 +78,57 @@ private extension QTEditorView {
     // 상단 말씀 카드 (읽기 전용)
     @ViewBuilder
     func verseCardSection() -> some View {
-        Section {
-            VStack(alignment: .leading, spacing: 16) {
-                // 구절 제목 (한글 책명 + 장:절)
+        VStack(alignment: .leading, spacing: DS.Spacing.l) {
+            SectionHeader(icon: "book.closed.fill", title: "오늘의 말씀")
+
+            // 구절 제목
+            HStack {
+                Image(systemName: "book.closed.fill")
+                    .foregroundStyle(DS.Color.gold)
                 Text(draft.verse.id)
-                    .font(.headline)
-                    .foregroundColor(.blue)
-
-                // 영문 본문
-                Text(draft.verse.text)
-                    .font(.body)
-                    .padding(.vertical, 8)
-
-                // 출처 라벨
-                Text("Original: \(draft.verse.translation) (Public Domain)")
-                    .font(.caption)
-                    .foregroundColor(.secondary)
+                    .font(DS.Font.titleM(.semibold))
+                    .foregroundStyle(DS.Color.deepCocoa)
             }
-        } header: {
-            Text("오늘의 말씀")
-        }
+            .padding(.horizontal, DS.Spacing.m)
 
-        // 한글 해설 (있는 경우)
-        if let korean = draft.korean, !korean.isEmpty {
-            Section {
-                let lines = korean.split(separator: "\n", maxSplits: 1, omittingEmptySubsequences: false)
-                if lines.count == 2 {
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text(String(lines[0]))
-                            .font(.body)
-                            .fontWeight(.semibold)
-                            .foregroundColor(.purple)
+            // 영문 본문
+            VerseCardView(title: "본문") {
+                VStack(alignment: .leading, spacing: DS.Spacing.s) {
+                    Text(draft.verse.text)
+                        .lineSpacing(4)
 
-                        Text(String(lines[1]))
-                            .font(.body)
-                            .foregroundColor(.primary)
+                    Text("\(draft.verse.translation) (Public Domain)")
+                        .font(DS.Font.caption())
+                        .foregroundStyle(DS.Color.textSecondary)
+                }
+            }
+
+            // 한글 해설 (있는 경우)
+            if let korean = draft.korean, !korean.isEmpty {
+                VerseCardView(title: "해설") {
+                    let lines = korean.split(separator: "\n", maxSplits: 1, omittingEmptySubsequences: false)
+                    if lines.count == 2 {
+                        VStack(alignment: .leading, spacing: DS.Spacing.s) {
+                            Text(String(lines[0]))
+                                .font(DS.Font.bodyL(.semibold))
+                                .foregroundStyle(DS.Color.gold)
+
+                            Text(String(lines[1]))
+                                .lineSpacing(4)
+                        }
+                    } else {
+                        Text(korean)
+                            .lineSpacing(4)
                     }
-                } else {
-                    Text(korean)
-                        .font(.body)
-                        .foregroundColor(.primary)
-                }
-            } header: {
-                HStack {
-                    Image(systemName: "sparkle")
-                        .foregroundColor(.purple)
-                    Text("구절 해설")
                 }
             }
-        }
 
-        // 추천 이유 (있는 경우)
-        if let rationale = draft.rationale, !rationale.isEmpty {
-            Section {
-                Text(rationale)
-                    .font(.body)
-                    .foregroundColor(.secondary)
-            } header: {
-                Text("추천 이유")
+            // 추천 이유 (있는 경우)
+            if let rationale = draft.rationale, !rationale.isEmpty {
+                VerseCardView(title: "추천 이유") {
+                    Text(rationale)
+                        .lineSpacing(4)
+                }
             }
         }
     }
@@ -133,155 +136,168 @@ private extension QTEditorView {
     // 템플릿 스위처
     @ViewBuilder
     func templateSwitcherSection() -> some View {
-        Section {
-            Picker("템플릿", selection: $viewModel.selectedTemplate) {
-                ForEach(QTTemplateType.allCases, id: \.self) { template in
-                    Text(template.displayName).tag(template)
+        VStack(alignment: .leading, spacing: DS.Spacing.m) {
+            SectionHeader(icon: "square.grid.2x2", title: "QT 템플릿")
+
+            SoftCard {
+                VStack(spacing: DS.Spacing.m) {
+                    Picker("템플릿", selection: $viewModel.selectedTemplate) {
+                        ForEach(QTTemplateType.allCases, id: \.self) { template in
+                            Text(template.displayName).tag(template)
+                        }
+                    }
+                    .pickerStyle(.segmented)
+
+                    Text(viewModel.selectedTemplate == .soap
+                         ? "Scripture, Observation, Application, Prayer"
+                         : "Adoration, Confession, Thanksgiving, Supplication")
+                        .font(DS.Font.caption())
+                        .foregroundStyle(DS.Color.textSecondary)
+                        .frame(maxWidth: .infinity, alignment: .leading)
                 }
             }
-            .pickerStyle(.segmented)
-        } header: {
-            Text("QT 템플릿")
-        } footer: {
-            Text(viewModel.selectedTemplate == .soap
-                 ? "Scripture, Observation, Application, Prayer"
-                 : "Adoration, Confession, Thanksgiving, Supplication")
-                .font(.caption)
-                .foregroundColor(.secondary)
         }
     }
 
     // S.O.A.P 템플릿 섹션들
     @ViewBuilder
     func soapTemplateSections() -> some View {
-        // O: Observation
-        Section {
-            inputField(
+        VStack(alignment: .leading, spacing: DS.Spacing.xl) {
+            SectionHeader(icon: "square.and.pencil", title: "나의 묵상")
+
+            // O: Observation
+            inputSection(
+                icon: "eye",
+                title: "Observation",
+                subtitle: "관찰",
                 text: $viewModel.soapTemplate.observation,
                 placeholder: viewModel.soapTemplate.observationPlaceholder,
                 minHeight: 100,
                 onChanged: viewModel.updateSOAPObservation
             )
-        } header: {
-            HStack {
-                Text("O")
-                    .fontWeight(.bold)
-                Text("🔎 Observation (관찰)")
-            }
-        } footer: {
-            characterCounter(for: viewModel.soapTemplate.observation)
-        }
 
-        // A: Application
-        Section {
-            inputField(
+            // A: Application
+            inputSection(
+                icon: "arrow.right.circle",
+                title: "Application",
+                subtitle: "적용",
                 text: $viewModel.soapTemplate.application,
                 placeholder: viewModel.soapTemplate.applicationPlaceholder,
                 minHeight: 100,
                 onChanged: viewModel.updateSOAPApplication
             )
-        } header: {
-            HStack {
-                Text("A")
-                    .fontWeight(.bold)
-                Text("📝 Application (적용)")
-            }
-        } footer: {
-            characterCounter(for: viewModel.soapTemplate.application)
-        }
 
-        // P: Prayer
-        Section {
-            inputField(
+            // P: Prayer
+            inputSection(
+                icon: "hands.sparkles",
+                title: "Prayer",
+                subtitle: "기도",
                 text: $viewModel.soapTemplate.prayer,
                 placeholder: viewModel.soapTemplate.prayerPlaceholder,
                 minHeight: 100,
                 onChanged: viewModel.updateSOAPPrayer
             )
-        } header: {
-            HStack {
-                Text("P")
-                    .fontWeight(.bold)
-                Text("🙏 Prayer (기도)")
-            }
-        } footer: {
-            characterCounter(for: viewModel.soapTemplate.prayer)
         }
     }
 
     // A.C.T.S 템플릿 섹션들
     @ViewBuilder
     func actsTemplateSections() -> some View {
-        // A: Adoration
-        Section {
-            inputField(
+        VStack(alignment: .leading, spacing: DS.Spacing.xl) {
+            SectionHeader(icon: "hands.sparkles", title: "나의 기도")
+
+            // A: Adoration
+            inputSection(
+                icon: "sparkles",
+                title: "Adoration",
+                subtitle: "경배",
                 text: $viewModel.actsTemplate.adoration,
                 placeholder: viewModel.actsTemplate.adorationPlaceholder,
                 minHeight: 100,
                 onChanged: viewModel.updateACTSAdoration
             )
-        } header: {
-            HStack {
-                Text("A")
-                    .fontWeight(.bold)
-                Text("✨ Adoration (찬양)")
-            }
-        } footer: {
-            characterCounter(for: viewModel.actsTemplate.adoration)
-        }
 
-        // C: Confession
-        Section {
-            inputField(
+            // C: Confession
+            inputSection(
+                icon: "heart",
+                title: "Confession",
+                subtitle: "고백",
                 text: $viewModel.actsTemplate.confession,
                 placeholder: viewModel.actsTemplate.confessionPlaceholder,
                 minHeight: 100,
                 onChanged: viewModel.updateACTSConfession
             )
-        } header: {
-            HStack {
-                Text("C")
-                    .fontWeight(.bold)
-                Text("💧 Confession (회개)")
-            }
-        } footer: {
-            characterCounter(for: viewModel.actsTemplate.confession)
-        }
 
-        // T: Thanksgiving
-        Section {
-            inputField(
+            // T: Thanksgiving
+            inputSection(
+                icon: "leaf",
+                title: "Thanksgiving",
+                subtitle: "감사",
                 text: $viewModel.actsTemplate.thanksgiving,
                 placeholder: viewModel.actsTemplate.thanksgivingPlaceholder,
                 minHeight: 100,
                 onChanged: viewModel.updateACTSThanksgiving
             )
-        } header: {
-            HStack {
-                Text("T")
-                    .fontWeight(.bold)
-                Text("💚 Thanksgiving (감사)")
-            }
-        } footer: {
-            characterCounter(for: viewModel.actsTemplate.thanksgiving)
-        }
 
-        // S: Supplication
-        Section {
-            inputField(
+            // S: Supplication
+            inputSection(
+                icon: "hands.and.sparkles",
+                title: "Supplication",
+                subtitle: "간구",
                 text: $viewModel.actsTemplate.supplication,
                 placeholder: viewModel.actsTemplate.supplicationPlaceholder,
                 minHeight: 100,
                 onChanged: viewModel.updateACTSSupplication
             )
-        } header: {
-            HStack {
-                Text("S")
-                    .fontWeight(.bold)
-                Text("🤲 Supplication (간구)")
+        }
+    }
+
+    // 입력 섹션 (헤더 + 카드 + 카운터)
+    @ViewBuilder
+    func inputSection(
+        icon: String,
+        title: String,
+        subtitle: String,
+        text: Binding<String>,
+        placeholder: String,
+        minHeight: CGFloat,
+        onChanged: @escaping (String) -> Void
+    ) -> some View {
+        SoftCard {
+            VStack(alignment: .leading, spacing: DS.Spacing.m) {
+                // 헤더
+                HStack(spacing: DS.Spacing.s) {
+                    Image(systemName: icon)
+                        .foregroundStyle(DS.Color.gold)
+                        .font(DS.Font.bodyL())
+
+                    Text(title)
+                        .font(DS.Font.bodyL(.semibold))
+                        .foregroundStyle(DS.Color.textPrimary)
+
+                    Text("·")
+                        .foregroundStyle(DS.Color.textSecondary)
+
+                    Text(subtitle)
+                        .font(DS.Font.bodyM())
+                        .foregroundStyle(DS.Color.textSecondary)
+
+                    Spacer()
+
+                    // 글자수 카운터
+                    Text(viewModel.characterCount(for: text.wrappedValue))
+                        .font(DS.Font.caption())
+                        .foregroundStyle(viewModel.isOverLimit(for: text.wrappedValue) ? .red : DS.Color.textSecondary)
+                }
+
+                // 입력 필드
+                inputField(
+                    text: text,
+                    placeholder: placeholder,
+                    minHeight: minHeight,
+                    onChanged: onChanged
+                )
             }
-        } footer: {
-            characterCounter(for: viewModel.actsTemplate.supplication)
         }
     }
 
@@ -296,10 +312,10 @@ private extension QTEditorView {
         ZStack(alignment: .topLeading) {
             if text.wrappedValue.isEmpty {
                 Text(placeholder)
-                    .font(.body)
-                    .foregroundColor(.secondary.opacity(0.5))
-                    .padding(.horizontal, 5)
-                    .padding(.vertical, 8)
+                    .font(DS.Font.bodyM())
+                    .foregroundStyle(DS.Color.textSecondary.opacity(0.4))
+                    .padding(.horizontal, DS.Spacing.xs)
+                    .padding(.vertical, DS.Spacing.s)
             }
 
             TextEditor(text: Binding(
@@ -308,66 +324,53 @@ private extension QTEditorView {
                     onChanged(newValue)
                 }
             ))
+            .font(DS.Font.bodyM())
+            .foregroundStyle(DS.Color.textPrimary)
             .frame(minHeight: minHeight)
             .scrollContentBackground(.hidden)
             .textInputAutocapitalization(.sentences)
             .disableAutocorrection(false)
         }
-        .padding(8)
-        .background(
-            viewModel.isEmptyOrWhitespace(text.wrappedValue)
-                ? Color(.systemGray6)
-                : Color.clear
-        )
-        .clipShape(RoundedRectangle(cornerRadius: 12))
-    }
-
-    // 글자수 카운터
-    @ViewBuilder
-    func characterCounter(for text: String) -> some View {
-        HStack {
-            Spacer()
-            Text(viewModel.characterCount(for: text))
-                .font(.caption)
-                .foregroundColor(viewModel.isOverLimit(for: text) ? .red : .secondary)
-        }
+        .padding(DS.Spacing.s)
+        .background(DS.Color.background)
+        .clipShape(RoundedRectangle(cornerRadius: DS.Radius.s))
     }
 
     // 저장 버튼 섹션
     @ViewBuilder
     func saveButtonSection() -> some View {
-        Section {
-            Button(action: {
-                Task {
-                    await viewModel.saveQT(draft: draft)
-                }
-            }) {
-                HStack {
-                    Spacer()
-                    Text("저장하기")
-                        .bold()
-                    Spacer()
-                }
+        PrimaryButton(title: "저장하기", icon: "checkmark.circle.fill") {
+            Haptics.tap()
+            Task {
+                await viewModel.saveQT(draft: draft)
             }
-            .buttonStyle(.borderless)
-            .foregroundColor(.blue)
         }
+        .padding(.top, DS.Spacing.l)
+        .padding(.bottom, DS.Spacing.xxl)
     }
 
     // 성공 토스트
     @ViewBuilder
     func successToast() -> some View {
-        HStack {
-            Image(systemName: "checkmark.circle.fill")
-                .foregroundColor(.green)
-            Text("기록이 저장되었습니다")
-                .font(.subheadline)
-                .foregroundColor(.primary)
+        SoftCard {
+            HStack(spacing: DS.Spacing.m) {
+                ZStack {
+                    Circle()
+                        .fill(DS.Color.success.opacity(0.2))
+                        .frame(width: 32, height: 32)
+                        .blur(radius: 6)
+
+                    Image(systemName: "checkmark.circle.fill")
+                        .foregroundStyle(DS.Color.success)
+                        .font(DS.Font.titleM())
+                }
+
+                Text("기록이 저장되었습니다")
+                    .font(DS.Font.bodyL(.semibold))
+                    .foregroundStyle(DS.Color.textPrimary)
+            }
         }
-        .padding()
-        .background(.thinMaterial)
-        .clipShape(RoundedRectangle(cornerRadius: 12))
-        .shadow(radius: 4)
-        .padding(.bottom, 50)
+        .padding(.horizontal, DS.Spacing.l)
+        .padding(.bottom, DS.Spacing.xxl)
     }
 }
