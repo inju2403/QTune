@@ -22,24 +22,29 @@ public struct RequestVerseView: View {
 
     // MARK: - Body
     public var body: some View {
-        ScrollView {
-            VStack(spacing: 24) {
-                draftBanner()
-                descriptionSection()
-                inputSection()
-                errorSection()
-                loadingIndicator()
-                requestButton()
-                resultSection()
-                goToQTButton()
+        ZStack {
+            AppBackgroundView()
+                .ignoresSafeArea()
+
+            ScrollView {
+                VStack(spacing: DS.Spacing.xl) {
+                    draftBanner()
+                    descriptionSection()
+                    inputSection()
+                    errorSection()
+                    loadingIndicator()
+                    requestButton()
+                    resultSection()
+                    goToQTButton()
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.horizontal, DS.Spacing.l)
+                .padding(.vertical, DS.Spacing.l)
             }
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(.horizontal, 20)
-            .padding(.vertical, 16)
+            .navigationTitle("오늘의 말씀")
+            .navigationBarTitleDisplayMode(.large)
+            .scrollDismissesKeyboard(.interactively)
         }
-        .navigationTitle("오늘의 말씀")
-        .navigationBarTitleDisplayMode(.large)
-        .scrollDismissesKeyboard(.interactively)
         .onAppear {
             viewModel.send(.onAppear(userId: "me"))
         }
@@ -90,67 +95,90 @@ private extension RequestVerseView {
     @ViewBuilder
     func draftBanner() -> some View {
         if viewModel.state.showDraftBanner {
-            HStack {
-                VStack(alignment: .leading, spacing: 2) {
-                    Text("오늘 작성 중인 QT가 있어요").bold()
-                    Text("이어 쓰거나 삭제할 수 있어요")
-                        .font(.footnote)
-                        .foregroundStyle(.secondary)
+            SoftCard {
+                HStack(spacing: DS.Spacing.m) {
+                    Image(systemName: "doc.text")
+                        .foregroundStyle(DS.Color.gold)
+                        .font(DS.Font.titleM())
+
+                    VStack(alignment: .leading, spacing: DS.Spacing.xs) {
+                        Text("오늘 작성 중인 QT가 있어요")
+                            .font(DS.Font.bodyL(.semibold))
+                            .foregroundStyle(DS.Color.textPrimary)
+                        Text("이어 쓰거나 삭제할 수 있어요")
+                            .font(DS.Font.caption())
+                            .foregroundStyle(DS.Color.textSecondary)
+                    }
+                    Spacer()
+                    Button("이어쓰기") {
+                        Haptics.tap()
+                        viewModel.send(.tapResumeDraft)
+                    }
+                    .font(DS.Font.bodyM(.semibold))
+                    .foregroundStyle(DS.Color.olive)
+
+                    Button("삭제") {
+                        Haptics.tap()
+                        viewModel.send(.tapDiscardDraft)
+                    }
+                    .font(DS.Font.bodyM(.semibold))
+                    .foregroundStyle(DS.Color.textSecondary)
                 }
-                Spacer()
-                Button("이어쓰기") { viewModel.send(.tapResumeDraft) }
-                Button("삭제") { viewModel.send(.tapDiscardDraft) }
             }
-            .padding(12)
-            .background(.thinMaterial)
-            .clipShape(RoundedRectangle(cornerRadius: 12))
         }
     }
 
     func descriptionSection() -> some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text("오늘 하루는 어떠셨나요?")
-                .font(.title3)
-                .fontWeight(.semibold)
+        VStack(alignment: .leading, spacing: DS.Spacing.m) {
+            SectionHeader(icon: "heart.text.square", title: "오늘 하루는 어떠셨나요?")
 
             Text("오늘의 생각, 감정, 상황을 자유롭게 적어보세요")
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
+                .font(DS.Font.bodyM())
+                .foregroundStyle(DS.Color.textSecondary)
+                .padding(.horizontal, DS.Spacing.m)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
     }
 
     func inputSection() -> some View {
-        VStack(alignment: .leading, spacing: 16) {
+        VStack(alignment: .leading, spacing: DS.Spacing.l) {
             // 감정/상황 입력 (필수)
-            VStack(alignment: .leading, spacing: 8) {
-                Text("감정/상황 (필수)")
-                    .font(.subheadline)
-                    .fontWeight(.medium)
+            SoftCard {
+                VStack(alignment: .leading, spacing: DS.Spacing.m) {
+                    HStack {
+                        Image(systemName: "heart.fill")
+                            .foregroundStyle(DS.Color.gold)
+                            .font(DS.Font.bodyL())
+                        Text("감정/상황 (필수)")
+                            .font(DS.Font.bodyL(.semibold))
+                            .foregroundStyle(DS.Color.textPrimary)
+                        Spacer()
+                        Text("\(viewModel.state.moodText.count)/500")
+                            .font(DS.Font.caption())
+                            .foregroundStyle(DS.Color.textSecondary)
+                    }
 
-                moodInputArea()
-
-                HStack {
-                    Spacer()
-                    Text("\(viewModel.state.moodText.count)/500")
-                        .font(.footnote)
-                        .foregroundStyle(.secondary)
+                    moodInputArea()
                 }
             }
 
             // 추가 메모 (선택)
-            VStack(alignment: .leading, spacing: 8) {
-                Text("추가 메모 (선택)")
-                    .font(.subheadline)
-                    .fontWeight(.medium)
+            SoftCard {
+                VStack(alignment: .leading, spacing: DS.Spacing.m) {
+                    HStack {
+                        Image(systemName: "note.text")
+                            .foregroundStyle(DS.Color.olive)
+                            .font(DS.Font.bodyL())
+                        Text("추가 메모 (선택)")
+                            .font(DS.Font.bodyL(.semibold))
+                            .foregroundStyle(DS.Color.textPrimary)
+                        Spacer()
+                        Text("\(viewModel.state.noteText.count)/200")
+                            .font(DS.Font.caption())
+                            .foregroundStyle(DS.Color.textSecondary)
+                    }
 
-                noteInputArea()
-
-                HStack {
-                    Spacer()
-                    Text("\(viewModel.state.noteText.count)/200")
-                        .font(.footnote)
-                        .foregroundStyle(.secondary)
+                    noteInputArea()
                 }
             }
         }
@@ -165,21 +193,23 @@ private extension RequestVerseView {
         return ZStack(alignment: .topLeading) {
             if viewModel.state.moodText.isEmpty {
                 Text("예) 오늘은 중요한 시험을 앞두고 너무 긴장되고 불안해요...")
-                    .font(.body)
-                    .foregroundStyle(.secondary.opacity(0.5))
-                    .padding(.horizontal, 5)
-                    .padding(.vertical, 8)
+                    .font(DS.Font.bodyM())
+                    .foregroundStyle(DS.Color.textSecondary.opacity(0.4))
+                    .padding(.horizontal, DS.Spacing.xs)
+                    .padding(.vertical, DS.Spacing.s)
             }
 
             TextEditor(text: binding)
+                .font(DS.Font.bodyM())
+                .foregroundStyle(DS.Color.textPrimary)
                 .frame(minHeight: 120, alignment: .topLeading)
                 .scrollContentBackground(.hidden)
                 .textInputAutocapitalization(.sentences)
                 .disableAutocorrection(false)
         }
-        .padding(8)
-        .background(Color(.systemGray6))
-        .clipShape(RoundedRectangle(cornerRadius: 12))
+        .padding(DS.Spacing.s)
+        .background(DS.Color.background)
+        .clipShape(RoundedRectangle(cornerRadius: DS.Radius.s))
     }
 
     func noteInputArea() -> some View {
@@ -191,159 +221,163 @@ private extension RequestVerseView {
         return ZStack(alignment: .topLeading) {
             if viewModel.state.noteText.isEmpty {
                 Text("예) 최선을 다했지만 결과가 걱정돼요")
-                    .font(.body)
-                    .foregroundStyle(.secondary.opacity(0.5))
-                    .padding(.horizontal, 5)
-                    .padding(.vertical, 8)
+                    .font(DS.Font.bodyM())
+                    .foregroundStyle(DS.Color.textSecondary.opacity(0.4))
+                    .padding(.horizontal, DS.Spacing.xs)
+                    .padding(.vertical, DS.Spacing.s)
             }
 
             TextEditor(text: binding)
+                .font(DS.Font.bodyM())
+                .foregroundStyle(DS.Color.textPrimary)
                 .frame(minHeight: 80, alignment: .topLeading)
                 .scrollContentBackground(.hidden)
                 .textInputAutocapitalization(.sentences)
                 .disableAutocorrection(false)
         }
-        .padding(8)
-        .background(Color(.systemGray6))
-        .clipShape(RoundedRectangle(cornerRadius: 12))
+        .padding(DS.Spacing.s)
+        .background(DS.Color.background)
+        .clipShape(RoundedRectangle(cornerRadius: DS.Radius.s))
     }
 
     @ViewBuilder
     func errorSection() -> some View {
         if let errorMessage = viewModel.state.errorMessage {
-            HStack(spacing: 12) {
-                Image(systemName: "exclamationmark.triangle.fill")
-                    .foregroundColor(.orange)
+            SoftCard {
+                HStack(spacing: DS.Spacing.m) {
+                    Image(systemName: "exclamationmark.triangle.fill")
+                        .foregroundStyle(.orange)
+                        .font(DS.Font.bodyL())
 
-                Text(errorMessage)
-                    .font(.subheadline)
-                    .foregroundColor(.primary)
+                    Text(errorMessage)
+                        .font(DS.Font.bodyM())
+                        .foregroundStyle(DS.Color.textPrimary)
 
-                Spacer()
+                    Spacer()
 
-                Button(action: { viewModel.send(.dismissError) }) {
-                    Image(systemName: "xmark.circle.fill")
-                        .foregroundColor(.secondary)
+                    Button {
+                        Haptics.tap()
+                        viewModel.send(.dismissError)
+                    } label: {
+                        Image(systemName: "xmark.circle.fill")
+                            .foregroundStyle(DS.Color.textSecondary)
+                            .font(DS.Font.bodyL())
+                    }
                 }
             }
-            .padding(12)
-            .background(Color.orange.opacity(0.1))
-            .clipShape(RoundedRectangle(cornerRadius: 12))
+            .transition(.move(edge: .top).combined(with: .opacity))
         }
     }
 
     @ViewBuilder
     func loadingIndicator() -> some View {
         if viewModel.state.isLoading {
-            HStack {
-                Spacer()
-                ProgressView()
-                    .controlSize(.regular)
-                Text("말씀을 추천하고 있어요...")
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
-                Spacer()
+            VStack(spacing: DS.Spacing.l) {
+                HStack(spacing: DS.Spacing.m) {
+                    Spacer()
+                    ProgressView()
+                        .controlSize(.regular)
+                        .tint(DS.Color.gold)
+                    Text("말씀을 추천하고 있어요...")
+                        .font(DS.Font.bodyM())
+                        .foregroundStyle(DS.Color.textSecondary)
+                    Spacer()
+                }
+                .padding(.vertical, DS.Spacing.m)
+
+                // Loading skeleton
+                VerseCardView(title: "추천 말씀") {
+                    VStack(alignment: .leading, spacing: DS.Spacing.m) {
+                        Text("요한복음 3:16")
+                            .font(DS.Font.bodyL(.semibold))
+                        Text("하나님이 세상을 이처럼 사랑하사 독생자를 주셨으니...")
+                            .font(DS.Font.bodyL())
+                            .lineLimit(3)
+                    }
+                }
+                .redacted(reason: .placeholder)
             }
-            .padding(.vertical, 12)
+            .transition(.opacity.combined(with: .scale(scale: 0.95)))
         }
     }
 
     func requestButton() -> some View {
-        Button(action: { viewModel.send(.tapRequest) }) {
-            Text("오늘의 말씀 추천받기")
-                .bold()
-                .frame(maxWidth: .infinity)
-                .padding()
+        PrimaryButton(title: "오늘의 말씀 추천받기", icon: "sparkles") {
+            viewModel.send(.tapRequest)
         }
         .disabled(!viewModel.state.isValidInput || viewModel.state.isLoading)
-        .buttonStyle(.borderedProminent)
-        .controlSize(.large)
+        .opacity((!viewModel.state.isValidInput || viewModel.state.isLoading) ? 0.5 : 1)
+        .animation(Motion.appear, value: viewModel.state.isValidInput)
     }
 
     @ViewBuilder
     func resultSection() -> some View {
         if let result = viewModel.state.generatedResult, result.isSafe {
-            VStack(alignment: .leading, spacing: 16) {
-                Divider()
-                    .padding(.vertical, 8)
+            VStack(alignment: .leading, spacing: DS.Spacing.xl) {
+                // Success header with glow
+                HStack(spacing: DS.Spacing.m) {
+                    ZStack {
+                        Circle()
+                            .fill(DS.Color.success.opacity(0.2))
+                            .frame(width: 40, height: 40)
+                            .blur(radius: 8)
+                            .animation(Motion.halo, value: true)
 
-                // 결과 헤더
-                HStack {
-                    Image(systemName: "checkmark.circle.fill")
-                        .foregroundColor(.green)
+                        Image(systemName: "checkmark.circle.fill")
+                            .foregroundStyle(DS.Color.success)
+                            .font(DS.Font.titleL())
+                    }
+
                     Text("추천 말씀")
-                        .font(.title3)
-                        .fontWeight(.bold)
+                        .font(DS.Font.titleL(.semibold))
+                        .foregroundStyle(DS.Color.textPrimary)
+                }
+                .padding(.top, DS.Spacing.m)
+                .onAppear {
+                    Haptics.success()
                 }
 
-                // verseRef
-                Text(result.verseRef)
-                    .font(.headline)
-                    .foregroundColor(.blue)
+                // Verse reference
+                HStack {
+                    Image(systemName: "book.closed.fill")
+                        .foregroundStyle(DS.Color.gold)
+                    Text(result.verseRef)
+                        .font(DS.Font.titleM(.semibold))
+                        .foregroundStyle(DS.Color.deepCocoa)
+                }
+                .padding(.horizontal, DS.Spacing.m)
 
-                // verseText (영어 본문)
-                Text(result.verseText)
-                    .font(.body)
-                    .padding()
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .background(Color(.systemGray6))
-                    .clipShape(RoundedRectangle(cornerRadius: 12))
+                // Verse text (English)
+                VerseCardView(title: "본문") {
+                    Text(result.verseText)
+                        .lineSpacing(4)
+                }
 
-                // korean (한글 해설)
+                // Korean interpretation
                 if !result.korean.isEmpty {
-                    VStack(alignment: .leading, spacing: 8) {
-                        HStack {
-                            Image(systemName: "sparkle")
-                                .foregroundColor(.purple)
-                            Text("구절 해설")
-                                .font(.subheadline)
-                                .fontWeight(.medium)
-                                .foregroundColor(.secondary)
-                        }
-
-                        // 구절명과 본문 분리
+                    VerseCardView(title: "해설") {
                         let lines = result.korean.split(separator: "\n", maxSplits: 1, omittingEmptySubsequences: false)
                         if lines.count == 2 {
-                            VStack(alignment: .leading, spacing: 4) {
-                                // 구절명 (색상 강조)
+                            VStack(alignment: .leading, spacing: DS.Spacing.s) {
                                 Text(String(lines[0]))
-                                    .font(.body)
-                                    .fontWeight(.semibold)
-                                    .foregroundColor(.purple)
-
-                                // 본문
+                                    .font(DS.Font.bodyL(.semibold))
+                                    .foregroundStyle(DS.Color.gold)
                                 Text(String(lines[1]))
-                                    .font(.body)
-                                    .foregroundColor(.primary)
+                                    .lineSpacing(4)
                             }
                         } else {
                             Text(result.korean)
-                                .font(.body)
-                                .foregroundColor(.primary)
+                                .lineSpacing(4)
                         }
                     }
-                    .padding()
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .background(Color.purple.opacity(0.05))
-                    .clipShape(RoundedRectangle(cornerRadius: 12))
                 }
 
-                // rationale (추천 이유)
+                // Rationale
                 if !result.rationale.isEmpty {
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text("추천 이유")
-                            .font(.subheadline)
-                            .fontWeight(.medium)
-                            .foregroundColor(.secondary)
-
+                    VerseCardView(title: "추천 이유") {
                         Text(result.rationale)
-                            .font(.body)
-                            .foregroundColor(.primary)
+                            .lineSpacing(4)
                     }
-                    .padding()
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .background(Color.blue.opacity(0.05))
-                    .clipShape(RoundedRectangle(cornerRadius: 12))
                 }
             }
         }
@@ -352,18 +386,11 @@ private extension RequestVerseView {
     @ViewBuilder
     func goToQTButton() -> some View {
         if viewModel.state.hasResult {
-            Button(action: { viewModel.send(.tapGoToQT) }) {
-                HStack {
-                    Text("QT 하러 가기")
-                        .bold()
-                    Image(systemName: "arrow.right")
-                }
-                .frame(maxWidth: .infinity)
-                .padding()
+            PrimaryButton(title: "QT 하러 가기", icon: "arrow.right") {
+                viewModel.send(.tapGoToQT)
             }
-            .buttonStyle(.borderedProminent)
-            .controlSize(.large)
-            .tint(.green)
+            .transition(.move(edge: .bottom).combined(with: .opacity))
+            .padding(.bottom, DS.Spacing.l)
         }
     }
 }

@@ -25,22 +25,29 @@ public struct QTListView: View {
 
     public var body: some View {
         NavigationStack {
-            VStack(spacing: 0) {
-                // 검색바
-                searchBar()
+            ZStack {
+                AppBackgroundView()
+                    .ignoresSafeArea()
 
-                // 필터 바
-                filterBar()
+                VStack(spacing: DS.Spacing.m) {
+                    // 검색바
+                    searchBar()
 
-                // 리스트
-                if viewModel.isLoading {
-                    Spacer()
-                    ProgressView()
-                    Spacer()
-                } else if viewModel.filteredAndSortedList.isEmpty {
-                    emptyStateView()
-                } else {
-                    entryList()
+                    // 필터 바
+                    filterBar()
+
+                    // 리스트
+                    if viewModel.isLoading {
+                        Spacer()
+                        ProgressView()
+                            .tint(DS.Color.gold)
+                            .controlSize(.large)
+                        Spacer()
+                    } else if viewModel.filteredAndSortedList.isEmpty {
+                        emptyStateView()
+                    } else {
+                        entryList()
+                    }
                 }
             }
             .navigationTitle("기록")
@@ -68,41 +75,50 @@ public struct QTListView: View {
 private extension QTListView {
     @ViewBuilder
     func searchBar() -> some View {
-        HStack {
-            Image(systemName: "magnifyingglass")
-                .foregroundColor(.secondary)
+        SoftCard {
+            HStack(spacing: DS.Spacing.m) {
+                Image(systemName: "magnifyingglass")
+                    .foregroundStyle(DS.Color.gold)
+                    .font(DS.Font.bodyL())
 
-            TextField("말씀, 태그, 내용으로 검색", text: $viewModel.searchText)
-                .textFieldStyle(.plain)
-                .autocapitalization(.none)
-                .disableAutocorrection(true)
+                TextField("말씀, 태그, 내용으로 검색", text: $viewModel.searchText)
+                    .font(DS.Font.bodyM())
+                    .foregroundStyle(DS.Color.textPrimary)
+                    .textFieldStyle(.plain)
+                    .autocapitalization(.none)
+                    .disableAutocorrection(true)
 
-            if !viewModel.searchText.isEmpty {
-                Button(action: {
-                    viewModel.searchText = ""
-                }) {
-                    Image(systemName: "xmark.circle.fill")
-                        .foregroundColor(.secondary)
+                if !viewModel.searchText.isEmpty {
+                    Button {
+                        Haptics.tap()
+                        withAnimation(Motion.appear) {
+                            viewModel.searchText = ""
+                        }
+                    } label: {
+                        Image(systemName: "xmark.circle.fill")
+                            .foregroundStyle(DS.Color.textSecondary)
+                            .font(DS.Font.bodyL())
+                    }
                 }
             }
         }
-        .padding(12)
-        .background(Color(.systemGray6))
-        .clipShape(RoundedRectangle(cornerRadius: 12))
-        .padding(.horizontal, 16)
-        .padding(.top, 8)
+        .padding(.horizontal, DS.Spacing.l)
+        .padding(.top, DS.Spacing.s)
     }
 
     @ViewBuilder
     func filterBar() -> some View {
         ScrollView(.horizontal, showsIndicators: false) {
-            HStack(spacing: 12) {
+            HStack(spacing: DS.Spacing.m) {
                 // 필터
                 Menu {
                     ForEach(QTListViewModel.FilterType.allCases, id: \.self) { filter in
-                        Button(action: {
-                            viewModel.selectedFilter = filter
-                        }) {
+                        Button {
+                            Haptics.tap()
+                            withAnimation(Motion.appear) {
+                                viewModel.selectedFilter = filter
+                            }
+                        } label: {
                             HStack {
                                 Text(filter.displayName)
                                 if viewModel.selectedFilter == filter {
@@ -112,23 +128,29 @@ private extension QTListView {
                         }
                     }
                 } label: {
-                    HStack {
+                    HStack(spacing: DS.Spacing.xs) {
                         Text(viewModel.selectedFilter.displayName)
                         Image(systemName: "chevron.down")
+                            .font(DS.Font.caption())
                     }
-                    .font(.subheadline)
-                    .padding(.horizontal, 12)
-                    .padding(.vertical, 8)
-                    .background(Color(.systemGray6))
-                    .clipShape(RoundedRectangle(cornerRadius: 8))
+                    .font(DS.Font.bodyM(.medium))
+                    .foregroundStyle(DS.Color.textPrimary)
+                    .padding(.horizontal, DS.Spacing.m)
+                    .padding(.vertical, DS.Spacing.s)
+                    .background(DS.Color.canvas)
+                    .clipShape(Capsule())
+                    .overlay(Capsule().stroke(DS.Color.divider, lineWidth: 1))
                 }
 
                 // 정렬
                 Menu {
                     ForEach(QTListViewModel.SortType.allCases, id: \.self) { sort in
-                        Button(action: {
-                            viewModel.selectedSort = sort
-                        }) {
+                        Button {
+                            Haptics.tap()
+                            withAnimation(Motion.appear) {
+                                viewModel.selectedSort = sort
+                            }
+                        } label: {
                             HStack {
                                 Text(sort.displayName)
                                 if viewModel.selectedSort == sort {
@@ -138,26 +160,29 @@ private extension QTListView {
                         }
                     }
                 } label: {
-                    HStack {
+                    HStack(spacing: DS.Spacing.xs) {
                         Text(viewModel.selectedSort.displayName)
                         Image(systemName: "chevron.down")
+                            .font(DS.Font.caption())
                     }
-                    .font(.subheadline)
-                    .padding(.horizontal, 12)
-                    .padding(.vertical, 8)
-                    .background(Color(.systemGray6))
-                    .clipShape(RoundedRectangle(cornerRadius: 8))
+                    .font(DS.Font.bodyM(.medium))
+                    .foregroundStyle(DS.Color.textPrimary)
+                    .padding(.horizontal, DS.Spacing.m)
+                    .padding(.vertical, DS.Spacing.s)
+                    .background(DS.Color.canvas)
+                    .clipShape(Capsule())
+                    .overlay(Capsule().stroke(DS.Color.divider, lineWidth: 1))
                 }
             }
-            .padding(.horizontal, 16)
+            .padding(.horizontal, DS.Spacing.l)
         }
-        .padding(.vertical, 8)
+        .padding(.vertical, DS.Spacing.s)
     }
 
     @ViewBuilder
     func entryList() -> some View {
         ScrollView {
-            LazyVStack(spacing: 12) {
+            LazyVStack(spacing: DS.Spacing.m) {
                 ForEach(viewModel.filteredAndSortedList) { qt in
                     NavigationLink(value: qt) {
                         entryCell(qt)
@@ -165,7 +190,7 @@ private extension QTListView {
                     .buttonStyle(.plain)
                 }
             }
-            .padding(16)
+            .padding(DS.Spacing.l)
         }
         .navigationDestination(for: QuietTime.self) { qt in
             QTDetailView(
@@ -177,73 +202,92 @@ private extension QTListView {
 
     @ViewBuilder
     func entryCell(_ qt: QuietTime) -> some View {
-        VStack(alignment: .leading, spacing: 8) {
-            // 1행: verseRef + 날짜
-            HStack {
-                Text(qt.verse.id)
-                    .font(.headline)
-                    .foregroundColor(.blue)
+        SoftCard {
+            VStack(alignment: .leading, spacing: DS.Spacing.m) {
+                // 1행: verseRef + 날짜
+                HStack {
+                    Image(systemName: "book.closed.fill")
+                        .foregroundStyle(DS.Color.gold)
+                        .font(DS.Font.bodyM())
 
-                Spacer()
+                    Text(qt.verse.id)
+                        .font(DS.Font.bodyL(.semibold))
+                        .foregroundStyle(DS.Color.deepCocoa)
 
-                Text(formattedDate(qt.date))
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-            }
+                    Spacer()
 
-            // 2행: 요약 텍스트
-            if let summary = summaryText(qt), !summary.isEmpty {
-                Text(summary)
-                    .font(.body)
-                    .foregroundColor(.primary)
-                    .lineLimit(1)
-            }
+                    Text(formattedDate(qt.date))
+                        .font(DS.Font.caption())
+                        .foregroundStyle(DS.Color.textSecondary)
+                }
 
-            // 템플릿 뱃지 + 즐겨찾기
-            HStack {
-                Text(qt.template)
-                    .font(.caption)
-                    .padding(.horizontal, 8)
-                    .padding(.vertical, 4)
-                    .background(qt.template == "SOAP" ? Color.blue.opacity(0.1) : Color.purple.opacity(0.1))
-                    .foregroundColor(qt.template == "SOAP" ? .blue : .purple)
-                    .clipShape(RoundedRectangle(cornerRadius: 4))
+                // 2행: 요약 텍스트
+                if let summary = summaryText(qt), !summary.isEmpty {
+                    Text(summary)
+                        .font(DS.Font.bodyM())
+                        .foregroundStyle(DS.Color.textPrimary)
+                        .lineLimit(2)
+                        .lineSpacing(2)
+                }
 
-                Spacer()
+                // 템플릿 뱃지 + 즐겨찾기
+                HStack(spacing: DS.Spacing.s) {
+                    Text(qt.template)
+                        .font(DS.Font.caption(.medium))
+                        .foregroundStyle(qt.template == "SOAP" ? DS.Color.olive : DS.Color.gold)
+                        .padding(.horizontal, DS.Spacing.s)
+                        .padding(.vertical, DS.Spacing.xs)
+                        .background(
+                            qt.template == "SOAP"
+                                ? DS.Color.olive.opacity(0.15)
+                                : DS.Color.gold.opacity(0.15)
+                        )
+                        .clipShape(Capsule())
 
-                // 즐겨찾기 토글
-                Button(action: {
-                    Task {
-                        await viewModel.toggleFavorite(qt)
+                    Spacer()
+
+                    // 즐겨찾기 토글
+                    Button {
+                        Haptics.tap()
+                        Task {
+                            await viewModel.toggleFavorite(qt)
+                        }
+                    } label: {
+                        Image(systemName: qt.isFavorite ? "star.fill" : "star")
+                            .foregroundStyle(qt.isFavorite ? DS.Color.gold : DS.Color.textSecondary)
+                            .font(DS.Font.bodyL())
                     }
-                }) {
-                    Image(systemName: qt.isFavorite ? "star.fill" : "star")
-                        .foregroundColor(qt.isFavorite ? .yellow : .secondary)
+                    .animation(Motion.press, value: qt.isFavorite)
                 }
             }
         }
-        .padding(16)
-        .background(Color(.systemBackground))
-        .clipShape(RoundedRectangle(cornerRadius: 12))
-        .shadow(color: .black.opacity(0.05), radius: 2, x: 0, y: 1)
     }
 
     @ViewBuilder
     func emptyStateView() -> some View {
-        VStack(spacing: 16) {
+        VStack(spacing: DS.Spacing.xl) {
             Spacer()
 
-            Image(systemName: "book.closed")
-                .font(.system(size: 60))
-                .foregroundColor(.secondary)
+            ZStack {
+                Circle()
+                    .fill(DS.Color.gold.opacity(0.15))
+                    .frame(width: 120, height: 120)
+                    .blur(radius: 20)
 
-            Text("아직 기록이 없어요")
-                .font(.title3)
-                .fontWeight(.semibold)
+                Image(systemName: "book.closed")
+                    .font(.system(size: 60))
+                    .foregroundStyle(DS.Color.gold)
+            }
 
-            Text("오늘의 말씀에서 시작해 보세요")
-                .font(.body)
-                .foregroundColor(.secondary)
+            VStack(spacing: DS.Spacing.s) {
+                Text("아직 기록이 없어요")
+                    .font(DS.Font.titleL(.semibold))
+                    .foregroundStyle(DS.Color.textPrimary)
+
+                Text("오늘의 말씀에서 시작해 보세요")
+                    .font(DS.Font.bodyM())
+                    .foregroundStyle(DS.Color.textSecondary)
+            }
 
             Spacer()
         }

@@ -23,58 +23,69 @@ public struct QTDetailView: View {
     }
 
     public var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 24) {
-                // 헤더
-                headerSection()
+        ZStack {
+            AppBackgroundView()
+                .ignoresSafeArea()
 
-                // 상단 말씀 카드
-                verseCardSection()
+            ScrollView {
+                VStack(alignment: .leading, spacing: DS.Spacing.xl) {
+                    // 헤더
+                    headerSection()
 
-                // 템플릿 본문
-                if viewModel.qt.template == "SOAP" {
-                    soapContentSection()
-                } else {
-                    actsContentSection()
+                    // 상단 말씀 카드
+                    verseCardSection()
+
+                    // 템플릿 본문
+                    if viewModel.qt.template == "SOAP" {
+                        soapContentSection()
+                    } else {
+                        actsContentSection()
+                    }
                 }
+                .padding(DS.Spacing.l)
             }
-            .padding(16)
         }
         .navigationTitle("QT 기록")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItemGroup(placement: .navigationBarTrailing) {
                 // 즐겨찾기
-                Button(action: {
+                Button {
+                    Haptics.tap()
                     Task {
                         await viewModel.toggleFavorite()
                     }
-                }) {
+                } label: {
                     Image(systemName: viewModel.qt.isFavorite ? "star.fill" : "star")
-                        .foregroundColor(viewModel.qt.isFavorite ? .yellow : .secondary)
+                        .foregroundStyle(viewModel.qt.isFavorite ? DS.Color.gold : DS.Color.textSecondary)
                 }
+                .animation(Motion.press, value: viewModel.qt.isFavorite)
 
                 // 메뉴
                 Menu {
-                    Button(action: {
+                    Button {
+                        Haptics.tap()
                         viewModel.showEditSheet = true
-                    }) {
+                    } label: {
                         Label("편집", systemImage: "pencil")
                     }
 
-                    Button(action: {
+                    Button {
+                        Haptics.tap()
                         viewModel.prepareShare()
-                    }) {
+                    } label: {
                         Label("공유", systemImage: "square.and.arrow.up")
                     }
 
-                    Button(role: .destructive, action: {
+                    Button(role: .destructive) {
+                        Haptics.tap()
                         viewModel.confirmDelete()
-                    }) {
+                    } label: {
                         Label("삭제", systemImage: "trash")
                     }
                 } label: {
                     Image(systemName: "ellipsis.circle")
+                        .foregroundStyle(DS.Color.textSecondary)
                 }
             }
         }
@@ -110,120 +121,113 @@ public struct QTDetailView: View {
 private extension QTDetailView {
     @ViewBuilder
     func headerSection() -> some View {
-        VStack(alignment: .leading, spacing: 8) {
-            HStack {
-                Text(viewModel.qt.verse.id)
-                    .font(.title2)
-                    .fontWeight(.bold)
+        VStack(alignment: .leading, spacing: DS.Spacing.m) {
+            HStack(alignment: .top, spacing: DS.Spacing.m) {
+                Image(systemName: "book.closed.fill")
+                    .foregroundStyle(DS.Color.gold)
+                    .font(DS.Font.titleL())
+
+                VStack(alignment: .leading, spacing: DS.Spacing.xs) {
+                    Text(viewModel.qt.verse.id)
+                        .font(DS.Font.titleL(.bold))
+                        .foregroundStyle(DS.Color.deepCocoa)
+
+                    Text(formattedDate(viewModel.qt.date))
+                        .font(DS.Font.bodyM())
+                        .foregroundStyle(DS.Color.textSecondary)
+                }
 
                 Spacer()
 
                 Text(viewModel.qt.template)
-                    .font(.caption)
-                    .padding(.horizontal, 8)
-                    .padding(.vertical, 4)
-                    .background(viewModel.qt.template == "SOAP" ? Color.blue.opacity(0.1) : Color.purple.opacity(0.1))
-                    .foregroundColor(viewModel.qt.template == "SOAP" ? .blue : .purple)
-                    .clipShape(RoundedRectangle(cornerRadius: 4))
+                    .font(DS.Font.caption(.medium))
+                    .foregroundStyle(viewModel.qt.template == "SOAP" ? DS.Color.olive : DS.Color.gold)
+                    .padding(.horizontal, DS.Spacing.m)
+                    .padding(.vertical, DS.Spacing.xs)
+                    .background(
+                        viewModel.qt.template == "SOAP"
+                            ? DS.Color.olive.opacity(0.15)
+                            : DS.Color.gold.opacity(0.15)
+                    )
+                    .clipShape(Capsule())
             }
-
-            Text(formattedDate(viewModel.qt.date))
-                .font(.subheadline)
-                .foregroundColor(.secondary)
         }
+        .padding(.top, DS.Spacing.s)
     }
 
     @ViewBuilder
     func verseCardSection() -> some View {
-        VStack(alignment: .leading, spacing: 16) {
+        VStack(alignment: .leading, spacing: DS.Spacing.l) {
             // 영문 본문
-            VStack(alignment: .leading, spacing: 8) {
-                Text("Original")
-                    .font(.caption)
-                    .foregroundColor(.secondary)
+            VerseCardView(title: "본문") {
+                VStack(alignment: .leading, spacing: DS.Spacing.s) {
+                    Text(viewModel.qt.verse.text)
+                        .lineSpacing(4)
 
-                Text(viewModel.qt.verse.text)
-                    .font(.body)
-                    .foregroundColor(.primary)
-
-                Text("\(viewModel.qt.verse.translation) (Public Domain)")
-                    .font(.caption)
-                    .foregroundColor(.secondary)
+                    Text("\(viewModel.qt.verse.translation) (Public Domain)")
+                        .font(DS.Font.caption())
+                        .foregroundStyle(DS.Color.textSecondary)
+                }
             }
-
-            Divider()
 
             // 한국어 해석
             if let korean = viewModel.qt.korean, !korean.isEmpty {
-                VStack(alignment: .leading, spacing: 8) {
-                    HStack {
-                        Image(systemName: "sparkle")
-                            .foregroundColor(.purple)
-                        Text("구절 해설")
-                            .font(.caption)
-                            .foregroundColor(.secondary)
-                    }
-
+                VerseCardView(title: "해설") {
                     let lines = korean.split(separator: "\n", maxSplits: 1, omittingEmptySubsequences: false)
                     if lines.count == 2 {
-                        VStack(alignment: .leading, spacing: 4) {
+                        VStack(alignment: .leading, spacing: DS.Spacing.s) {
                             Text(String(lines[0]))
-                                .font(.body)
-                                .fontWeight(.semibold)
-                                .foregroundColor(.purple)
+                                .font(DS.Font.bodyL(.semibold))
+                                .foregroundStyle(DS.Color.gold)
 
                             Text(String(lines[1]))
-                                .font(.body)
-                                .foregroundColor(.primary)
+                                .lineSpacing(4)
                         }
                     } else {
                         Text(korean)
-                            .font(.body)
-                            .foregroundColor(.primary)
+                            .lineSpacing(4)
                     }
                 }
             }
 
             // 추천 이유
             if let rationale = viewModel.qt.rationale, !rationale.isEmpty {
-                Divider()
-
-                VStack(alignment: .leading, spacing: 8) {
-                    Text("추천 이유")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-
+                VerseCardView(title: "추천 이유") {
                     Text(rationale)
-                        .font(.body)
-                        .foregroundColor(.secondary)
+                        .lineSpacing(4)
                 }
             }
         }
-        .padding(16)
-        .background(Color(.systemGray6))
-        .clipShape(RoundedRectangle(cornerRadius: 12))
     }
 
     @ViewBuilder
     func soapContentSection() -> some View {
-        VStack(alignment: .leading, spacing: 24) {
+        VStack(alignment: .leading, spacing: DS.Spacing.xl) {
+            SectionHeader(icon: "square.and.pencil", title: "나의 묵상")
+
             if let observation = viewModel.qt.soapObservation, !observation.isEmpty {
                 fieldCard(
-                    title: "O 🔎 Observation",
+                    icon: "eye",
+                    title: "Observation",
+                    subtitle: "관찰",
                     content: observation
                 )
             }
 
             if let application = viewModel.qt.soapApplication, !application.isEmpty {
                 fieldCard(
-                    title: "A 📝 Application",
+                    icon: "arrow.right.circle",
+                    title: "Application",
+                    subtitle: "적용",
                     content: application
                 )
             }
 
             if let prayer = viewModel.qt.soapPrayer, !prayer.isEmpty {
                 fieldCard(
-                    title: "P 🙏 Prayer",
+                    icon: "hands.sparkles",
+                    title: "Prayer",
+                    subtitle: "기도",
                     content: prayer
                 )
             }
@@ -232,31 +236,41 @@ private extension QTDetailView {
 
     @ViewBuilder
     func actsContentSection() -> some View {
-        VStack(alignment: .leading, spacing: 24) {
+        VStack(alignment: .leading, spacing: DS.Spacing.xl) {
+            SectionHeader(icon: "hands.sparkles", title: "나의 기도")
+
             if let adoration = viewModel.qt.actsAdoration, !adoration.isEmpty {
                 fieldCard(
-                    title: "A ✨ Adoration",
+                    icon: "sparkles",
+                    title: "Adoration",
+                    subtitle: "경배",
                     content: adoration
                 )
             }
 
             if let confession = viewModel.qt.actsConfession, !confession.isEmpty {
                 fieldCard(
-                    title: "C 💧 Confession",
+                    icon: "heart",
+                    title: "Confession",
+                    subtitle: "고백",
                     content: confession
                 )
             }
 
             if let thanksgiving = viewModel.qt.actsThanksgiving, !thanksgiving.isEmpty {
                 fieldCard(
-                    title: "T 💚 Thanksgiving",
+                    icon: "leaf",
+                    title: "Thanksgiving",
+                    subtitle: "감사",
                     content: thanksgiving
                 )
             }
 
             if let supplication = viewModel.qt.actsSupplication, !supplication.isEmpty {
                 fieldCard(
-                    title: "S 🤲 Supplication",
+                    icon: "hands.and.sparkles",
+                    title: "Supplication",
+                    subtitle: "간구",
                     content: supplication
                 )
             }
@@ -264,21 +278,32 @@ private extension QTDetailView {
     }
 
     @ViewBuilder
-    func fieldCard(title: String, content: String) -> some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text(title)
-                .font(.headline)
-                .foregroundColor(.primary)
+    func fieldCard(icon: String, title: String, subtitle: String, content: String) -> some View {
+        SoftCard {
+            VStack(alignment: .leading, spacing: DS.Spacing.m) {
+                HStack(spacing: DS.Spacing.s) {
+                    Image(systemName: icon)
+                        .foregroundStyle(DS.Color.gold)
+                        .font(DS.Font.bodyL())
 
-            Text(content)
-                .font(.body)
-                .foregroundColor(.primary)
+                    Text(title)
+                        .font(DS.Font.bodyL(.semibold))
+                        .foregroundStyle(DS.Color.textPrimary)
+
+                    Text("·")
+                        .foregroundStyle(DS.Color.textSecondary)
+
+                    Text(subtitle)
+                        .font(DS.Font.bodyM())
+                        .foregroundStyle(DS.Color.textSecondary)
+                }
+
+                Text(content)
+                    .font(DS.Font.bodyM())
+                    .foregroundStyle(DS.Color.textPrimary)
+                    .lineSpacing(4)
+            }
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(16)
-        .background(Color(.systemBackground))
-        .clipShape(RoundedRectangle(cornerRadius: 12))
-        .shadow(color: .black.opacity(0.05), radius: 2, x: 0, y: 1)
     }
 
     // MARK: - Helpers
