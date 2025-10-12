@@ -2,7 +2,7 @@
 //  OpenAIMapperTests.swift
 //  DataTests
 //
-//  Created by Claude Code on 10/11/25.
+//  Created by 이승주 on 10/11/25.
 //
 
 import XCTest
