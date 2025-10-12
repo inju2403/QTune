@@ -26,8 +26,7 @@ public struct QTListView: View {
     public var body: some View {
         NavigationStack {
             ZStack {
-                AppBackgroundView()
-                    .ignoresSafeArea()
+                CrossSunsetBackground()
 
                 VStack(spacing: DS.Spacing.m) {
                     // 검색바

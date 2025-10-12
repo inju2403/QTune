@@ -21,11 +21,30 @@ public struct PillTabBar: View {
             tab(icon: "book", title: "기록", index: 1)
         }
         .padding(DS.Spacing.m)
-        .background(.ultraThinMaterial, in: Capsule())
-        .overlay(Capsule().stroke(DS.Color.divider, lineWidth: 1))
+        .background(
+            ZStack {
+                Capsule()
+                    .fill(.ultraThinMaterial)
+
+                // Glossy top highlight
+                Capsule()
+                    .fill(
+                        LinearGradient(
+                            colors: [.white.opacity(0.25), .white.opacity(0.0)],
+                            startPoint: .top,
+                            endPoint: .center
+                        )
+                    )
+            }
+        )
+        .overlay(
+            Capsule()
+                .stroke(DSColor.gold.opacity(0.35), lineWidth: 1.5)
+        )
+        .glow(DSColor.gold)
         .padding(.bottom, DS.Spacing.l)
         .padding(.horizontal, DS.Spacing.xl)
-        .dsShadow(.init(color: .black.opacity(0.12), radius: 18, y: 10))
+        .shadow(color: .black.opacity(0.25), radius: 22, x: 0, y: 12)
     }
 
     private func tab(icon: String, title: String, index: Int) -> some View {
@@ -38,23 +57,29 @@ public struct PillTabBar: View {
             HStack(spacing: DS.Spacing.s) {
                 Image(systemName: icon)
                 Text(title)
-                    .font(DS.Font.bodyM(.semibold))
+                    .font(.system(size: 15, weight: .semibold, design: .rounded))
             }
             .padding(.vertical, DS.Spacing.s)
             .padding(.horizontal, DS.Spacing.l)
             .background(
-                selection == index ? DS.Color.sand.opacity(0.6) : .clear,
-                in: Capsule()
-            )
-            .overlay {
-                if selection == index {
-                    Capsule()
-                        .stroke(DS.Color.gold.opacity(0.5), lineWidth: 1)
+                Group {
+                    if selection == index {
+                        Capsule()
+                            .fill(DSColor.gold.opacity(0.25))
+                            .overlay(
+                                Capsule()
+                                    .stroke(DSColor.gold.opacity(0.6), lineWidth: 1)
+                            )
+                    } else {
+                        Color.clear
+                    }
                 }
-            }
+            )
         }
         .foregroundStyle(
-            selection == index ? DS.Color.deepCocoa : DS.Color.textSecondary
+            selection == index ? .white.opacity(0.95) : DSColor.textSec
         )
+        .scaleEffect(selection == index ? 1.02 : 1)
+        .animation(Motion.press, value: selection)
     }
 }

@@ -23,8 +23,7 @@ public struct QTEditorView: View {
 
     public var body: some View {
         ZStack {
-            AppBackgroundView()
-                .ignoresSafeArea()
+            CrossSunsetBackground()
 
             ScrollView {
                 VStack(spacing: DS.Spacing.xl) {

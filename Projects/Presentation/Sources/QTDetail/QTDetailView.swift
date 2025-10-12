@@ -24,8 +24,7 @@ public struct QTDetailView: View {
 
     public var body: some View {
         ZStack {
-            AppBackgroundView()
-                .ignoresSafeArea()
+            CrossSunsetBackground()
 
             ScrollView {
                 VStack(alignment: .leading, spacing: DS.Spacing.xl) {
