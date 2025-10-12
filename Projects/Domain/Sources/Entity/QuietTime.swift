@@ -25,6 +25,8 @@ public struct QuietTime: Identifiable, Equatable, Hashable {
     public let id: UUID
     public var verse: Verse
     public var memo: String
+    public var korean: String?      // GPT 한글 해설 (선택)
+    public var rationale: String?   // 추천 이유 (선택)
     public var date: Date
     public var status: QuietTimeStatus
     public var tags: [String]
@@ -35,6 +37,8 @@ public struct QuietTime: Identifiable, Equatable, Hashable {
         id: UUID = UUID(),
         verse: Verse,
         memo: String,
+        korean: String? = nil,
+        rationale: String? = nil,
         date: Date,
         status: QuietTimeStatus,
         tags: [String] = [],
@@ -44,6 +48,8 @@ public struct QuietTime: Identifiable, Equatable, Hashable {
         self.id = id
         self.verse = verse
         self.memo = memo
+        self.korean = korean
+        self.rationale = rationale
         self.date = date
         self.status = status
         self.tags = tags

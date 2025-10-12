@@ -41,6 +41,7 @@ struct GeneratedVerseResult: Equatable {
     let verseRef: String        // 예: "시편 23:1"
     let verseText: String       // 말씀 본문
     let verseTextEN: String?    // 영어 텍스트 (선택)
+    let korean: String          // 한글 해설 (GPT 생성, 3~5문장)
     let rationale: String       // 추천 이유
     let verse: Verse            // Domain 모델 (QT 작성 화면으로 전달용)
     let isSafe: Bool            // safety 검증 결과 (차단되지 않았는지)

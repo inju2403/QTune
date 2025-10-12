@@ -40,6 +40,7 @@ final class SpyGenerateVerseInteractor: GenerateVerseUseCase {
 
         return GeneratedVerse(
             verse: verse,
+            korean: "이 구절은 하나님께서 우리와 함께 하신다는 약속입니다. 어떤 두려움이나 불안이 있어도 하나님이 함께하시니 담대할 수 있습니다.",
             reason: "테스트 이유"
         )
     }

@@ -12,18 +12,13 @@ public struct QTEditorView: View {
     public let draft: QuietTime
     public init(draft: QuietTime) {
         self.draft = draft
-        // 사용자 메모는 빈 문자열로 시작 (draft.memo는 rationale용)
-        _userMemo = State(initialValue: "")
+        // 사용자 메모는 draft.memo로 초기화
+        _userMemo = State(initialValue: draft.memo)
     }
 
     @State private var userMemo: String = ""
     @State private var showSaveAlert = false
     @Environment(\.dismiss) private var dismiss
-
-    // draft.memo를 rationale로 사용
-    private var rationale: String {
-        draft.memo
-    }
 
     public var body: some View {
         Form {
@@ -42,8 +37,40 @@ public struct QTEditorView: View {
                 Text("오늘의 말씀")
             }
 
+            // 한글 해설 섹션 (있는 경우)
+            if let korean = draft.korean, !korean.isEmpty {
+                Section {
+                    // 구절명과 본문 분리
+                    let lines = korean.split(separator: "\n", maxSplits: 1, omittingEmptySubsequences: false)
+                    if lines.count == 2 {
+                        VStack(alignment: .leading, spacing: 4) {
+                            // 구절명 (색상 강조)
+                            Text(String(lines[0]))
+                                .font(.body)
+                                .fontWeight(.semibold)
+                                .foregroundColor(.purple)
+
+                            // 본문
+                            Text(String(lines[1]))
+                                .font(.body)
+                                .foregroundColor(.primary)
+                        }
+                    } else {
+                        Text(korean)
+                            .font(.body)
+                            .foregroundColor(.primary)
+                    }
+                } header: {
+                    HStack {
+                        Image(systemName: "sparkle")
+                            .foregroundColor(.purple)
+                        Text("구절 해설")
+                    }
+                }
+            }
+
             // 추천 이유 섹션 (있는 경우)
-            if !rationale.isEmpty {
+            if let rationale = draft.rationale, !rationale.isEmpty {
                 Section {
                     Text(rationale)
                         .font(.body)

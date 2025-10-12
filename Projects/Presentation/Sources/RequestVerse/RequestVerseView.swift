@@ -51,12 +51,14 @@ public struct RequestVerseView: View {
                 showConflict = true
             case .navigateToEditor(let draft):
                 path.append(draft)
-            case .navigateToQTEditor(let verse, let rationale):
-                // QT 작성 화면으로 이동 (rationale을 memo에 임시 저장)
+            case .navigateToQTEditor(let verse, let korean, let rationale):
+                // QT 작성 화면으로 이동
                 let draft = QuietTime(
                     id: UUID(),
                     verse: verse,
-                    memo: rationale,  // 추천 이유를 memo에 저장
+                    memo: "",  // 사용자 메모는 빈 문자열로 시작
+                    korean: korean,
+                    rationale: rationale,
                     date: Date(),
                     status: .draft,
                     tags: [],
@@ -279,7 +281,7 @@ private extension RequestVerseView {
                     .font(.headline)
                     .foregroundColor(.blue)
 
-                // verseText
+                // verseText (영어 본문)
                 Text(result.verseText)
                     .font(.body)
                     .padding()
@@ -287,7 +289,46 @@ private extension RequestVerseView {
                     .background(Color(.systemGray6))
                     .clipShape(RoundedRectangle(cornerRadius: 12))
 
-                // rationale
+                // korean (한글 해설)
+                if !result.korean.isEmpty {
+                    VStack(alignment: .leading, spacing: 8) {
+                        HStack {
+                            Image(systemName: "sparkle")
+                                .foregroundColor(.purple)
+                            Text("구절 해설")
+                                .font(.subheadline)
+                                .fontWeight(.medium)
+                                .foregroundColor(.secondary)
+                        }
+
+                        // 구절명과 본문 분리
+                        let lines = result.korean.split(separator: "\n", maxSplits: 1, omittingEmptySubsequences: false)
+                        if lines.count == 2 {
+                            VStack(alignment: .leading, spacing: 4) {
+                                // 구절명 (색상 강조)
+                                Text(String(lines[0]))
+                                    .font(.body)
+                                    .fontWeight(.semibold)
+                                    .foregroundColor(.purple)
+
+                                // 본문
+                                Text(String(lines[1]))
+                                    .font(.body)
+                                    .foregroundColor(.primary)
+                            }
+                        } else {
+                            Text(result.korean)
+                                .font(.body)
+                                .foregroundColor(.primary)
+                        }
+                    }
+                    .padding()
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .background(Color.purple.opacity(0.05))
+                    .clipShape(RoundedRectangle(cornerRadius: 12))
+                }
+
+                // rationale (추천 이유)
                 if !result.rationale.isEmpty {
                     VStack(alignment: .leading, spacing: 8) {
                         Text("추천 이유")

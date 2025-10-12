@@ -9,10 +9,12 @@ import Foundation
 
 public struct GeneratedVerse: Equatable {
     public let verse: Verse
-    public let reason: String
+    public let korean: String       // GPT 한글 해설 (3~5문장)
+    public let reason: String       // 추천 이유 (1~2문장)
 
-    public init(verse: Verse, reason: String) {
+    public init(verse: Verse, korean: String, reason: String) {
         self.verse = verse
+        self.korean = korean
         self.reason = reason
     }
 }

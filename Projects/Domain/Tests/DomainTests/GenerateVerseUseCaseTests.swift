@@ -118,6 +118,7 @@ final class GenerateVerseUseCaseTests: XCTestCase {
                 text: "여호와는 나의 목자시니 내게 부족함이 없으리로다",
                 translation: "개역개정"
             ),
+            korean: "이 구절은 하나님께서 우리의 목자가 되어 보호하고 인도하신다는 의미입니다. 힘든 시기에도 하나님이 함께하시므로 부족함이 없다는 확신을 줍니다.",
             reason: "오늘 힘든 하루를 보내신 당신에게 위로가 되길 바랍니다"
         )
 
@@ -144,6 +145,7 @@ final class GenerateVerseUseCaseTests: XCTestCase {
         spyRateLimiterRepository.shouldAllow = true
         spyAIRepository.generatedVerse = GeneratedVerse(
             verse: Verse(book: "시편", chapter: 1, verse: 1, text: "복 있는 사람", translation: "개역개정"),
+            korean: "테스트 한글 해설입니다.",
             reason: "테스트"
         )
 

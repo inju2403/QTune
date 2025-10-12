@@ -7,7 +7,37 @@
 
 import Foundation
 
-// MARK: - Response DTOs (OpenAI가 반환하는 구조화된 JSON)
+// MARK: - Bible API Response DTOs
+
+/// Bible API 응답은 BibleAPIDataSource.swift에 정의됨
+
+// MARK: - OpenAI Verse Recommendation DTOs
+
+/// GPT 구절 추천 DTO
+public struct VerseRecommendationDTO: Codable {
+    public let verseRef: String     // 예: "John 3:16", "Psalms 23:1"
+    public let rationale: String    // 추천 이유 (1-2문장)
+
+    public init(verseRef: String, rationale: String) {
+        self.verseRef = verseRef
+        self.rationale = rationale
+    }
+}
+
+// MARK: - OpenAI Korean Explanation DTOs
+
+/// GPT 한글 해설 DTO
+public struct KoreanExplanationDTO: Codable {
+    public let korean: String       // 한글 해석 (영문 길이의 80~130%)
+    public let rationale: String    // 추천 이유 (1-2문장)
+
+    public init(korean: String, rationale: String) {
+        self.korean = korean
+        self.rationale = rationale
+    }
+}
+
+// MARK: - Legacy Response DTOs (OpenAI가 반환하는 구조화된 JSON)
 
 /// 생성된 성경 구절 DTO
 public struct GeneratedVerseDTO: Codable {

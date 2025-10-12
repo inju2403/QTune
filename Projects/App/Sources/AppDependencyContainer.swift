@@ -50,14 +50,21 @@ final class AppDependencyContainer {
         }
 
         // 2. HTTP 클라이언트 준비
-        let baseURL = URL(string: "https://api.openai.com")!
-        let httpClient = URLSessionHTTPClient(baseURL: baseURL)
+        // Bible API 클라이언트
+        let bibleAPIBaseURL = URL(string: "https://bible-api.com")!
+        let bibleAPIClient = URLSessionHTTPClient(baseURL: bibleAPIBaseURL)
+        let bibleDataSource = BibleAPIDataSource(client: bibleAPIClient)
 
-        // 3. OpenAI RemoteDataSource 생성
-        let remoteDataSource = OpenAIDataSource(client: httpClient, apiKey: apiKey)
+        // OpenAI API 클라이언트
+        let openAIBaseURL = URL(string: "https://api.openai.com")!
+        let openAIClient = URLSessionHTTPClient(baseURL: openAIBaseURL)
+        let openAIDataSource = OpenAIDataSource(client: openAIClient, apiKey: apiKey)
 
-        // 4. AIRepository 생성
-        return DefaultAIRepository(remoteDataSource: remoteDataSource)
+        // 3. AIRepository 생성
+        return DefaultAIRepository(
+            bibleDataSource: bibleDataSource,
+            openAIDataSource: openAIDataSource
+        )
     }
 
     /// RateLimiterRepository 생성

@@ -37,7 +37,7 @@ public final class RequestVerseViewModel: ObservableObject {
 
         case .tapGoToQT:
             guard let result = state.generatedResult else { return }
-            effect.send(.navigateToQTEditor(verse: result.verse, rationale: result.rationale))
+            effect.send(.navigateToQTEditor(verse: result.verse, korean: result.korean, rationale: result.rationale))
 
         case .tapResumeDraft:
             guard let draft = state.todayDraft else { return }
@@ -96,6 +96,7 @@ public final class RequestVerseViewModel: ObservableObject {
                 verseRef: "\(generated.verse.book) \(generated.verse.chapter):\(generated.verse.verse)",
                 verseText: generated.verse.text,
                 verseTextEN: nil,  // TODO: OpenAI API에서 verseTextEN 받아오면 사용
+                korean: generated.korean,
                 rationale: generated.reason,
                 verse: generated.verse,
                 isSafe: true  // DomainError.moderationBlocked가 throw되지 않았으므로 안전

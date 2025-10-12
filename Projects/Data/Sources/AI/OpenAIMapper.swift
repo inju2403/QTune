@@ -32,8 +32,10 @@ public enum OpenAIMapper {
             translation: translation
         )
 
+        // Legacy: GeneratedVerseDTO에는 korean 필드가 없으므로 빈 문자열 사용
         return GeneratedVerse(
             verse: verseEntity,
+            korean: "",  // Legacy DTO는 korean 필드 없음
             reason: dto.rationale
         )
     }

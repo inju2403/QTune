@@ -25,6 +25,8 @@ public enum AIRepositoryError: Error {
     case contentBlocked(reason: String)
     case invalidResponse
     case apiKeyNotConfigured
+    case bibleAPIFailed(reason: String)
+    case koreanExplanationFailed(reason: String)
 }
 
 /// AI 기반 말씀 생성 Repository

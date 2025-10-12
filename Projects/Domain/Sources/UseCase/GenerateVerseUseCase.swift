@@ -126,6 +126,10 @@ public final class GenerateVerseInteractor: GenerateVerseUseCase {
                 throw DomainError.network("응답 형식이 올바르지 않습니다")
             case .apiKeyNotConfigured:
                 throw DomainError.configurationError("API 키가 설정되지 않았습니다")
+            case .bibleAPIFailed(let reason):
+                throw DomainError.network("본문을 불러오지 못했습니다: \(reason)")
+            case .koreanExplanationFailed(let reason):
+                throw DomainError.network("해설을 생성하지 못했습니다: \(reason)")
             }
         }
     }
