@@ -86,5 +86,21 @@ public struct QuietTime: Identifiable, Equatable, Hashable {
         self.actsThanksgiving = actsThanksgiving
         self.actsSupplication = actsSupplication
     }
+
+    /// 리스트용 미리보기 텍스트 (최대 120자)
+    public var preview: String {
+        let content: String
+        if template == "SOAP" {
+            content = soapObservation ?? soapApplication ?? soapPrayer ?? ""
+        } else {
+            content = actsAdoration ?? actsConfession ?? actsThanksgiving ?? actsSupplication ?? ""
+        }
+
+        let trimmed = content.trimmingCharacters(in: .whitespacesAndNewlines)
+        if trimmed.count > 120 {
+            return String(trimmed.prefix(120)) + "..."
+        }
+        return trimmed
+    }
 }
 

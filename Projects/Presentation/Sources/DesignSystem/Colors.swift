@@ -8,10 +8,10 @@
 import SwiftUI
 
 public enum DSColor {
-    // Light sunset background
-    public static let bgTop      = Color(hex: "#F8F1E8")   // Bright ivory
-    public static let bgMid      = Color(hex: "#F1E6D7")   // Warm sand
-    public static let bgBot      = Color(hex: "#E9D7C4")   // Soft beige
+    // Light sunset background (3-5% darker)
+    public static let bgTop      = Color(hex: "#F3E9DD")   // Darker ivory
+    public static let bgMid      = Color(hex: "#EEDFCF")   // Darker sand
+    public static let bgBot      = Color(hex: "#E4CFBA")   // Darker beige
 
     // Point colors
     public static let cocoa      = Color(hex: "#6A4A3C")   // Text/icons

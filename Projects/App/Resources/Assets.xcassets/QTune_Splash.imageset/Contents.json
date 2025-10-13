@@ -1,10 +1,9 @@
 {
   "images" : [
     {
-      "filename" : "QTune_AppIcon_1024.png",
+      "filename" : "QTune_Splash_1242x2688.png",
       "idiom" : "universal",
-      "platform" : "ios",
-      "size" : "1024x1024"
+      "scale" : "1x"
     }
   ],
   "info" : {

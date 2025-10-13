@@ -182,11 +182,20 @@ private extension QTListView {
     func entryList() -> some View {
         ScrollView {
             LazyVStack(spacing: DS.Spacing.m) {
-                ForEach(viewModel.filteredAndSortedList) { qt in
+                ForEach(Array(viewModel.filteredAndSortedList.enumerated()), id: \.element.id) { index, qt in
                     NavigationLink(value: qt) {
                         entryCell(qt)
                     }
                     .buttonStyle(.plain)
+                    .transition(.asymmetric(
+                        insertion: .move(edge: .bottom).combined(with: .opacity),
+                        removal: .opacity
+                    ))
+                    .animation(
+                        .spring(response: 0.5, dampingFraction: 0.9)
+                            .delay(Double(index) * 0.04),
+                        value: viewModel.filteredAndSortedList.count
+                    )
                 }
             }
             .padding(DS.Spacing.l)
@@ -228,13 +237,13 @@ private extension QTListView {
                             .foregroundStyle(DSColor.textSec)
                     }
 
-                    // 2행: 요약 텍스트
-                    if let summary = summaryText(qt), !summary.isEmpty {
-                        Text(summary)
+                    // 2행: 미리보기 텍스트 (2줄)
+                    if !qt.preview.isEmpty {
+                        Text(qt.preview)
                             .font(.system(size: 14))
-                            .foregroundStyle(DSColor.textPri)
+                            .foregroundStyle(DSColor.textSec)
                             .lineLimit(2)
-                            .lineSpacing(2)
+                            .lineSpacing(4)
                     }
 
                     // 3행: 뱃지 + 즐겨찾기
