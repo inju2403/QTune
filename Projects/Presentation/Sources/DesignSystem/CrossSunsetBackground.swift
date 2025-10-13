@@ -7,11 +7,8 @@
 
 import SwiftUI
 
-/// 노을 + 십자가 실루엣 배경
+/// 노을 배경
 public struct CrossSunsetBackground: View {
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
-    @State private var breathingPhase: CGFloat = 0
-
     public init() {}
 
     public var body: some View {
@@ -43,24 +40,8 @@ public struct CrossSunsetBackground: View {
                 endRadius: 420
             )
             .offset(y: 120)
-            .scaleEffect(1 + (reduceMotion ? 0 : 0.025 * sin(breathingPhase)))
-            .animation(
-                reduceMotion ? .none : .easeInOut(duration: 2.2).repeatForever(autoreverses: true),
-                value: breathingPhase
-            )
-            .onAppear {
-                breathingPhase = 1
-            }
 
-            // 십자가 실루엣 (은은하게)
-            CrossSilhouette()
-                .fill(DSColor.cocoa.opacity(0.08))
-                .blur(radius: 2)
-                .scaleEffect(1.05)
-                .offset(y: -18)
-                .allowsHitTesting(false)
-
-            // 종이결 텍스처 (optional - will work without image too)
+            // 종이결 텍스처
             Color.white
                 .opacity(0.03)
                 .blendMode(.overlay)
