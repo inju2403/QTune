@@ -63,6 +63,12 @@ public struct RequestVerseView: View {
             .navigationTitle("")
             .navigationBarTitleDisplayMode(.inline)
             .scrollDismissesKeyboard(.interactively)
+
+            // Loading overlay
+            if resultPhase == .loading {
+                LoadingOverlay()
+                    .transition(.scale.combined(with: .opacity))
+            }
         }
         .onAppear {
             viewModel.send(.onAppear(userId: "me"))

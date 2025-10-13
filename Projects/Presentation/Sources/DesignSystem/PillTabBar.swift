@@ -39,9 +39,8 @@ public struct PillTabBar: View {
         )
         .overlay(
             Capsule()
-                .stroke(DSColor.gold.opacity(0.35), lineWidth: 1.5)
+                .stroke(DSColor.stroke.opacity(0.5), lineWidth: 1.5)
         )
-        .glow(DSColor.gold)
         .padding(.bottom, DS.Spacing.l)
         .padding(.horizontal, DS.Spacing.xl)
         .shadow(color: .black.opacity(0.25), radius: 22, x: 0, y: 12)
@@ -77,7 +76,7 @@ public struct PillTabBar: View {
             )
         }
         .foregroundStyle(
-            selection == index ? .white.opacity(0.95) : DSColor.textSec
+            selection == index ? DSColor.cocoa : DSColor.textSec
         )
         .scaleEffect(selection == index ? 1.02 : 1)
         .animation(Motion.press, value: selection)

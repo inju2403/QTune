@@ -25,37 +25,37 @@ public struct CrossSunsetBackground: View {
             .ignoresSafeArea()
 
             LinearGradient(
-                colors: [DSColor.bgMid, DSColor.bgBottom],
+                colors: [DSColor.bgMid, DSColor.bgBot],
                 startPoint: .center,
                 endPoint: .bottom
             )
-            .blendMode(.multiply)
             .ignoresSafeArea()
 
-            // 해(라디얼) – 숨쉬듯 브레싱
+            // 햇살(라디얼) – 하단 은은한 광량
             RadialGradient(
                 colors: [
-                    DSColor.sunCore.opacity(0.55),
-                    DSColor.sunEdge.opacity(0.15),
+                    DSColor.gold.opacity(0.35),
+                    DSColor.gold.opacity(0.08),
                     .clear
                 ],
-                center: .center,
-                startRadius: 40,
-                endRadius: 480
+                center: .bottom,
+                startRadius: 10,
+                endRadius: 420
             )
-            .scaleEffect(1 + (reduceMotion ? 0 : 0.015 * sin(breathingPhase)))
+            .offset(y: 120)
+            .scaleEffect(1 + (reduceMotion ? 0 : 0.025 * sin(breathingPhase)))
             .animation(
-                reduceMotion ? .none : .easeInOut(duration: 2.4).repeatForever(autoreverses: true),
+                reduceMotion ? .none : .easeInOut(duration: 2.2).repeatForever(autoreverses: true),
                 value: breathingPhase
             )
             .onAppear {
                 breathingPhase = 1
             }
 
-            // 십자가 실루엣
+            // 십자가 실루엣 (은은하게)
             CrossSilhouette()
-                .fill(Color.black.opacity(0.28))
-                .blur(radius: 1)
+                .fill(DSColor.cocoa.opacity(0.08))
+                .blur(radius: 2)
                 .scaleEffect(1.05)
                 .offset(y: -18)
                 .allowsHitTesting(false)

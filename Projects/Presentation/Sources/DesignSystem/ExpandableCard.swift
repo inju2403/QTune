@@ -39,11 +39,12 @@ public struct ExpandableCard<Content: View>: View {
                 )
                 .overlay(
                     RoundedRectangle(cornerRadius: 22)
-                        .stroke(.black.opacity(0.08), lineWidth: 1)
+                        .stroke(DSColor.stroke, lineWidth: 1)
                 )
-                .shadow(color: .black.opacity(0.15), radius: 22, x: 0, y: 12)
+                .shadow(color: .black.opacity(0.18), radius: 24, x: 0, y: 14)
                 .opacity(reveal ? 1 : 0)
-                .offset(y: reveal ? 0 : 12)
+                .offset(y: reveal ? 0 : 16)
+                .scaleEffect(reveal ? 1 : 0.98, anchor: .top)
                 .blur(radius: reveal ? 0 : (reduceMotion ? 0 : 8))
                 .animation(
                     reduceMotion

@@ -45,9 +45,20 @@ public struct PrimaryCTAButton: View {
                 RoundedRectangle(cornerRadius: 28)
                     .fill(
                         LinearGradient(
-                            colors: [DSColor.accent, DSColor.accent2],
+                            colors: [
+                                DSColor.accent.opacity(0.95),
+                                DSColor.accent,
+                                DSColor.accent2
+                            ],
                             startPoint: .topLeading,
                             endPoint: .bottomTrailing
+                        )
+                    )
+                    .overlay(
+                        LinearGradient(
+                            colors: [.white.opacity(0.2), .clear],
+                            startPoint: .top,
+                            endPoint: .center
                         )
                     )
             )

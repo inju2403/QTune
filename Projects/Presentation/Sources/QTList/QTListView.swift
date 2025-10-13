@@ -202,61 +202,70 @@ private extension QTListView {
     @ViewBuilder
     func entryCell(_ qt: QuietTime) -> some View {
         SoftCard {
-            VStack(alignment: .leading, spacing: DS.Spacing.m) {
-                // 1행: verseRef + 날짜
-                HStack {
+            HStack(alignment: .top, spacing: DS.Spacing.m) {
+                // 아이콘 원형 배경
+                ZStack {
+                    Circle()
+                        .fill(DSColor.bgMid)
+                        .frame(width: 36, height: 36)
+
                     Image(systemName: "book.closed.fill")
-                        .foregroundStyle(DS.Color.gold)
-                        .font(DS.Font.bodyM())
-
-                    Text(qt.verse.id)
-                        .font(DS.Font.bodyL(.semibold))
-                        .foregroundStyle(DS.Color.deepCocoa)
-
-                    Spacer()
-
-                    Text(formattedDate(qt.date))
-                        .font(DS.Font.caption())
-                        .foregroundStyle(DS.Color.textSecondary)
+                        .foregroundStyle(DSColor.cocoa)
+                        .font(.system(size: 16))
                 }
 
-                // 2행: 요약 텍스트
-                if let summary = summaryText(qt), !summary.isEmpty {
-                    Text(summary)
-                        .font(DS.Font.bodyM())
-                        .foregroundStyle(DS.Color.textPrimary)
-                        .lineLimit(2)
-                        .lineSpacing(2)
-                }
+                VStack(alignment: .leading, spacing: DS.Spacing.s) {
+                    // 1행: 제목 + 날짜
+                    HStack {
+                        Text(qt.verse.id)
+                            .font(.system(size: 17, weight: .semibold))
+                            .foregroundStyle(DSColor.textPri)
 
-                // 템플릿 뱃지 + 즐겨찾기
-                HStack(spacing: DS.Spacing.s) {
-                    Text(qt.template)
-                        .font(DS.Font.caption(.medium))
-                        .foregroundStyle(qt.template == "SOAP" ? DS.Color.olive : DS.Color.gold)
-                        .padding(.horizontal, DS.Spacing.s)
-                        .padding(.vertical, DS.Spacing.xs)
-                        .background(
-                            qt.template == "SOAP"
-                                ? DS.Color.olive.opacity(0.15)
-                                : DS.Color.gold.opacity(0.15)
-                        )
-                        .clipShape(Capsule())
+                        Spacer()
 
-                    Spacer()
-
-                    // 즐겨찾기 토글
-                    Button {
-                        Haptics.tap()
-                        Task {
-                            await viewModel.toggleFavorite(qt)
-                        }
-                    } label: {
-                        Image(systemName: qt.isFavorite ? "star.fill" : "star")
-                            .foregroundStyle(qt.isFavorite ? DS.Color.gold : DS.Color.textSecondary)
-                            .font(DS.Font.bodyL())
+                        Text(formattedDate(qt.date))
+                            .font(.system(size: 13))
+                            .foregroundStyle(DSColor.textSec)
                     }
-                    .animation(Motion.press, value: qt.isFavorite)
+
+                    // 2행: 요약 텍스트
+                    if let summary = summaryText(qt), !summary.isEmpty {
+                        Text(summary)
+                            .font(.system(size: 14))
+                            .foregroundStyle(DSColor.textPri)
+                            .lineLimit(2)
+                            .lineSpacing(2)
+                    }
+
+                    // 3행: 뱃지 + 즐겨찾기
+                    HStack(spacing: DS.Spacing.s) {
+                        Text(qt.template)
+                            .font(.system(size: 12, weight: .medium))
+                            .foregroundStyle(qt.template == "SOAP" ? DSColor.olive : DSColor.gold)
+                            .padding(.horizontal, DS.Spacing.s)
+                            .padding(.vertical, DS.Spacing.xs)
+                            .background(
+                                qt.template == "SOAP"
+                                    ? DSColor.olive.opacity(0.15)
+                                    : DSColor.gold.opacity(0.15)
+                            )
+                            .clipShape(Capsule())
+
+                        Spacer()
+
+                        // 즐겨찾기 토글
+                        Button {
+                            Haptics.tap()
+                            Task {
+                                await viewModel.toggleFavorite(qt)
+                            }
+                        } label: {
+                            Image(systemName: qt.isFavorite ? "star.fill" : "star")
+                                .foregroundStyle(qt.isFavorite ? DSColor.gold : DSColor.textSec)
+                                .font(.system(size: 18))
+                        }
+                        .animation(Motion.press, value: qt.isFavorite)
+                    }
                 }
             }
         }
