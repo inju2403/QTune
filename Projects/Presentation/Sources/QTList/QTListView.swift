@@ -264,7 +264,6 @@ private extension QTListView {
                                 .foregroundStyle(qt.isFavorite ? DSColor.gold : DSColor.textSec)
                                 .font(.system(size: 18))
                         }
-                        .animation(Motion.press, value: qt.isFavorite)
                     }
                 }
             }
