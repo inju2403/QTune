@@ -11,6 +11,7 @@ import SwiftUI
 public struct SplashView: View {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var breathe = false
+    @State private var showText = false
 
     public init() {}
 
@@ -38,6 +39,43 @@ public struct SplashView: View {
                     .onAppear {
                         breathe = true
                     }
+            }
+
+            // 텍스트 카피
+            VStack(spacing: 0) {
+                Spacer()
+
+                VStack(spacing: 8) {
+                    // 한줄 카피
+                    Text("주의 말씀은 내 발에 등이요")
+                        .font(.system(size: 20, weight: .semibold, design: .default))
+                        .foregroundStyle(DSColor.cocoa.opacity(0.9))
+                        .multilineTextAlignment(.center)
+
+                    // 보조 카피
+                    Text("Your word is a lamp to my feet. (Ps 119:105)")
+                        .font(.system(size: 14, weight: .regular, design: .default))
+                        .foregroundStyle(DSColor.cocoa.opacity(0.7))
+                        .multilineTextAlignment(.center)
+                        .lineLimit(2)
+                }
+                .opacity(reduceMotion || showText ? 1 : 0)
+                .offset(y: reduceMotion || showText ? 0 : 6)
+
+                Spacer()
+                    .frame(height: 120)
+            }
+            .padding(.horizontal, 32)
+        }
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("QTune. 주의 말씀은 내 발에 등이요. Your word is a lamp to my feet. 잠시 후 메인 화면으로 이동합니다.")
+        .onAppear {
+            if !reduceMotion {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                    withAnimation(.easeOut(duration: 0.6)) {
+                        showText = true
+                    }
+                }
             }
         }
     }

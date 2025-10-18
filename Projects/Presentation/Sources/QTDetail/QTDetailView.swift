@@ -205,30 +205,24 @@ private extension QTDetailView {
             SectionHeader(icon: "square.and.pencil", title: "나의 묵상")
 
             if let observation = viewModel.qt.soapObservation, !observation.isEmpty {
-                fieldCard(
-                    icon: "eye",
-                    title: "Observation",
-                    subtitle: "관찰",
-                    content: observation
-                )
+                VerseCardView(title: "Observation · 관찰") {
+                    Text(observation)
+                        .lineSpacing(4)
+                }
             }
 
             if let application = viewModel.qt.soapApplication, !application.isEmpty {
-                fieldCard(
-                    icon: "arrow.right.circle",
-                    title: "Application",
-                    subtitle: "적용",
-                    content: application
-                )
+                VerseCardView(title: "Application · 적용") {
+                    Text(application)
+                        .lineSpacing(4)
+                }
             }
 
             if let prayer = viewModel.qt.soapPrayer, !prayer.isEmpty {
-                fieldCard(
-                    icon: "hands.sparkles",
-                    title: "Prayer",
-                    subtitle: "기도",
-                    content: prayer
-                )
+                VerseCardView(title: "Prayer · 기도") {
+                    Text(prayer)
+                        .lineSpacing(4)
+                }
             }
         }
     }
@@ -239,68 +233,31 @@ private extension QTDetailView {
             SectionHeader(icon: "hands.sparkles", title: "나의 기도")
 
             if let adoration = viewModel.qt.actsAdoration, !adoration.isEmpty {
-                fieldCard(
-                    icon: "sparkles",
-                    title: "Adoration",
-                    subtitle: "경배",
-                    content: adoration
-                )
+                VerseCardView(title: "Adoration · 경배") {
+                    Text(adoration)
+                        .lineSpacing(4)
+                }
             }
 
             if let confession = viewModel.qt.actsConfession, !confession.isEmpty {
-                fieldCard(
-                    icon: "heart",
-                    title: "Confession",
-                    subtitle: "고백",
-                    content: confession
-                )
+                VerseCardView(title: "Confession · 고백") {
+                    Text(confession)
+                        .lineSpacing(4)
+                }
             }
 
             if let thanksgiving = viewModel.qt.actsThanksgiving, !thanksgiving.isEmpty {
-                fieldCard(
-                    icon: "leaf",
-                    title: "Thanksgiving",
-                    subtitle: "감사",
-                    content: thanksgiving
-                )
+                VerseCardView(title: "Thanksgiving · 감사") {
+                    Text(thanksgiving)
+                        .lineSpacing(4)
+                }
             }
 
             if let supplication = viewModel.qt.actsSupplication, !supplication.isEmpty {
-                fieldCard(
-                    icon: "hands.and.sparkles",
-                    title: "Supplication",
-                    subtitle: "간구",
-                    content: supplication
-                )
-            }
-        }
-    }
-
-    @ViewBuilder
-    func fieldCard(icon: String, title: String, subtitle: String, content: String) -> some View {
-        SoftCard {
-            VStack(alignment: .leading, spacing: DS.Spacing.m) {
-                HStack(spacing: DS.Spacing.s) {
-                    Image(systemName: icon)
-                        .foregroundStyle(DS.Color.gold)
-                        .font(DS.Font.bodyL())
-
-                    Text(title)
-                        .font(DS.Font.bodyL(.semibold))
-                        .foregroundStyle(DS.Color.textPrimary)
-
-                    Text("·")
-                        .foregroundStyle(DS.Color.textSecondary)
-
-                    Text(subtitle)
-                        .font(DS.Font.bodyM())
-                        .foregroundStyle(DS.Color.textSecondary)
+                VerseCardView(title: "Supplication · 간구") {
+                    Text(supplication)
+                        .lineSpacing(4)
                 }
-
-                Text(content)
-                    .font(DS.Font.bodyM())
-                    .foregroundStyle(DS.Color.textPrimary)
-                    .lineSpacing(4)
             }
         }
     }

@@ -43,13 +43,13 @@ public struct ExpandableCard<Content: View>: View {
                 )
                 .shadow(color: .black.opacity(0.18), radius: 24, x: 0, y: 14)
                 .opacity(reveal ? 1 : 0)
-                .offset(y: reveal ? 0 : 16)
-                .scaleEffect(reveal ? 1 : 0.98, anchor: .top)
-                .blur(radius: reveal ? 0 : (reduceMotion ? 0 : 8))
+                .offset(y: reveal ? 0 : 20)  // 더 많이 이동
+                .scaleEffect(reveal ? 1 : 0.96, anchor: .top)
+                .blur(radius: reveal ? 0 : (reduceMotion ? 0 : 4))  // blur 줄임
                 .animation(
                     reduceMotion
                         ? .none
-                        : .spring(response: 0.48, dampingFraction: 0.86).delay(delay),
+                        : .easeOut(duration: 0.7).delay(delay),  // 0.7초로 느리게, easeOut으로 경건한 느낌
                     value: reveal
                 )
                 .onAppear {

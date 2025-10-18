@@ -12,17 +12,20 @@ public enum DS {
 
     // MARK: - Color Tokens
     public enum Color {
-        public static let background    = SwiftUI.Color(hex: "#F6F1EA")   // 따뜻한 아이보리
-        public static let canvas        = SwiftUI.Color(hex: "#F3EDE4")   // 카드 바탕
+        public static let background    = SwiftUI.Color(hex: "#FAF6F1")   // 밝은 오트밀 베이지 (개선)
+        public static let canvas        = SwiftUI.Color(hex: "#FFFFFF")   // 순백 카드 (개선)
         public static let sand          = SwiftUI.Color(hex: "#E8D8C8")
         public static let cocoa         = SwiftUI.Color(hex: "#6B4F4F")
         public static let deepCocoa     = SwiftUI.Color(hex: "#3E2C1C")
         public static let gold          = SwiftUI.Color(hex: "#D7B46A")   // 포인트
         public static let olive         = SwiftUI.Color(hex: "#71816D")   // 보조 포인트
+        public static let mocha         = SwiftUI.Color(hex: "#8B6F47")   // 탭 선택 (신규)
+        public static let lightBrown    = SwiftUI.Color(hex: "#B8A598")   // 탭 비선택 (신규)
         public static let success       = SwiftUI.Color(hex: "#2FAF66")
         public static let danger        = SwiftUI.Color(hex: "#B06B6B")
-        public static let textPrimary   = SwiftUI.Color(hex: "#2B211A")
-        public static let textSecondary = SwiftUI.Color.black.opacity(0.55)
+        public static let textPrimary   = SwiftUI.Color(hex: "#1A1412")   // 더 짙게 (개선)
+        public static let textSecondary = SwiftUI.Color.black.opacity(0.50)
+        public static let placeholder   = SwiftUI.Color.black.opacity(0.25)  // placeholder 전용 (신규)
         public static let divider       = SwiftUI.Color.black.opacity(0.07)
     }
 
@@ -54,27 +57,32 @@ public enum DS {
     // MARK: - Typography
     public enum Font {
         public static func titleXL(_ weight: SwiftUI.Font.Weight = .semibold) -> SwiftUI.Font {
-            .system(size: 34, weight: weight, design: .rounded)
+            .system(size: 34, weight: weight, design: .serif)  // 세리프로 변경
         }
 
         public static func titleL(_ weight: SwiftUI.Font.Weight = .semibold) -> SwiftUI.Font {
-            .system(size: 28, weight: weight, design: .rounded)
+            .system(size: 28, weight: weight, design: .serif)  // 세리프로 변경
         }
 
         public static func titleM(_ weight: SwiftUI.Font.Weight = .semibold) -> SwiftUI.Font {
-            .system(size: 22, weight: weight, design: .rounded)
+            .system(size: 22, weight: weight, design: .serif)  // 세리프로 변경
         }
 
         public static func bodyL(_ weight: SwiftUI.Font.Weight = .regular) -> SwiftUI.Font {
-            .system(size: 17, weight: weight, design: .rounded)
+            .system(size: 17, weight: weight, design: .default)  // 본문은 기본 산세리프
         }
 
         public static func bodyM(_ weight: SwiftUI.Font.Weight = .regular) -> SwiftUI.Font {
-            .system(size: 15, weight: weight, design: .rounded)
+            .system(size: 15, weight: weight, design: .default)  // 본문은 기본 산세리프
         }
 
         public static func caption(_ weight: SwiftUI.Font.Weight = .medium) -> SwiftUI.Font {
-            .system(size: 13, weight: weight, design: .rounded)
+            .system(size: 13, weight: weight, design: .default)  // 캡션은 기본 산세리프
+        }
+
+        // 영문 구절용 세리프 폰트
+        public static func verse(_ size: CGFloat = 17, _ weight: SwiftUI.Font.Weight = .regular) -> SwiftUI.Font {
+            .system(size: size, weight: weight, design: .serif)
         }
     }
 }

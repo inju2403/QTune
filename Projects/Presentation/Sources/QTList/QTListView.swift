@@ -28,29 +28,43 @@ public struct QTListView: View {
             ZStack {
                 CrossSunsetBackground()
 
-                VStack(spacing: DS.Spacing.m) {
-                    // 검색바
-                    searchBar()
+                ScrollView {
+                    LazyVStack(spacing: 0, pinnedViews: []) {
+                        // 검색바
+                        searchBar()
+                            .padding(.top, DS.Spacing.m)
 
-                    // 필터 바
-                    filterBar()
+                        // 필터 바
+                        filterBar()
 
-                    // 리스트
-                    if viewModel.isLoading {
-                        Spacer()
-                        ProgressView()
-                            .tint(DS.Color.gold)
-                            .controlSize(.large)
-                        Spacer()
-                    } else if viewModel.filteredAndSortedList.isEmpty {
-                        emptyStateView()
-                    } else {
-                        entryList()
+                        // 리스트
+                        if viewModel.isLoading {
+                            VStack {
+                                Spacer()
+                                    .frame(height: 100)
+                                ProgressView()
+                                    .tint(DS.Color.gold)
+                                    .controlSize(.large)
+                                Spacer()
+                                    .frame(height: 100)
+                            }
+                        } else if viewModel.filteredAndSortedList.isEmpty {
+                            emptyStateView()
+                                .frame(minHeight: 400)
+                        } else {
+                            entriesContent()
+                        }
                     }
+                }
+                .navigationDestination(for: QuietTime.self) { qt in
+                    QTDetailView(
+                        viewModel: detailViewModelFactory(qt),
+                        editorViewModelFactory: editorViewModelFactory
+                    )
                 }
             }
             .navigationTitle("기록")
-            .navigationBarTitleDisplayMode(.large)
+            .navigationBarTitleDisplayMode(.inline)
             .task {
                 await viewModel.load()
             }
@@ -102,7 +116,6 @@ private extension QTListView {
             }
         }
         .padding(.horizontal, DS.Spacing.l)
-        .padding(.top, DS.Spacing.s)
     }
 
     @ViewBuilder
@@ -179,103 +192,85 @@ private extension QTListView {
     }
 
     @ViewBuilder
-    func entryList() -> some View {
-        ScrollView {
-            LazyVStack(spacing: DS.Spacing.m) {
-                ForEach(Array(viewModel.filteredAndSortedList.enumerated()), id: \.element.id) { index, qt in
-                    NavigationLink(value: qt) {
-                        entryCell(qt)
-                    }
-                    .buttonStyle(.plain)
-                    .transition(.asymmetric(
-                        insertion: .move(edge: .bottom).combined(with: .opacity),
-                        removal: .opacity
-                    ))
-                    .animation(
-                        .spring(response: 0.5, dampingFraction: 0.9)
-                            .delay(Double(index) * 0.04),
-                        value: viewModel.filteredAndSortedList.count
-                    )
+    func entriesContent() -> some View {
+        LazyVStack(spacing: DS.Spacing.m) {
+            ForEach(Array(viewModel.filteredAndSortedList.enumerated()), id: \.element.id) { index, qt in
+                NavigationLink(value: qt) {
+                    entryCell(qt)
                 }
+                .buttonStyle(.plain)
+                .transition(.asymmetric(
+                    insertion: .move(edge: .bottom).combined(with: .opacity),
+                    removal: .opacity
+                ))
+                .animation(
+                    .spring(response: 0.5, dampingFraction: 0.9)
+                        .delay(Double(index) * 0.04),
+                    value: viewModel.filteredAndSortedList.count
+                )
             }
-            .padding(DS.Spacing.l)
         }
-        .navigationDestination(for: QuietTime.self) { qt in
-            QTDetailView(
-                viewModel: detailViewModelFactory(qt),
-                editorViewModelFactory: editorViewModelFactory
-            )
-        }
+        .padding(DS.Spacing.l)
+        .padding(.top, DS.Spacing.xs)
     }
 
     @ViewBuilder
     func entryCell(_ qt: QuietTime) -> some View {
         SoftCard {
-            HStack(alignment: .top, spacing: DS.Spacing.m) {
-                // 아이콘 원형 배경
-                ZStack {
-                    Circle()
-                        .fill(DSColor.bgMid)
-                        .frame(width: 36, height: 36)
+            VStack(alignment: .leading, spacing: DS.Spacing.l) {
+                // 1행: 말씀 제목 (크고 두껍게) + 날짜
+                HStack(alignment: .top) {
+                    Text(qt.verse.id)
+                        .font(.system(size: 24, weight: .bold, design: .serif))  // 더 크게
+                        .foregroundStyle(DS.Color.deepCocoa)
+                        .lineLimit(2)
 
-                    Image(systemName: "book.closed.fill")
-                        .foregroundStyle(DSColor.cocoa)
-                        .font(.system(size: 16))
+                    Spacer()
+
+                    Text(formattedDate(qt.date))
+                        .font(DS.Font.caption())
+                        .foregroundStyle(DS.Color.textSecondary)
                 }
 
-                VStack(alignment: .leading, spacing: DS.Spacing.s) {
-                    // 1행: 제목 + 날짜
-                    HStack {
-                        Text(qt.verse.id)
-                            .font(.system(size: 17, weight: .semibold))
-                            .foregroundStyle(DSColor.textPri)
+                // 2행: 말씀 본문 (크게, 3~4줄)
+                if !qt.verse.text.isEmpty {
+                    Text(qt.verse.text)
+                        .font(.system(size: 17, weight: .regular, design: .serif))  // 성경 느낌 나는 세리프
+                        .foregroundStyle(DS.Color.textPrimary)
+                        .lineLimit(4)  // 4줄까지 표시
+                        .lineSpacing(6)  // 줄간격 넉넉하게
+                }
 
-                        Spacer()
+                // 3행: 뱃지 + 즐겨찾기
+                HStack(spacing: DS.Spacing.s) {
+                    Text(qt.template)
+                        .font(DS.Font.caption(.medium))
+                        .foregroundStyle(qt.template == "SOAP" ? DS.Color.olive : DS.Color.gold)
+                        .padding(.horizontal, DS.Spacing.m)
+                        .padding(.vertical, DS.Spacing.s)
+                        .background(
+                            qt.template == "SOAP"
+                                ? DS.Color.olive.opacity(0.15)
+                                : DS.Color.gold.opacity(0.15)
+                        )
+                        .clipShape(Capsule())
 
-                        Text(formattedDate(qt.date))
-                            .font(.system(size: 13))
-                            .foregroundStyle(DSColor.textSec)
-                    }
+                    Spacer()
 
-                    // 2행: 미리보기 텍스트 (2줄)
-                    if !qt.preview.isEmpty {
-                        Text(qt.preview)
-                            .font(.system(size: 14))
-                            .foregroundStyle(DSColor.textSec)
-                            .lineLimit(2)
-                            .lineSpacing(4)
-                    }
-
-                    // 3행: 뱃지 + 즐겨찾기
-                    HStack(spacing: DS.Spacing.s) {
-                        Text(qt.template)
-                            .font(.system(size: 12, weight: .medium))
-                            .foregroundStyle(qt.template == "SOAP" ? DSColor.olive : DSColor.gold)
-                            .padding(.horizontal, DS.Spacing.s)
-                            .padding(.vertical, DS.Spacing.xs)
-                            .background(
-                                qt.template == "SOAP"
-                                    ? DSColor.olive.opacity(0.15)
-                                    : DSColor.gold.opacity(0.15)
-                            )
-                            .clipShape(Capsule())
-
-                        Spacer()
-
-                        // 즐겨찾기 토글
-                        Button {
-                            Haptics.tap()
-                            Task {
-                                await viewModel.toggleFavorite(qt)
-                            }
-                        } label: {
-                            Image(systemName: qt.isFavorite ? "star.fill" : "star")
-                                .foregroundStyle(qt.isFavorite ? DSColor.gold : DSColor.textSec)
-                                .font(.system(size: 18))
+                    // 즐겨찾기 토글
+                    Button {
+                        Haptics.tap()
+                        Task {
+                            await viewModel.toggleFavorite(qt)
                         }
+                    } label: {
+                        Image(systemName: qt.isFavorite ? "star.fill" : "star")
+                            .foregroundStyle(qt.isFavorite ? DS.Color.gold : DS.Color.textSecondary)
+                            .font(.system(size: 20))
                     }
                 }
             }
+            .padding(DS.Spacing.xl)  // 더 넉넉한 패딩
         }
     }
 

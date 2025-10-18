@@ -42,5 +42,27 @@ public struct MainTabView<RequestContent: View>: View {
                 Label("기록", systemImage: "book.closed")
             }
         }
+        .accentColor(DSColor.mocha)  // 탭 선택 색상을 모카 브라운으로 변경
+        .onAppear {
+            // 탭바 비선택 아이템 색상 설정
+            let appearance = UITabBarAppearance()
+            appearance.configureWithOpaqueBackground()
+            appearance.backgroundColor = UIColor(DSColor.card)
+
+            // 비선택 아이템 색상
+            appearance.stackedLayoutAppearance.normal.iconColor = UIColor(DSColor.lightBrown)
+            appearance.stackedLayoutAppearance.normal.titleTextAttributes = [
+                .foregroundColor: UIColor(DSColor.lightBrown)
+            ]
+
+            // 선택된 아이템 색상
+            appearance.stackedLayoutAppearance.selected.iconColor = UIColor(DSColor.mocha)
+            appearance.stackedLayoutAppearance.selected.titleTextAttributes = [
+                .foregroundColor: UIColor(DSColor.mocha)
+            ]
+
+            UITabBar.appearance().standardAppearance = appearance
+            UITabBar.appearance().scrollEdgeAppearance = appearance
+        }
     }
 }

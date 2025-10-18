@@ -29,6 +29,7 @@ public struct VerseCardView<Content: View>: View {
                 .font(DS.Font.bodyL())
                 .foregroundStyle(DS.Color.textPrimary)
         }
+        .frame(maxWidth: .infinity, alignment: .leading)
         .padding(DS.Spacing.xl)
         .background(
             RoundedRectangle(cornerRadius: DS.Radius.l)
