@@ -48,15 +48,6 @@ public struct RequestVerseView: View {
                         }
                     }
                     .padding(.top, 8)
-
-                    if resultPhase == .loading {
-                        skeleton()
-                    }
-
-                    if (resultPhase == .expanding || resultPhase == .expanded),
-                       let result = viewModel.state.generatedResult, result.isSafe {
-                        resultContent(result: result)
-                    }
                 }
                 .padding(.horizontal, 20)
             }
@@ -66,8 +57,9 @@ public struct RequestVerseView: View {
 
             // Loading overlay
             if resultPhase == .loading {
-                LoadingOverlay()
-                    .transition(.scale.combined(with: .opacity))
+                QTuneCrossOverlay()
+                    .transition(.opacity)
+                    .zIndex(10)
             }
         }
         .onAppear {
@@ -101,15 +93,16 @@ public struct RequestVerseView: View {
         }
         .onChange(of: viewModel.state.generatedResult) { newValue in
             if newValue != nil {
-                withAnimation {
-                    resultPhase = .expanding
+                // Haptic 피드백
+                Haptics.success()
+
+                // 로딩 UI 닫기와 동시에 네비게이션
+                withAnimation(.easeInOut(duration: 0.25)) {
+                    resultPhase = .idle
                 }
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) {
-                    withAnimation {
-                        resultPhase = .expanded
-                    }
-                    Haptics.success()
-                }
+
+                // 즉시 QT 에디터로 네비게이션
+                viewModel.send(.tapGoToQT)
             } else if resultPhase != .loading {
                 resultPhase = .idle
             }
@@ -186,7 +179,7 @@ private extension RequestVerseView {
                     .foregroundStyle(DSColor.gold)
                 Text("오늘 하루는 어떠셨나요?")
                     .font(.system(size: 20, weight: .semibold))
-                    .foregroundStyle(.white.opacity(0.95))
+                    .foregroundStyle(DSColor.cocoa)
             }
 
             Text("오늘의 생각, 감정, 상황을 자유롭게 적어보세요")
@@ -204,7 +197,7 @@ private extension RequestVerseView {
                         .foregroundStyle(DSColor.gold)
                     Text("감정/상황 (필수)")
                         .font(.system(size: 16, weight: .semibold))
-                        .foregroundStyle(.white.opacity(0.9))
+                        .foregroundStyle(DSColor.cocoa)
                     Spacer()
                     Text("\(viewModel.state.moodText.count)/500")
                         .font(.system(size: 13))
@@ -226,7 +219,7 @@ private extension RequestVerseView {
                         .foregroundStyle(DSColor.olive)
                     Text("추가 메모 (선택)")
                         .font(.system(size: 16, weight: .semibold))
-                        .foregroundStyle(.white.opacity(0.9))
+                        .foregroundStyle(DSColor.cocoa)
                     Spacer()
                     Text("\(viewModel.state.noteText.count)/200")
                         .font(.system(size: 13))
@@ -253,21 +246,21 @@ private extension RequestVerseView {
             if viewModel.state.moodText.isEmpty {
                 Text("예) 오늘은 중요한 시험을 앞두고 너무 긴장되고 불안해요...")
                     .font(.system(size: 16))
-                    .foregroundStyle(DSColor.textPri.opacity(0.3))
+                    .foregroundStyle(DSColor.placeholder)  // placeholder 전용 색상 사용
                     .padding(.horizontal, 5)
                     .padding(.vertical, 8)
             }
 
             TextEditor(text: binding)
                 .font(.system(size: 16))
-                .foregroundStyle(DSColor.textPri)
+                .foregroundStyle(DSColor.textPri)  // 더 짙은 텍스트
                 .frame(minHeight: 120)
                 .scrollContentBackground(.hidden)
                 .textInputAutocapitalization(.sentences)
                 .disableAutocorrection(false)
         }
         .padding(8)
-        .background(Color.white)
+        .background(DSColor.card)  // 순백 카드로 변경
         .clipShape(RoundedRectangle(cornerRadius: 12))
     }
 
@@ -281,21 +274,21 @@ private extension RequestVerseView {
             if viewModel.state.noteText.isEmpty {
                 Text("예) 최선을 다했지만 결과가 걱정돼요")
                     .font(.system(size: 16))
-                    .foregroundStyle(DSColor.textPri.opacity(0.3))
+                    .foregroundStyle(DSColor.placeholder)  // placeholder 전용 색상 사용
                     .padding(.horizontal, 5)
                     .padding(.vertical, 8)
             }
 
             TextEditor(text: binding)
                 .font(.system(size: 16))
-                .foregroundStyle(DSColor.textPri)
+                .foregroundStyle(DSColor.textPri)  // 더 짙은 텍스트
                 .frame(minHeight: 80)
                 .scrollContentBackground(.hidden)
                 .textInputAutocapitalization(.sentences)
                 .disableAutocorrection(false)
         }
         .padding(8)
-        .background(Color.white)
+        .background(DSColor.card)  // 순백 카드로 변경
         .clipShape(RoundedRectangle(cornerRadius: 12))
     }
 
