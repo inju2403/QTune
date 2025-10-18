@@ -42,7 +42,21 @@ public final class QTEditorViewModel: ObservableObject {
 
     // MARK: - 편집 모드 초기화
     public func loadQT(_ qt: QuietTime) {
-        editingQT = qt
+        // status가 draft이고 템플릿 필드가 비어있으면 신규 작성
+        let isNewDraft = qt.status == .draft &&
+            qt.soapObservation == nil &&
+            qt.soapApplication == nil &&
+            qt.soapPrayer == nil &&
+            qt.actsAdoration == nil &&
+            qt.actsConfession == nil &&
+            qt.actsThanksgiving == nil &&
+            qt.actsSupplication == nil
+
+        // 신규 작성이 아닐 때만 editingQT 설정 (UPDATE 모드)
+        if !isNewDraft {
+            editingQT = qt
+        }
+
         selectedTemplate = qt.template == "SOAP" ? .soap : .acts
 
         if qt.template == "SOAP" {
@@ -63,31 +77,45 @@ public final class QTEditorViewModel: ObservableObject {
     }
 
     public func updateSOAPObservation(_ text: String) {
-        soapTemplate.observation = text
+        Task { @MainActor in
+            soapTemplate.observation = text
+        }
     }
 
     public func updateSOAPApplication(_ text: String) {
-        soapTemplate.application = text
+        Task { @MainActor in
+            soapTemplate.application = text
+        }
     }
 
     public func updateSOAPPrayer(_ text: String) {
-        soapTemplate.prayer = text
+        Task { @MainActor in
+            soapTemplate.prayer = text
+        }
     }
 
     public func updateACTSAdoration(_ text: String) {
-        actsTemplate.adoration = text
+        Task { @MainActor in
+            actsTemplate.adoration = text
+        }
     }
 
     public func updateACTSConfession(_ text: String) {
-        actsTemplate.confession = text
+        Task { @MainActor in
+            actsTemplate.confession = text
+        }
     }
 
     public func updateACTSThanksgiving(_ text: String) {
-        actsTemplate.thanksgiving = text
+        Task { @MainActor in
+            actsTemplate.thanksgiving = text
+        }
     }
 
     public func updateACTSSupplication(_ text: String) {
-        actsTemplate.supplication = text
+        Task { @MainActor in
+            actsTemplate.supplication = text
+        }
     }
 
     // MARK: - Validation Helpers
@@ -107,6 +135,11 @@ public final class QTEditorViewModel: ObservableObject {
     // MARK: - Save Logic
     /// QT 저장 (신규 또는 편집)
     public func saveQT(draft: Domain.QuietTime) async {
+        print("🔵 [QTEditorViewModel] Starting saveQT")
+        print("   Draft ID: \(draft.id)")
+        print("   Editing QT: \(editingQT?.id.uuidString ?? "nil")")
+        print("   Selected Template: \(selectedTemplate)")
+
         do {
             var qtToSave = draft
             qtToSave.template = selectedTemplate.rawValue
@@ -114,6 +147,7 @@ public final class QTEditorViewModel: ObservableObject {
 
             // 템플릿별 필드 설정
             if selectedTemplate == .soap {
+                print("   SOAP - O: \(soapTemplate.observation.count), A: \(soapTemplate.application.count), P: \(soapTemplate.prayer.count)")
                 qtToSave.soapObservation = soapTemplate.observation
                 qtToSave.soapApplication = soapTemplate.application
                 qtToSave.soapPrayer = soapTemplate.prayer
@@ -122,6 +156,7 @@ public final class QTEditorViewModel: ObservableObject {
                 qtToSave.actsThanksgiving = nil
                 qtToSave.actsSupplication = nil
             } else {
+                print("   ACTS - A: \(actsTemplate.adoration.count), C: \(actsTemplate.confession.count), T: \(actsTemplate.thanksgiving.count), S: \(actsTemplate.supplication.count)")
                 qtToSave.actsAdoration = actsTemplate.adoration
                 qtToSave.actsConfession = actsTemplate.confession
                 qtToSave.actsThanksgiving = actsTemplate.thanksgiving
@@ -133,6 +168,7 @@ public final class QTEditorViewModel: ObservableObject {
 
             if let existingQT = editingQT {
                 // 편집 모드: 업데이트
+                print("   Mode: UPDATE existing QT")
                 var updated = existingQT
                 updated.template = qtToSave.template
                 updated.soapObservation = qtToSave.soapObservation
@@ -144,17 +180,27 @@ public final class QTEditorViewModel: ObservableObject {
                 updated.actsSupplication = qtToSave.actsSupplication
                 updated.updatedAt = Date()
 
+                print("   Calling updateQTUseCase...")
                 _ = try await updateQTUseCase.execute(qt: updated, session: session)
+                print("   ✅ Update succeeded")
             } else {
                 // 신규 작성: 커밋
+                print("   Mode: COMMIT new QT")
                 qtToSave.status = .draft
+                print("   Calling commitQTUseCase...")
                 _ = try await commitQTUseCase.execute(draft: qtToSave, session: session)
+                print("   ✅ Commit succeeded")
             }
 
             await MainActor.run {
                 showSaveSuccessToast = true
             }
         } catch {
+            print("🔴 [QTEditorViewModel] Save failed: \(error)")
+            if let localizedError = error as? LocalizedError {
+                print("   Description: \(localizedError.errorDescription ?? "none")")
+                print("   Reason: \(localizedError.failureReason ?? "none")")
+            }
             await MainActor.run {
                 showSaveErrorAlert = true
             }

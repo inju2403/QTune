@@ -30,10 +30,10 @@ public struct QTEditorView: View {
                     // 상단 고정 카드 (읽기 전용)
                     verseCardSection()
 
-                    // 템플릿 스위처
-                    templateSwitcherSection()
+                    // 템플릿 선택 토글
+                    templateToggleSection()
 
-                    // 템플릿별 입력 섹션
+                    // 템플릿별 입력 섹션 (선택된 템플릿만 표시)
                     if viewModel.selectedTemplate == .soap {
                         soapTemplateSections()
                     } else {
@@ -48,6 +48,9 @@ public struct QTEditorView: View {
         }
         .navigationTitle("QT 작성")
         .navigationBarTitleDisplayMode(.inline)
+        .onAppear {
+            viewModel.loadQT(draft)
+        }
         .alert("저장 실패", isPresented: $viewModel.showSaveErrorAlert) {
             Button("확인", role: .cancel) {}
         } message: {
@@ -74,6 +77,64 @@ public struct QTEditorView: View {
 
 // MARK: - Subviews
 private extension QTEditorView {
+    // 템플릿 선택 토글
+    @ViewBuilder
+    func templateToggleSection() -> some View {
+        HStack(spacing: DS.Spacing.m) {
+            // S.O.A.P 버튼
+            Button {
+                Haptics.tap()
+                withAnimation(Motion.appear) {
+                    viewModel.switchTemplate(to: .soap)
+                }
+            } label: {
+                HStack(spacing: DS.Spacing.s) {
+                    Image(systemName: "square.and.pencil")
+                        .font(DS.Font.bodyL())
+                    Text("S.O.A.P")
+                        .font(DS.Font.bodyL(.semibold))
+                }
+                .foregroundStyle(viewModel.selectedTemplate == .soap ? DS.Color.gold : DS.Color.textSecondary)
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, DS.Spacing.m)
+                .background(
+                    RoundedRectangle(cornerRadius: DS.Radius.m)
+                        .fill(viewModel.selectedTemplate == .soap ? DS.Color.gold.opacity(0.15) : DS.Color.canvas)
+                )
+                .overlay(
+                    RoundedRectangle(cornerRadius: DS.Radius.m)
+                        .stroke(viewModel.selectedTemplate == .soap ? DS.Color.gold : DS.Color.divider, lineWidth: 2)
+                )
+            }
+
+            // A.C.T.S 버튼
+            Button {
+                Haptics.tap()
+                withAnimation(Motion.appear) {
+                    viewModel.switchTemplate(to: .acts)
+                }
+            } label: {
+                HStack(spacing: DS.Spacing.s) {
+                    Image(systemName: "hands.sparkles")
+                        .font(DS.Font.bodyL())
+                    Text("A.C.T.S")
+                        .font(DS.Font.bodyL(.semibold))
+                }
+                .foregroundStyle(viewModel.selectedTemplate == .acts ? DS.Color.gold : DS.Color.textSecondary)
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, DS.Spacing.m)
+                .background(
+                    RoundedRectangle(cornerRadius: DS.Radius.m)
+                        .fill(viewModel.selectedTemplate == .acts ? DS.Color.gold.opacity(0.15) : DS.Color.canvas)
+                )
+                .overlay(
+                    RoundedRectangle(cornerRadius: DS.Radius.m)
+                        .stroke(viewModel.selectedTemplate == .acts ? DS.Color.gold : DS.Color.divider, lineWidth: 2)
+                )
+            }
+        }
+    }
+
     // 상단 말씀 카드 (읽기 전용)
     @ViewBuilder
     func verseCardSection() -> some View {
@@ -127,32 +188,6 @@ private extension QTEditorView {
                 VerseCardView(title: "추천 이유") {
                     Text(rationale)
                         .lineSpacing(4)
-                }
-            }
-        }
-    }
-
-    // 템플릿 스위처
-    @ViewBuilder
-    func templateSwitcherSection() -> some View {
-        VStack(alignment: .leading, spacing: DS.Spacing.m) {
-            SectionHeader(icon: "square.grid.2x2", title: "QT 템플릿")
-
-            SoftCard {
-                VStack(spacing: DS.Spacing.m) {
-                    Picker("템플릿", selection: $viewModel.selectedTemplate) {
-                        ForEach(QTTemplateType.allCases, id: \.self) { template in
-                            Text(template.displayName).tag(template)
-                        }
-                    }
-                    .pickerStyle(.segmented)
-
-                    Text(viewModel.selectedTemplate == .soap
-                         ? "Scripture, Observation, Application, Prayer"
-                         : "Adoration, Confession, Thanksgiving, Supplication")
-                        .font(DS.Font.caption())
-                        .foregroundStyle(DS.Color.textSecondary)
-                        .frame(maxWidth: .infinity, alignment: .leading)
                 }
             }
         }
@@ -317,12 +352,7 @@ private extension QTEditorView {
                     .padding(.vertical, DS.Spacing.s)
             }
 
-            TextEditor(text: Binding(
-                get: { text.wrappedValue },
-                set: { newValue in
-                    onChanged(newValue)
-                }
-            ))
+            TextEditor(text: text)
             .font(DS.Font.bodyM())
             .foregroundStyle(DS.Color.textPrimary)
             .frame(minHeight: minHeight)
@@ -340,7 +370,7 @@ private extension QTEditorView {
     func saveButtonSection() -> some View {
         PrimaryButton(title: "저장하기", icon: "checkmark.circle.fill") {
             Haptics.tap()
-            Task {
+            Task { @MainActor in
                 await viewModel.saveQT(draft: draft)
             }
         }
