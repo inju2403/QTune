@@ -213,10 +213,29 @@ public final class OpenAIDataSource: OpenAIRemoteDataSource {
         do {
             let explanationDTO = try decoder.decode(KoreanExplanationDTO.self, from: jsonData)
             print("✅ [OpenAIDataSource] Successfully decoded KoreanExplanationDTO")
+            print("   korean: \(explanationDTO.korean.prefix(100))...")
+            print("   rationale: \(explanationDTO.rationale)")
             return explanationDTO
         } catch {
             print("🔴 [OpenAIDataSource] Decoding failed: \(error)")
-            print("   Raw JSON: \(jsonString)")
+            if let decodingError = error as? DecodingError {
+                switch decodingError {
+                case .keyNotFound(let key, let context):
+                    print("   Missing key: \(key.stringValue)")
+                    print("   Context: \(context.debugDescription)")
+                case .typeMismatch(let type, let context):
+                    print("   Type mismatch: expected \(type)")
+                    print("   Context: \(context.debugDescription)")
+                case .valueNotFound(let type, let context):
+                    print("   Value not found: \(type)")
+                    print("   Context: \(context.debugDescription)")
+                case .dataCorrupted(let context):
+                    print("   Data corrupted: \(context.debugDescription)")
+                @unknown default:
+                    print("   Unknown decoding error")
+                }
+            }
+            print("   Full Raw JSON: \(jsonString)")
             throw error
         }
     }

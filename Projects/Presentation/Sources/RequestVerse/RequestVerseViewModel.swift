@@ -105,27 +105,32 @@ public final class RequestVerseViewModel: ObservableObject {
 
         } catch let error as DomainError {
             // Domain 에러별 처리
+            let message: String
             switch error {
-            case .validationFailed(let message):
-                state.errorMessage = message
+            case .validationFailed(let msg):
+                message = msg
             case .moderationBlocked(let reason):
-                state.errorMessage = "부적절한 내용이 감지되었습니다: \(reason)"
+                message = "부적절한 내용이 감지되었습니다: \(reason)"
             case .rateLimited:
-                state.errorMessage = "오늘 이미 말씀을 추천받으셨어요. 내일 다시 시도해 주세요"
-            case .network(let message):
-                state.errorMessage = "네트워크 오류: \(message)"
-            case .configurationError(let message):
-                state.errorMessage = "설정 오류: \(message)"
+                message = "오늘 이미 말씀을 추천받으셨어요. 내일 다시 시도해 주세요"
+            case .network(let msg):
+                message = "네트워크 오류: \(msg)"
+            case .configurationError(let msg):
+                message = "설정 오류: \(msg)"
             case .unauthorized:
-                state.errorMessage = "인증이 필요합니다"
+                message = "인증이 필요합니다"
             case .notFound:
-                state.errorMessage = "요청하신 항목을 찾을 수 없습니다"
+                message = "요청하신 항목을 찾을 수 없습니다"
             case .unknown:
-                state.errorMessage = "알 수 없는 오류가 발생했습니다"
+                message = "알 수 없는 오류가 발생했습니다"
             }
+            state.errorMessage = message
+            effect.send(.showError(message))
         } catch {
             // 기타 에러
-            state.errorMessage = "말씀 추천에 실패했어요. 잠시 후 다시 시도해 주세요"
+            let message = "말씀 추천에 실패했어요. 잠시 후 다시 시도해 주세요"
+            state.errorMessage = message
+            effect.send(.showError(message))
         }
     }
 }

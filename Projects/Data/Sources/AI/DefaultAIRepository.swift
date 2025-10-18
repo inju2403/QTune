@@ -90,12 +90,12 @@ public final class DefaultAIRepository: AIRepository {
 
     /// verseRef를 파싱하여 Verse 모델로 변환
     /// - Parameters:
-    ///   - reference: "John 3:16" 형식의 참조
+    ///   - reference: "John 3:16" 또는 "Philippians 4:6-7" 형식의 참조
     ///   - text: 본문 텍스트
     ///   - translation: 번역본 ID
     /// - Returns: Verse 모델
     private func parseVerse(reference: String, text: String, translation: String) throws -> Verse {
-        // "John 3:16" 형식 파싱
+        // "John 3:16" 또는 "Philippians 4:6-7" 형식 파싱
         let components = reference.split(separator: " ")
         guard components.count >= 2 else {
             throw AIRepositoryError.invalidResponse
@@ -106,15 +106,33 @@ public final class DefaultAIRepository: AIRepository {
 
         let chapterVerseComponents = chapterVerse.split(separator: ":")
         guard chapterVerseComponents.count == 2,
-              let chapter = Int(chapterVerseComponents[0]),
-              let verse = Int(chapterVerseComponents[1]) else {
+              let chapter = Int(chapterVerseComponents[0]) else {
             throw AIRepositoryError.invalidResponse
+        }
+
+        // 절 번호 파싱 (범위인 경우 시작 절만 사용)
+        // 예: "6-7" → 6, "16" → 16
+        let verseString = String(chapterVerseComponents[1])
+        let verseNumber: Int
+        if let dashIndex = verseString.firstIndex(of: "-") {
+            // 범위인 경우 (예: "6-7")
+            let startVerse = String(verseString[..<dashIndex])
+            guard let verse = Int(startVerse) else {
+                throw AIRepositoryError.invalidResponse
+            }
+            verseNumber = verse
+        } else {
+            // 단일 절인 경우
+            guard let verse = Int(verseString) else {
+                throw AIRepositoryError.invalidResponse
+            }
+            verseNumber = verse
         }
 
         return Verse(
             book: book,
             chapter: chapter,
-            verse: verse,
+            verse: verseNumber,
             text: text,
             translation: translation
         )
