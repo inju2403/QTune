@@ -10,16 +10,13 @@ let project = Project(
       bundleId: "com.yourcompany.app",
       deploymentTargets: .iOS("16.0"),
       infoPlist: .extendingDefault(with: [
-        "UILaunchScreen": [
-          "UIColorName": "",
-          "UIImageName": "",
-          "UILaunchScreen": [:]
-        ],
+        "UILaunchStoryboardName": "LaunchScreen",
         "UIViewControllerBasedStatusBarAppearance": true
       ]),
       sources: nil,
       resources: [
         "Resources/Assets.xcassets",
+        "Resources/LaunchScreen.storyboard",
         "Resources/Preview Content/**"
       ],
       buildableFolders: [.folder("Sources")],
