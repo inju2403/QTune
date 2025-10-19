@@ -3,6 +3,7 @@
 
 # Xcode user-specific + build
 build/
+Derived/
 DerivedData/
 *.pbxuser
 !default.pbxuser
@@ -14,6 +15,7 @@ DerivedData/
 !default.perspectivev3
 xcuserdata/
 *.xcuserstate
+*.xcuserdata/
 *.xccheckout
 *.xcscmblueprint
 
