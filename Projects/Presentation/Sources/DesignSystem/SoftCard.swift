@@ -20,12 +20,7 @@ public struct SoftCard<Content: View>: View {
             .padding(DS.Spacing.l)
             .background(
                 RoundedRectangle(cornerRadius: DS.Radius.m)
-                    .fill(DS.Color.canvas)
-                    .overlay(
-                        RoundedRectangle(cornerRadius: DS.Radius.m)
-                            .stroke(DS.Color.divider, lineWidth: 1)
-                    )
+                    .fill(DS.Color.canvas.opacity(0.9))
             )
-            .dsShadow(DS.Shadow.soft)
     }
 }

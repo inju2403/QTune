@@ -14,6 +14,8 @@ public struct MainTabView<RequestContent: View>: View {
     let detailViewModelFactory: (QuietTime) -> QTDetailViewModel
     let editorViewModelFactory: () -> QTEditorViewModel
 
+    @State private var selectedTab = 0
+
     public init(
         qtListViewModel: QTListViewModel,
         detailViewModelFactory: @escaping (QuietTime) -> QTDetailViewModel,
@@ -27,11 +29,12 @@ public struct MainTabView<RequestContent: View>: View {
     }
 
     public var body: some View {
-        TabView {
+        TabView(selection: $selectedTab) {
             requestContent()
                 .tabItem {
                     Label("오늘의 말씀", systemImage: "sparkles")
                 }
+                .tag(0)
 
             QTListView(
                 viewModel: qtListViewModel,
@@ -41,6 +44,7 @@ public struct MainTabView<RequestContent: View>: View {
             .tabItem {
                 Label("기록", systemImage: "book.closed")
             }
+            .tag(1)
         }
         .accentColor(DSColor.mocha)  // 탭 선택 색상을 모카 브라운으로 변경
         .onAppear {

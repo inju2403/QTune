@@ -10,6 +10,7 @@ let project = Project(
       bundleId: "com.yourcompany.app",
       deploymentTargets: .iOS("16.0"),
       infoPlist: .extendingDefault(with: [
+        "CFBundleDisplayName": "QTune",
         "UILaunchStoryboardName": "LaunchScreen",
         "UIViewControllerBasedStatusBarAppearance": true
       ]),

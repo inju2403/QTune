@@ -37,12 +37,22 @@ struct RequestVerseState {
 }
 
 /// 생성된 말씀 결과
-struct GeneratedVerseResult: Equatable {
-    let verseRef: String        // 예: "시편 23:1"
-    let verseText: String       // 말씀 본문
-    let verseTextEN: String?    // 영어 텍스트 (선택)
-    let korean: String          // 한글 해설 (GPT 생성, 3~5문장)
-    let rationale: String       // 추천 이유
-    let verse: Verse            // Domain 모델 (QT 작성 화면으로 전달용)
-    let isSafe: Bool            // safety 검증 결과 (차단되지 않았는지)
+public struct GeneratedVerseResult: Equatable, Hashable {
+    public let verseRef: String        // 예: "시편 23:1"
+    public let verseText: String       // 말씀 본문
+    public let verseTextEN: String?    // 영어 텍스트 (선택)
+    public let korean: String          // 한글 해설 (GPT 생성, 3~5문장)
+    public let rationale: String       // 추천 이유
+    public let verse: Verse            // Domain 모델 (QT 작성 화면으로 전달용)
+    public let isSafe: Bool            // safety 검증 결과 (차단되지 않았는지)
+
+    public init(verseRef: String, verseText: String, verseTextEN: String?, korean: String, rationale: String, verse: Verse, isSafe: Bool) {
+        self.verseRef = verseRef
+        self.verseText = verseText
+        self.verseTextEN = verseTextEN
+        self.korean = korean
+        self.rationale = rationale
+        self.verse = verse
+        self.isSafe = isSafe
+    }
 }

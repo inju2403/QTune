@@ -36,6 +36,9 @@ final class AppDependencyContainer {
     /// AIRepository 인스턴스 (lazy 캐싱)
     private var _aiRepository: AIRepository?
 
+    /// UserProfileRepository 인스턴스 (lazy 캐싱)
+    private var _userProfileRepository: UserProfileRepository?
+
     // MARK: - Initialization
 
     init() {
@@ -83,6 +86,17 @@ final class AppDependencyContainer {
     /// RateLimiterRepository 생성
     func makeRateLimiterRepository() -> RateLimiterRepository {
         return UserDefaultsRateLimiterRepository()
+    }
+
+    /// UserProfileRepository 생성 (lazy cached)
+    func makeUserProfileRepository() -> UserProfileRepository {
+        if let cached = _userProfileRepository {
+            return cached
+        }
+
+        let repo = DefaultUserProfileRepository()
+        _userProfileRepository = repo
+        return repo
     }
 
     /// QTRepository 생성 (lazy cached)
@@ -164,6 +178,16 @@ final class AppDependencyContainer {
         }
 
         return ToggleFavoriteInteractor(qtRepository: qtRepository)
+    }
+
+    /// SaveUserProfileUseCase 생성
+    func makeSaveUserProfileUseCase() -> SaveUserProfileUseCase {
+        return DefaultSaveUserProfileUseCase(repository: makeUserProfileRepository())
+    }
+
+    /// GetUserProfileUseCase 생성
+    func makeGetUserProfileUseCase() -> GetUserProfileUseCase {
+        return DefaultGetUserProfileUseCase(repository: makeUserProfileRepository())
     }
 }
 

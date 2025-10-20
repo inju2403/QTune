@@ -9,17 +9,24 @@ import SwiftUI
 
 /// CTA 버튼 with 광채 + 립플 + 3D effect
 public struct PrimaryCTAButton: View {
+    public enum Style {
+        case primary  // 기존 브라운/골드
+        case success  // 녹색 (은혜로운 톤)
+    }
+
     let title: String
     var icon: String = "sparkles"
+    var style: Style = .primary
     var action: () -> Void
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var press = false
     @State private var ripple = false
 
-    public init(title: String, icon: String = "sparkles", action: @escaping () -> Void) {
+    public init(title: String, icon: String = "sparkles", style: Style = .primary, action: @escaping () -> Void) {
         self.title = title
         self.icon = icon
+        self.style = style
         self.action = action
     }
 
@@ -43,7 +50,10 @@ public struct PrimaryCTAButton: View {
             .padding(.horizontal, 28)
             .background(
                 LinearGradient(
-                    colors: [
+                    colors: style == .success ? [
+                        Color(hex: "#77C593"),
+                        Color(hex: "#4AAE7B")
+                    ] : [
                         DSColor.accent.opacity(0.95),
                         DSColor.accent,
                         DSColor.accent2
@@ -63,13 +73,14 @@ public struct PrimaryCTAButton: View {
             .overlay(
                 // 립플 하이라이트
                 Circle()
-                    .stroke(DSColor.gold.opacity(ripple ? 0 : 0.5), lineWidth: 2)
+                    .stroke((style == .success ? Color(hex: "#77C593") : DSColor.gold).opacity(ripple ? 0 : 0.5), lineWidth: 2)
                     .scaleEffect(ripple ? 3.2 : 0.1)
                     .opacity(ripple ? 0 : 1)
                     .blendMode(.screen)
                     .animation(reduceMotion ? .none : .easeOut(duration: 0.7), value: ripple)
             )
-            .glow(DSColor.gold)
+            .shadow(color: .black.opacity(style == .success ? 0.15 : 0.1), radius: 8, y: 4)
+            .glow(style == .success ? Color(hex: "#77C593") : DSColor.gold)
             .scaleEffect(press ? 0.98 : 1)
         }
         .accessibilityHint("추천 결과가 아래에 펼쳐집니다")

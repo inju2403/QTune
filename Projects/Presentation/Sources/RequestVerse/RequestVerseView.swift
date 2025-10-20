@@ -13,13 +13,31 @@ public struct RequestVerseView: View {
     @StateObject private var viewModel: RequestVerseViewModel
     @State private var showConflict = false
     @State private var resultPhase: ResultPhase = .idle
+    @State private var userProfile: UserProfile?
     @Binding var path: NavigationPath
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
+    // MARK: - Dependencies
+    let commitQTUseCase: CommitQTUseCase
+    let session: UserSession
+    let getUserProfileUseCase: GetUserProfileUseCase
+    let onNavigateToRecordTab: () -> Void
+
     // MARK: - Init
-    public init(viewModel: RequestVerseViewModel, path: Binding<NavigationPath>) {
+    public init(
+        viewModel: RequestVerseViewModel,
+        path: Binding<NavigationPath>,
+        commitQTUseCase: CommitQTUseCase,
+        session: UserSession,
+        getUserProfileUseCase: GetUserProfileUseCase,
+        onNavigateToRecordTab: @escaping () -> Void
+    ) {
         _viewModel = StateObject(wrappedValue: viewModel)
         _path = path
+        self.commitQTUseCase = commitQTUseCase
+        self.session = session
+        self.getUserProfileUseCase = getUserProfileUseCase
+        self.onNavigateToRecordTab = onNavigateToRecordTab
     }
 
     // MARK: - Body
@@ -28,28 +46,43 @@ public struct RequestVerseView: View {
             CrossSunsetBackground()
 
             ScrollView {
-                VStack(alignment: .leading, spacing: 22) {
-                    // Title with shimmer
-                    Text("오늘의 말씀")
-                        .font(.system(size: 32, weight: .semibold, design: .rounded))
-                        .foregroundStyle(DSColor.textSec)
-                        .shimmer()
-                        .padding(.top, 28)
+                VStack(alignment: .leading, spacing: 28) {
+                    // 상단 여백
+                    Spacer()
+                        .frame(height: 20)
 
                     draftBanner()
                     descriptionSection()
                     inputSection()
                     errorSection()
 
-                    PrimaryCTAButton(title: "오늘의 말씀 추천받기") {
+                    // CTA 버튼
+                    Button {
+                        Haptics.tap()
                         Task {
                             resultPhase = .loading
                             viewModel.send(.tapRequest)
                         }
+                    } label: {
+                        HStack(spacing: 8) {
+                            Image(systemName: "sparkles")
+                                .font(.system(size: 16))
+                            Text("오늘의 말씀 추천받기")
+                                .font(.system(size: 17, weight: .semibold, design: .rounded))
+                        }
+                        .foregroundStyle(.white)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 16)
+                        .background(
+                            RoundedRectangle(cornerRadius: 14)
+                                .fill(Color(hex: "#8B7355"))
+                        )
+                        .shadow(color: Color.black.opacity(0.08), radius: 8, y: 3)
                     }
-                    .padding(.top, 8)
+                    .padding(.top, 16)
+                    .padding(.bottom, 40)
                 }
-                .padding(.horizontal, 20)
+                .padding(.horizontal, 22)
             }
             .navigationTitle("")
             .navigationBarTitleDisplayMode(.inline)
@@ -64,6 +97,7 @@ public struct RequestVerseView: View {
         }
         .onAppear {
             viewModel.send(.onAppear(userId: "me"))
+            loadUserProfile()
         }
         .onReceive(viewModel.effect) { eff in
             switch eff {
@@ -73,38 +107,48 @@ public struct RequestVerseView: View {
                 showConflict = true
             case .navigateToEditor(let draft):
                 path.append(draft)
-            case .navigateToQTEditor(let verse, let korean, let rationale):
-                let draft = QuietTime(
-                    id: UUID(),
-                    verse: verse,
-                    memo: "",
-                    korean: korean,
-                    rationale: rationale,
-                    date: Date(),
-                    status: .draft,
-                    tags: [],
-                    isFavorite: false,
-                    updatedAt: Date()
-                )
-                path.append(draft)
-            case .showToast:
+            case .navigateToQTEditor, .showToast:
                 break
             }
         }
         .onChange(of: viewModel.state.generatedResult) { newValue in
-            if newValue != nil {
+            if let result = newValue {
                 // Haptic 피드백
                 Haptics.success()
 
-                // 로딩 UI 닫기와 동시에 네비게이션
+                // 로딩 UI 닫기
                 withAnimation(.easeInOut(duration: 0.25)) {
                     resultPhase = .idle
                 }
 
-                // 즉시 QT 에디터로 네비게이션
-                viewModel.send(.tapGoToQT)
+                // ResultView로 네비게이션
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                    path.append(QTRoute.result(result))
+                }
             } else if resultPhase != .loading {
                 resultPhase = .idle
+            }
+        }
+        .navigationDestination(for: QTRoute.self) { route in
+            switch route {
+            case .result(let result):
+                ResultView(result: result, path: $path)
+            case .editor(let template, let verseEN, let verseRef, let explKR, let verse):
+                QTEditorWizardView(
+                    template: template,
+                    verseEN: verseEN,
+                    verseRef: verseRef,
+                    explKR: explKR,
+                    verse: verse,
+                    commitQTUseCase: commitQTUseCase,
+                    session: session,
+                    onSaveComplete: {
+                        // 네비게이션 스택 초기화
+                        path = NavigationPath()
+                        // 기록 탭으로 전환
+                        onNavigateToRecordTab()
+                    }
+                )
             }
         }
         .confirmationDialog("작성 중인 QT가 있어요",
@@ -173,122 +217,110 @@ private extension RequestVerseView {
     }
 
     func descriptionSection() -> some View {
-        VStack(alignment: .leading, spacing: 12) {
-            HStack(spacing: 8) {
-                Image(systemName: "heart.text.square")
-                    .foregroundStyle(DSColor.gold)
-                Text("오늘 하루는 어떠셨나요?")
-                    .font(.system(size: 20, weight: .semibold))
-                    .foregroundStyle(DSColor.cocoa)
-            }
+        VStack(alignment: .center, spacing: 20) {
+            // 상단 작은 아이콘
+            Image(systemName: "book.closed")
+                .font(.system(size: 40, weight: .light))
+                .foregroundStyle(DS.Color.gold.opacity(0.6))
+                .padding(.top, 8)
 
-            Text("오늘의 생각, 감정, 상황을 자유롭게 적어보세요")
-                .font(.system(size: 15))
-                .foregroundStyle(DSColor.textSec)
+            if let profile = userProfile {
+                // 개인화된 인사말 (큰 Serif 헤드라인)
+                VStack(spacing: 12) {
+                    Text("\(profile.nickname) \(profile.gender.rawValue)님")
+                        .font(.system(size: 36, weight: .bold, design: .serif))
+                        .foregroundStyle(DS.Color.deepCocoa)
+
+                    // 부제 (SF Rounded Light)
+                    Text("오늘 어떤 일이 있으셨나요?")
+                        .font(.system(size: 18, weight: .light, design: .rounded))
+                        .foregroundStyle(DS.Color.textSecondary)
+                        .multilineTextAlignment(.center)
+                        .lineSpacing(6)
+
+                    Text("글로 알려주시면 \(profile.nickname) \(profile.gender.rawValue)님에게\n오늘의 말씀을 추천해드릴게요")
+                        .font(.system(size: 15, weight: .regular, design: .rounded))
+                        .foregroundStyle(DS.Color.textSecondary.opacity(0.8))
+                        .multilineTextAlignment(.center)
+                        .lineSpacing(6)
+                }
+            } else {
+                // 프로필 로드 전 기본 텍스트
+                VStack(spacing: 12) {
+                    Text("오늘의 말씀")
+                        .font(.system(size: 36, weight: .bold, design: .serif))
+                        .foregroundStyle(DS.Color.deepCocoa)
+
+                    Text("오늘의 생각, 감정, 상황을\n자유롭게 적어보세요")
+                        .font(.system(size: 18, weight: .light, design: .rounded))
+                        .foregroundStyle(DS.Color.textSecondary)
+                        .multilineTextAlignment(.center)
+                        .lineSpacing(6)
+                }
+            }
         }
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, 8)
     }
 
     func inputSection() -> some View {
-        VStack(alignment: .leading, spacing: 16) {
-            // 감정/상황 입력
-            VStack(alignment: .leading, spacing: 12) {
-                HStack {
-                    Image(systemName: "heart.fill")
-                        .foregroundStyle(DSColor.gold)
-                    Text("감정/상황 (필수)")
-                        .font(.system(size: 16, weight: .semibold))
-                        .foregroundStyle(DSColor.cocoa)
-                    Spacer()
-                    Text("\(viewModel.state.moodText.count)/500")
-                        .font(.system(size: 13))
-                        .foregroundStyle(DSColor.textSec)
-                }
+        // 단일 통합 입력 필드
+        VStack(alignment: .leading, spacing: 18) {
+            // 제목
+            Text("어떤 내용이든 좋아요.\n오늘 느낀 감정, 생각 등을 공유해주세요.")
+                .font(.system(size: 16, weight: .medium, design: .rounded))
+                .foregroundStyle(Color(hex: "#6B6B6B"))
+                .multilineTextAlignment(.leading)
+                .lineSpacing(4)
+                .padding(.bottom, 4)
 
-                moodInputArea()
+            // 입력 영역
+            unifiedInputArea()
+
+            // 글자 수
+            HStack {
+                Spacer()
+                Text("\(viewModel.state.moodText.count)/700")
+                    .font(.system(size: 13, weight: .regular))
+                    .foregroundStyle(viewModel.state.moodText.count > 700 ? Color.red.opacity(0.7) : Color(hex: "#AFAFAF"))
             }
-            .padding(16)
-            .background(
-                RoundedRectangle(cornerRadius: 18)
-                    .fill(DSColor.card.opacity(0.9))
-            )
-
-            // 추가 메모
-            VStack(alignment: .leading, spacing: 12) {
-                HStack {
-                    Image(systemName: "note.text")
-                        .foregroundStyle(DSColor.olive)
-                    Text("추가 메모 (선택)")
-                        .font(.system(size: 16, weight: .semibold))
-                        .foregroundStyle(DSColor.cocoa)
-                    Spacer()
-                    Text("\(viewModel.state.noteText.count)/200")
-                        .font(.system(size: 13))
-                        .foregroundStyle(DSColor.textSec)
-                }
-
-                noteInputArea()
-            }
-            .padding(16)
-            .background(
-                RoundedRectangle(cornerRadius: 18)
-                    .fill(DSColor.card.opacity(0.9))
-            )
         }
+        .padding(28)
+        .background(
+            RoundedRectangle(cornerRadius: 24)
+                .fill(DS.Color.canvas.opacity(0.9))
+        )
     }
 
-    func moodInputArea() -> some View {
+    func unifiedInputArea() -> some View {
         let binding = Binding<String>(
             get: { viewModel.state.moodText },
-            set: { viewModel.send(.updateMood($0)) }
+            set: { newValue in
+                // 700자 제한
+                let limited = String(newValue.prefix(700))
+                viewModel.send(.updateMood(limited))
+            }
         )
 
         return ZStack(alignment: .topLeading) {
             if viewModel.state.moodText.isEmpty {
-                Text("예) 오늘은 중요한 시험을 앞두고 너무 긴장되고 불안해요...")
-                    .font(.system(size: 16))
-                    .foregroundStyle(DSColor.placeholder)  // placeholder 전용 색상 사용
-                    .padding(.horizontal, 5)
+                Text("내용을 입력하세요...")
+                    .font(.system(size: 16, design: .rounded))
+                    .foregroundStyle(Color(hex: "#D4D4D4"))
+                    .padding(.horizontal, 4)
                     .padding(.vertical, 8)
             }
 
             TextEditor(text: binding)
-                .font(.system(size: 16))
-                .foregroundStyle(DSColor.textPri)  // 더 짙은 텍스트
-                .frame(minHeight: 120)
+                .font(.system(size: 16, design: .rounded))
+                .foregroundStyle(Color(hex: "#3A3A3A"))
+                .frame(minHeight: 160)
                 .scrollContentBackground(.hidden)
                 .textInputAutocapitalization(.sentences)
                 .disableAutocorrection(false)
         }
-        .padding(8)
-        .background(DSColor.card)  // 순백 카드로 변경
-        .clipShape(RoundedRectangle(cornerRadius: 12))
-    }
-
-    func noteInputArea() -> some View {
-        let binding = Binding<String>(
-            get: { viewModel.state.noteText },
-            set: { viewModel.send(.updateNote($0)) }
-        )
-
-        return ZStack(alignment: .topLeading) {
-            if viewModel.state.noteText.isEmpty {
-                Text("예) 최선을 다했지만 결과가 걱정돼요")
-                    .font(.system(size: 16))
-                    .foregroundStyle(DSColor.placeholder)  // placeholder 전용 색상 사용
-                    .padding(.horizontal, 5)
-                    .padding(.vertical, 8)
-            }
-
-            TextEditor(text: binding)
-                .font(.system(size: 16))
-                .foregroundStyle(DSColor.textPri)  // 더 짙은 텍스트
-                .frame(minHeight: 80)
-                .scrollContentBackground(.hidden)
-                .textInputAutocapitalization(.sentences)
-                .disableAutocorrection(false)
-        }
-        .padding(8)
-        .background(DSColor.card)  // 순백 카드로 변경
+        .padding(12)
+        .background(Color(hex: "#F8F8F8"))
         .clipShape(RoundedRectangle(cornerRadius: 12))
     }
 
@@ -389,5 +421,18 @@ private extension RequestVerseView {
             Spacer()
         }
         .padding(.top, 6)
+    }
+
+    private func loadUserProfile() {
+        Task {
+            do {
+                let profile = try await getUserProfileUseCase.execute()
+                await MainActor.run {
+                    userProfile = profile
+                }
+            } catch {
+                print("Failed to load user profile: \(error)")
+            }
+        }
     }
 }

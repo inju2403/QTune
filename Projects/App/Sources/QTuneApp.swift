@@ -64,8 +64,31 @@ struct QTuneApp: App {
     /// 의존성 주입 컨테이너
     private let container = AppDependencyContainer()
 
+    /// 온보딩 완료 여부 (UserDefaults에서 동기적으로 읽음)
+    @AppStorage("hasCompletedOnboarding") private var hasCompletedOnboarding = false
+
     var body: some Scene {
         WindowGroup {
+            Group {
+                if !hasCompletedOnboarding {
+                    // 온보딩 미완료: 온보딩 화면 표시
+                    OnboardingView(
+                        saveUserProfileUseCase: container.makeSaveUserProfileUseCase()
+                    ) {
+                        hasCompletedOnboarding = true
+                    }
+                } else {
+                    // 온보딩 완료: 정상 앱 실행
+                    mainContent
+                }
+            }
+            .background(DS.Color.background)
+        }
+    }
+
+    @ViewBuilder
+    private var mainContent: some View {
+        Group {
             Group {
                 switch container.apiKeyStatus {
                 case .valid(_):
@@ -85,7 +108,7 @@ struct QTuneApp: App {
                             session: container.dummySession
                         )
 
-                        MainTabView(
+                        MainTabViewWrapper(
                             qtListViewModel: qtListVM,
                             detailViewModelFactory: { qt in
                                 QTDetailViewModel(
@@ -101,25 +124,12 @@ struct QTuneApp: App {
                                     updateQTUseCase: updateQTUseCase,
                                     session: container.dummySession
                                 )
-                            }
-                        ) {
-                            RootNavigationView(
-                                editorViewModelFactory: {
-                                    QTEditorViewModel(
-                                        commitQTUseCase: commitQTUseCase,
-                                        updateQTUseCase: updateQTUseCase,
-                                        session: container.dummySession
-                                    )
-                                }
-                            ) { path in
-                                RequestVerseView(
-                                    viewModel: RequestVerseViewModel(
-                                        generateVerseUseCase: generateVerseUseCase
-                                    ),
-                                    path: path
-                                )
-                            }
-                        }
+                            },
+                            generateVerseUseCase: generateVerseUseCase,
+                            commitQTUseCase: commitQTUseCase,
+                            getUserProfileUseCase: container.makeGetUserProfileUseCase(),
+                            session: container.dummySession
+                        )
                     } else {
                         // iOS 17 미만
                         APIKeyMissingView()
@@ -130,7 +140,7 @@ struct QTuneApp: App {
                     APIKeyMissingView()
                 }
             }
-            .background(Color(.systemBackground))
         }
     }
+
 }

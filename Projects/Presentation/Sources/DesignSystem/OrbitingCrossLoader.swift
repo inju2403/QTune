@@ -129,7 +129,7 @@ private struct WoodCrossBeveled: View {
 
 /// 십자가 페이드 로딩 오버레이
 public struct QTuneCrossOverlay: View {
-    public var message: String = "말씀을 기도로 준비하는 중…"
+    public var message: String = "말씀을 기도로 준비하는 중"
     public var size: CGFloat = 84
 
     public init() {}

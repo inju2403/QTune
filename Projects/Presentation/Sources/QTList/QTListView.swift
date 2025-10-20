@@ -88,33 +88,36 @@ public struct QTListView: View {
 private extension QTListView {
     @ViewBuilder
     func searchBar() -> some View {
-        SoftCard {
-            HStack(spacing: DS.Spacing.m) {
-                Image(systemName: "magnifyingglass")
-                    .foregroundStyle(DS.Color.gold)
-                    .font(DS.Font.bodyL())
+        HStack(spacing: DS.Spacing.m) {
+            Image(systemName: "magnifyingglass")
+                .foregroundStyle(DS.Color.gold)
+                .font(DS.Font.bodyL())
 
-                TextField("말씀, 태그, 내용으로 검색", text: $viewModel.searchText)
-                    .font(DS.Font.bodyM())
-                    .foregroundStyle(DS.Color.textPrimary)
-                    .textFieldStyle(.plain)
-                    .autocapitalization(.none)
-                    .disableAutocorrection(true)
+            TextField("말씀, 태그, 내용으로 검색", text: $viewModel.searchText)
+                .font(DS.Font.bodyM())
+                .foregroundStyle(DS.Color.textPrimary)
+                .textFieldStyle(.plain)
+                .autocapitalization(.none)
+                .disableAutocorrection(true)
 
-                if !viewModel.searchText.isEmpty {
-                    Button {
-                        Haptics.tap()
-                        withAnimation(Motion.appear) {
-                            viewModel.searchText = ""
-                        }
-                    } label: {
-                        Image(systemName: "xmark.circle.fill")
-                            .foregroundStyle(DS.Color.textSecondary)
-                            .font(DS.Font.bodyL())
+            if !viewModel.searchText.isEmpty {
+                Button {
+                    Haptics.tap()
+                    withAnimation(Motion.appear) {
+                        viewModel.searchText = ""
                     }
+                } label: {
+                    Image(systemName: "xmark.circle.fill")
+                        .foregroundStyle(DS.Color.textSecondary)
+                        .font(DS.Font.bodyL())
                 }
             }
         }
+        .padding(18)
+        .background(
+            RoundedRectangle(cornerRadius: 16)
+                .fill(DS.Color.canvas.opacity(0.9))
+        )
         .padding(.horizontal, DS.Spacing.l)
     }
 
@@ -127,9 +130,7 @@ private extension QTListView {
                     ForEach(QTListViewModel.FilterType.allCases, id: \.self) { filter in
                         Button {
                             Haptics.tap()
-                            withAnimation(Motion.appear) {
-                                viewModel.selectedFilter = filter
-                            }
+                            viewModel.selectedFilter = filter
                         } label: {
                             HStack {
                                 Text(filter.displayName)
@@ -140,18 +141,7 @@ private extension QTListView {
                         }
                     }
                 } label: {
-                    HStack(spacing: DS.Spacing.xs) {
-                        Text(viewModel.selectedFilter.displayName)
-                        Image(systemName: "chevron.down")
-                            .font(DS.Font.caption())
-                    }
-                    .font(DS.Font.bodyM(.medium))
-                    .foregroundStyle(DS.Color.textPrimary)
-                    .padding(.horizontal, DS.Spacing.m)
-                    .padding(.vertical, DS.Spacing.s)
-                    .background(DS.Color.canvas)
-                    .clipShape(Capsule())
-                    .overlay(Capsule().stroke(DS.Color.divider, lineWidth: 1))
+                    filterButton(text: viewModel.selectedFilter.displayName)
                 }
 
                 // 정렬
@@ -159,9 +149,7 @@ private extension QTListView {
                     ForEach(QTListViewModel.SortType.allCases, id: \.self) { sort in
                         Button {
                             Haptics.tap()
-                            withAnimation(Motion.appear) {
-                                viewModel.selectedSort = sort
-                            }
+                            viewModel.selectedSort = sort
                         } label: {
                             HStack {
                                 Text(sort.displayName)
@@ -172,23 +160,53 @@ private extension QTListView {
                         }
                     }
                 } label: {
-                    HStack(spacing: DS.Spacing.xs) {
-                        Text(viewModel.selectedSort.displayName)
-                        Image(systemName: "chevron.down")
-                            .font(DS.Font.caption())
-                    }
-                    .font(DS.Font.bodyM(.medium))
-                    .foregroundStyle(DS.Color.textPrimary)
-                    .padding(.horizontal, DS.Spacing.m)
-                    .padding(.vertical, DS.Spacing.s)
-                    .background(DS.Color.canvas)
-                    .clipShape(Capsule())
-                    .overlay(Capsule().stroke(DS.Color.divider, lineWidth: 1))
+                    sortButton(text: viewModel.selectedSort.displayName)
                 }
             }
             .padding(.horizontal, DS.Spacing.l)
         }
-        .padding(.vertical, DS.Spacing.s)
+        .padding(.top, DS.Spacing.m)
+        .padding(.bottom, DS.Spacing.xs)
+    }
+
+    @ViewBuilder
+    func filterButton(text: String) -> some View {
+        ZStack {
+            Capsule()
+                .fill(DS.Color.canvas.opacity(0.9))
+                .frame(width: 105, height: 38)
+
+            HStack(spacing: DS.Spacing.xs) {
+                Text(text)
+                    .font(DS.Font.bodyM(.medium))
+                    .foregroundStyle(DS.Color.textPrimary)
+
+                Image(systemName: "chevron.down")
+                    .font(DS.Font.caption())
+                    .foregroundStyle(DS.Color.textPrimary)
+            }
+        }
+        .frame(width: 105, height: 38)
+    }
+
+    @ViewBuilder
+    func sortButton(text: String) -> some View {
+        ZStack {
+            Capsule()
+                .fill(DS.Color.canvas.opacity(0.9))
+                .frame(width: 105, height: 38)
+
+            HStack(spacing: DS.Spacing.xs) {
+                Text(text)
+                    .font(DS.Font.bodyM(.medium))
+                    .foregroundStyle(DS.Color.textPrimary)
+
+                Image(systemName: "chevron.down")
+                    .font(DS.Font.caption())
+                    .foregroundStyle(DS.Color.textPrimary)
+            }
+        }
+        .frame(width: 105, height: 38)
     }
 
     @ViewBuilder
@@ -221,7 +239,7 @@ private extension QTListView {
                 // 1행: 말씀 제목 (크고 두껍게) + 날짜
                 HStack(alignment: .top) {
                     Text(qt.verse.id)
-                        .font(.system(size: 24, weight: .bold, design: .serif))  // 더 크게
+                        .font(.system(size: 24, weight: .bold, design: .serif))
                         .foregroundStyle(DS.Color.deepCocoa)
                         .lineLimit(2)
 
@@ -235,10 +253,10 @@ private extension QTListView {
                 // 2행: 말씀 본문 (크게, 3~4줄)
                 if !qt.verse.text.isEmpty {
                     Text(qt.verse.text)
-                        .font(.system(size: 17, weight: .regular, design: .serif))  // 성경 느낌 나는 세리프
+                        .font(.system(size: 17, weight: .regular, design: .serif))
                         .foregroundStyle(DS.Color.textPrimary)
-                        .lineLimit(4)  // 4줄까지 표시
-                        .lineSpacing(6)  // 줄간격 넉넉하게
+                        .lineLimit(4)
+                        .lineSpacing(6)
                 }
 
                 // 3행: 뱃지 + 즐겨찾기

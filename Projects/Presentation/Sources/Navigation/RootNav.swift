@@ -11,14 +11,14 @@ import Domain
 // Simple navigation coordinator that wraps content with NavigationStack
 public struct RootNavigationView<Content: View>: View {
     @State private var path = NavigationPath()
-    let content: (Binding<NavigationPath>) -> Content
-    let editorViewModelFactory: () -> QTEditorViewModel
+    let content: (Binding<NavigationPath>, @escaping () -> Void) -> Content
+    let onNavigateToRecordTab: () -> Void
 
     public init(
-        editorViewModelFactory: @escaping () -> QTEditorViewModel,
-        @ViewBuilder content: @escaping (Binding<NavigationPath>) -> Content
+        onNavigateToRecordTab: @escaping () -> Void,
+        @ViewBuilder content: @escaping (Binding<NavigationPath>, @escaping () -> Void) -> Content
     ) {
-        self.editorViewModelFactory = editorViewModelFactory
+        self.onNavigateToRecordTab = onNavigateToRecordTab
         self.content = content
     }
 
@@ -32,15 +32,8 @@ public struct RootNavigationView<Content: View>: View {
 
                 // Navigation Stack
                 NavigationStack(path: $path) {
-                    content($path)
+                    content($path, onNavigateToRecordTab)
                         .background(Color(.systemBackground))
-                        .navigationDestination(for: QuietTime.self) { qt in
-                            QTEditorView(
-                                draft: qt,
-                                viewModel: editorViewModelFactory()
-                            )
-                            .background(Color(.systemBackground))
-                        }
                 }
             }
         }

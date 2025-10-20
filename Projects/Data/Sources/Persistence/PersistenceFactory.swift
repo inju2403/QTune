@@ -6,7 +6,7 @@
 //
 
 import Foundation
-@_implementationOnly import SwiftData
+import SwiftData
 import Domain
 
 /// Persistence 레이어 팩토리
