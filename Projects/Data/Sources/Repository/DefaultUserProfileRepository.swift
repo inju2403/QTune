@@ -22,6 +22,7 @@ public final class DefaultUserProfileRepository: UserProfileRepository {
     public func saveProfile(_ profile: UserProfile) async throws {
         try dataSource.saveNickname(profile.nickname)
         try dataSource.saveGender(profile.gender.rawValue)
+        try dataSource.saveProfileImage(profile.profileImageData)
         dataSource.setOnboardingCompleted(true)
     }
 
@@ -32,7 +33,8 @@ public final class DefaultUserProfileRepository: UserProfileRepository {
             return nil
         }
 
-        return UserProfile(nickname: nickname, gender: gender)
+        let profileImageData = dataSource.getProfileImage()
+        return UserProfile(nickname: nickname, gender: gender, profileImageData: profileImageData)
     }
 
     public func hasCompletedOnboarding() async -> Bool {

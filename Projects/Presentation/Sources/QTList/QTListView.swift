@@ -10,17 +10,26 @@ import Domain
 
 public struct QTListView: View {
     @StateObject private var viewModel: QTListViewModel
+    @State private var userProfile: UserProfile?
+    @State private var showProfileEdit = false
+
     let detailViewModelFactory: (QuietTime) -> QTDetailViewModel
     let editorViewModelFactory: () -> QTEditorViewModel
+    let getUserProfileUseCase: GetUserProfileUseCase
+    let saveUserProfileUseCase: SaveUserProfileUseCase
 
     public init(
         viewModel: QTListViewModel,
         detailViewModelFactory: @escaping (QuietTime) -> QTDetailViewModel,
-        editorViewModelFactory: @escaping () -> QTEditorViewModel
+        editorViewModelFactory: @escaping () -> QTEditorViewModel,
+        getUserProfileUseCase: GetUserProfileUseCase,
+        saveUserProfileUseCase: SaveUserProfileUseCase
     ) {
         _viewModel = StateObject(wrappedValue: viewModel)
         self.detailViewModelFactory = detailViewModelFactory
         self.editorViewModelFactory = editorViewModelFactory
+        self.getUserProfileUseCase = getUserProfileUseCase
+        self.saveUserProfileUseCase = saveUserProfileUseCase
     }
 
     public var body: some View {
@@ -65,8 +74,17 @@ public struct QTListView: View {
             }
             .navigationTitle("기록")
             .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    ProfileHeaderView(profile: userProfile) {
+                        Haptics.tap()
+                        showProfileEdit = true
+                    }
+                }
+            }
             .task {
                 await viewModel.load()
+                loadUserProfile()
             }
             .alert("기록 삭제", isPresented: $viewModel.showDeleteAlert) {
                 Button("취소", role: .cancel) {
@@ -79,6 +97,30 @@ public struct QTListView: View {
                 }
             } message: {
                 Text("이 기록을 삭제할까요? 이 작업은 되돌릴 수 없습니다.")
+            }
+            .sheet(isPresented: $showProfileEdit) {
+                NavigationStack {
+                    ProfileEditView(
+                        currentProfile: userProfile,
+                        saveUseCase: saveUserProfileUseCase,
+                        onSave: {
+                            loadUserProfile()
+                        }
+                    )
+                }
+            }
+        }
+    }
+
+    private func loadUserProfile() {
+        Task {
+            do {
+                let profile = try await getUserProfileUseCase.execute()
+                await MainActor.run {
+                    userProfile = profile
+                }
+            } catch {
+                print("Failed to load user profile: \(error)")
             }
         }
     }

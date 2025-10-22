@@ -16,6 +16,7 @@ public struct MainTabViewWrapper: View {
     let generateVerseUseCase: GenerateVerseUseCase
     let commitQTUseCase: CommitQTUseCase
     let getUserProfileUseCase: GetUserProfileUseCase
+    let saveUserProfileUseCase: SaveUserProfileUseCase
     let session: UserSession
 
     @State private var selectedTab = 0
@@ -27,6 +28,7 @@ public struct MainTabViewWrapper: View {
         generateVerseUseCase: GenerateVerseUseCase,
         commitQTUseCase: CommitQTUseCase,
         getUserProfileUseCase: GetUserProfileUseCase,
+        saveUserProfileUseCase: SaveUserProfileUseCase,
         session: UserSession
     ) {
         self.qtListViewModel = qtListViewModel
@@ -35,6 +37,7 @@ public struct MainTabViewWrapper: View {
         self.generateVerseUseCase = generateVerseUseCase
         self.commitQTUseCase = commitQTUseCase
         self.getUserProfileUseCase = getUserProfileUseCase
+        self.saveUserProfileUseCase = saveUserProfileUseCase
         self.session = session
     }
 
@@ -55,6 +58,7 @@ public struct MainTabViewWrapper: View {
                     commitQTUseCase: commitQTUseCase,
                     session: session,
                     getUserProfileUseCase: getUserProfileUseCase,
+                    saveUserProfileUseCase: saveUserProfileUseCase,
                     onNavigateToRecordTab: onNavigateToRecordTab
                 )
             }
@@ -70,7 +74,9 @@ public struct MainTabViewWrapper: View {
             QTListView(
                 viewModel: qtListViewModel,
                 detailViewModelFactory: detailViewModelFactory,
-                editorViewModelFactory: editorViewModelFactory
+                editorViewModelFactory: editorViewModelFactory,
+                getUserProfileUseCase: getUserProfileUseCase,
+                saveUserProfileUseCase: saveUserProfileUseCase
             )
             .tabItem {
                 Label("기록", systemImage: "book.closed")

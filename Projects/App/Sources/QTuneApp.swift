@@ -128,6 +128,7 @@ struct QTuneApp: App {
                             generateVerseUseCase: generateVerseUseCase,
                             commitQTUseCase: commitQTUseCase,
                             getUserProfileUseCase: container.makeGetUserProfileUseCase(),
+                            saveUserProfileUseCase: container.makeSaveUserProfileUseCase(),
                             session: container.dummySession
                         )
                     } else {

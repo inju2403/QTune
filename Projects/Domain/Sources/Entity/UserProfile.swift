@@ -10,10 +10,12 @@ import Foundation
 public struct UserProfile: Equatable {
     public let nickname: String
     public let gender: Gender
+    public let profileImageData: Data?
 
-    public init(nickname: String, gender: Gender) {
+    public init(nickname: String, gender: Gender, profileImageData: Data? = nil) {
         self.nickname = nickname
         self.gender = gender
+        self.profileImageData = profileImageData
     }
 
     public enum Gender: String, Codable {

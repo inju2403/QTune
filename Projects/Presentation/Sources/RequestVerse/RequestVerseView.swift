@@ -14,6 +14,7 @@ public struct RequestVerseView: View {
     @State private var showConflict = false
     @State private var resultPhase: ResultPhase = .idle
     @State private var userProfile: UserProfile?
+    @State private var showProfileEdit = false
     @Binding var path: NavigationPath
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
@@ -21,6 +22,7 @@ public struct RequestVerseView: View {
     let commitQTUseCase: CommitQTUseCase
     let session: UserSession
     let getUserProfileUseCase: GetUserProfileUseCase
+    let saveUserProfileUseCase: SaveUserProfileUseCase
     let onNavigateToRecordTab: () -> Void
 
     // MARK: - Init
@@ -30,6 +32,7 @@ public struct RequestVerseView: View {
         commitQTUseCase: CommitQTUseCase,
         session: UserSession,
         getUserProfileUseCase: GetUserProfileUseCase,
+        saveUserProfileUseCase: SaveUserProfileUseCase,
         onNavigateToRecordTab: @escaping () -> Void
     ) {
         _viewModel = StateObject(wrappedValue: viewModel)
@@ -37,6 +40,7 @@ public struct RequestVerseView: View {
         self.commitQTUseCase = commitQTUseCase
         self.session = session
         self.getUserProfileUseCase = getUserProfileUseCase
+        self.saveUserProfileUseCase = saveUserProfileUseCase
         self.onNavigateToRecordTab = onNavigateToRecordTab
     }
 
@@ -86,6 +90,14 @@ public struct RequestVerseView: View {
             }
             .navigationTitle("")
             .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    ProfileHeaderView(profile: userProfile) {
+                        Haptics.tap()
+                        showProfileEdit = true
+                    }
+                }
+            }
             .scrollDismissesKeyboard(.interactively)
 
             // Loading overlay
@@ -162,6 +174,17 @@ public struct RequestVerseView: View {
             Button("취소", role: .cancel) {}
         } message: {
             Text("새로 시작하면 기존 초안은 삭제돼요. 어떻게 할까요?")
+        }
+        .sheet(isPresented: $showProfileEdit) {
+            NavigationStack {
+                ProfileEditView(
+                    currentProfile: userProfile,
+                    saveUseCase: saveUserProfileUseCase,
+                    onSave: {
+                        loadUserProfile()
+                    }
+                )
+            }
         }
     }
 }
