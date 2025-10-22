@@ -105,10 +105,25 @@ private extension ResultView {
                 .font(DS.Font.verse(17, .regular))
                 .foregroundStyle(DS.Color.textPrimary)
                 .lineSpacing(6)
+                .padding(.bottom, 12)
 
-            Text("\(result.verse.translation) (Public Domain)")
-                .font(DS.Font.caption())
-                .foregroundStyle(DS.Color.textSecondary)
+            // 번역본 표시 (좌측 정렬)
+            HStack(spacing: 6) {
+                Image(systemName: "text.book.closed")
+                    .font(.system(size: 11))
+                    .foregroundStyle(DS.Color.gold.opacity(0.7))
+
+                Text(result.verse.translation.uppercased())
+                    .font(.system(size: 12, weight: .medium, design: .rounded))
+                    .foregroundStyle(DS.Color.gold.opacity(0.8))
+
+                Text("·")
+                    .foregroundStyle(DS.Color.textSecondary.opacity(0.5))
+
+                Text("Public Domain")
+                    .font(.system(size: 11, weight: .regular))
+                    .foregroundStyle(DS.Color.textSecondary.opacity(0.7))
+            }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(24)

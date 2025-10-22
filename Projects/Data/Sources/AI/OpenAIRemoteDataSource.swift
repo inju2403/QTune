@@ -247,7 +247,7 @@ public final class OpenAIDataSource: OpenAIRemoteDataSource {
 
         // 사용자 locale 확인
         let isKorean = request.locale.hasPrefix("ko")
-        let translation = isKorean ? "개역개정 또는 새번역" : "NIV 또는 ESV"
+        let translation = isKorean ? "개역개정 또는 새번역" : "WEB 또는 KJV"
 
         return """
         큐튠(QTune) 사용자가 "\(request.mood)\(noteSection)"라고 말했어.
@@ -257,7 +257,7 @@ public final class OpenAIDataSource: OpenAIRemoteDataSource {
         [출력 형식 - 모든 필드 필수]
         - verseRef: "책명 장:절" (예: "시편 23:1")
         - verseText: \(translation) 번역으로 제공
-        - verseTextEN: 영어 텍스트 (NIV 또는 ESV) - 항상 제공
+        - verseTextEN: 영어 텍스트 (WEB 또는 KJV) - 항상 제공
         - rationale: 추천 이유 (2문장 이내)
         - tags: 태그 목록 (예: ["위로", "감사", "용기"]) - 최소 1개, 최대 5개
         - safety: 안전성 검증
