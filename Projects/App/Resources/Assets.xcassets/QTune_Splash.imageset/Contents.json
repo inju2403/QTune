@@ -2,8 +2,7 @@
   "images" : [
     {
       "filename" : "QTune_Splash_1242x2688.png",
-      "idiom" : "universal",
-      "scale" : "1x"
+      "idiom" : "universal"
     }
   ],
   "info" : {

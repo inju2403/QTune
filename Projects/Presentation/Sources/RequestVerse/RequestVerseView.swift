@@ -49,16 +49,23 @@ public struct RequestVerseView: View {
         ZStack {
             CrossSunsetBackground()
 
-            ScrollView {
-                VStack(alignment: .leading, spacing: 28) {
-                    // 상단 여백
-                    Spacer()
-                        .frame(height: 20)
+            VStack(spacing: 0) {
+                // 앱 아이콘 영역
+                Image("QTune_Icon")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 70, height: 70)
+                    .clipShape(RoundedRectangle(cornerRadius: 16))
+                    .shadow(color: .black.opacity(0.15), radius: 10, y: 5)
+                    .padding(.top, 8)
+                    .padding(.bottom, 24)
 
-                    draftBanner()
-                    descriptionSection()
-                    inputSection()
-                    errorSection()
+                ScrollView {
+                    VStack(alignment: .leading, spacing: 28) {
+                        draftBanner()
+                        descriptionSection()
+                        inputSection()
+                        errorSection()
 
                     // CTA 버튼
                     Button {
@@ -84,9 +91,10 @@ public struct RequestVerseView: View {
                         .shadow(color: Color.black.opacity(0.08), radius: 8, y: 3)
                     }
                     .padding(.top, 16)
-                    .padding(.bottom, 40)
+                    .padding(.bottom, 60)
+                    }
+                    .padding(.horizontal, 22)
                 }
-                .padding(.horizontal, 22)
             }
             .navigationTitle("")
             .navigationBarTitleDisplayMode(.inline)
@@ -240,13 +248,7 @@ private extension RequestVerseView {
     }
 
     func descriptionSection() -> some View {
-        VStack(alignment: .center, spacing: 20) {
-            // 상단 작은 아이콘
-            Image(systemName: "book.closed")
-                .font(.system(size: 40, weight: .light))
-                .foregroundStyle(DS.Color.gold.opacity(0.6))
-                .padding(.top, 8)
-
+        VStack(alignment: .center, spacing: 16) {
             if let profile = userProfile {
                 // 개인화된 인사말 (큰 Serif 헤드라인)
                 VStack(spacing: 12) {
