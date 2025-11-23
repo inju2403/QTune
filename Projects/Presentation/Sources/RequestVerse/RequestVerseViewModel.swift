@@ -9,9 +9,9 @@ import Foundation
 import Combine
 import Domain
 
-@MainActor
-public final class RequestVerseViewModel: ObservableObject {
-    @Published var state = RequestVerseState()
+@Observable
+public final class RequestVerseViewModel {
+    public private(set) var state = RequestVerseState()
     let effect = PassthroughSubject<RequestVerseEffect, Never>()
 
     private let generateVerseUseCase: GenerateVerseUseCase

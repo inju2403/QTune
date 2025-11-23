@@ -9,20 +9,10 @@ import SwiftUI
 import Domain
 
 public struct OnboardingView: View {
-    @State private var nickname = ""
-    @State private var selectedGender: UserProfile.Gender = .brother
-    @State private var isSaving = false
-    @State private var showError = false
+    @State private var viewModel: OnboardingViewModel
 
-    let saveUserProfileUseCase: SaveUserProfileUseCase
-    let onComplete: () -> Void
-
-    public init(
-        saveUserProfileUseCase: SaveUserProfileUseCase,
-        onComplete: @escaping () -> Void
-    ) {
-        self.saveUserProfileUseCase = saveUserProfileUseCase
-        self.onComplete = onComplete
+    public init(viewModel: OnboardingViewModel) {
+        _viewModel = State(wrappedValue: viewModel)
     }
 
     public var body: some View {
@@ -59,7 +49,10 @@ public struct OnboardingView: View {
                                 .foregroundStyle(DS.Color.deepCocoa)
                         }
 
-                        TextField("이름을 입력해주세요", text: $nickname)
+                        TextField("이름을 입력해주세요", text: Binding(
+                            get: { viewModel.state.nickname },
+                            set: { viewModel.send(.updateNickname($0)) }
+                        ))
                             .font(DS.Font.bodyM())
                             .foregroundStyle(DS.Color.textPrimary)
                             .padding(16)
@@ -85,12 +78,12 @@ public struct OnboardingView: View {
                             // 형제 버튼
                             Button {
                                 Haptics.tap()
-                                selectedGender = .brother
+                                viewModel.send(.selectGender(.brother))
                             } label: {
                                 Text("형제")
                                     .font(DS.Font.bodyL(.semibold))
                                     .foregroundStyle(
-                                        selectedGender == .brother
+                                        viewModel.state.selectedGender == .brother
                                             ? .white
                                             : DS.Color.deepCocoa
                                     )
@@ -99,7 +92,7 @@ public struct OnboardingView: View {
                                     .background(
                                         RoundedRectangle(cornerRadius: DS.Radius.s)
                                             .fill(
-                                                selectedGender == .brother
+                                                viewModel.state.selectedGender == .brother
                                                     ? DS.Color.mocha
                                                     : DS.Color.canvas
                                             )
@@ -110,12 +103,12 @@ public struct OnboardingView: View {
                             // 자매 버튼
                             Button {
                                 Haptics.tap()
-                                selectedGender = .sister
+                                viewModel.send(.selectGender(.sister))
                             } label: {
                                 Text("자매")
                                     .font(DS.Font.bodyL(.semibold))
                                     .foregroundStyle(
-                                        selectedGender == .sister
+                                        viewModel.state.selectedGender == .sister
                                             ? .white
                                             : DS.Color.deepCocoa
                                     )
@@ -124,7 +117,7 @@ public struct OnboardingView: View {
                                     .background(
                                         RoundedRectangle(cornerRadius: DS.Radius.s)
                                             .fill(
-                                                selectedGender == .sister
+                                                viewModel.state.selectedGender == .sister
                                                     ? DS.Color.mocha
                                                     : DS.Color.canvas
                                             )
@@ -147,10 +140,10 @@ public struct OnboardingView: View {
                 // 시작하기 버튼
                 Button {
                     Haptics.tap()
-                    saveProfile()
+                    viewModel.send(.saveProfile)
                 } label: {
                     HStack(spacing: 8) {
-                        if isSaving {
+                        if viewModel.state.isSaving {
                             ProgressView()
                                 .tint(.white)
                         } else {
@@ -165,7 +158,7 @@ public struct OnboardingView: View {
                         RoundedRectangle(cornerRadius: 16)
                             .fill(
                                 LinearGradient(
-                                    colors: nickname.isEmpty
+                                    colors: viewModel.state.nickname.isEmpty
                                         ? [DS.Color.textSecondary, DS.Color.textSecondary]
                                         : [DS.Color.mocha, DS.Color.deepCocoa],
                                     startPoint: .topLeading,
@@ -173,46 +166,30 @@ public struct OnboardingView: View {
                                 )
                             )
                             .shadow(
-                                color: nickname.isEmpty ? .clear : DS.Color.mocha.opacity(0.3),
+                                color: viewModel.state.nickname.isEmpty ? .clear : DS.Color.mocha.opacity(0.3),
                                 radius: 8,
                                 y: 4
                             )
                     )
                 }
                 .buttonStyle(.plain)
-                .disabled(nickname.isEmpty || isSaving)
+                .disabled(viewModel.state.nickname.isEmpty || viewModel.state.isSaving)
                 .padding(.horizontal, 20)
                 .padding(.bottom, 40)
             }
         }
-        .alert("오류", isPresented: $showError) {
+        .onChange(of: viewModel.state.isSaving) { isSaving in
+            if !isSaving && !viewModel.state.showError {
+                Haptics.success()
+            }
+        }
+        .alert("오류", isPresented: Binding(
+            get: { viewModel.state.showError },
+            set: { _ in }
+        )) {
             Button("확인", role: .cancel) {}
         } message: {
             Text("프로필 저장에 실패했습니다. 다시 시도해주세요.")
-        }
-    }
-
-    private func saveProfile() {
-        guard !nickname.isEmpty, !isSaving else { return }
-
-        Task {
-            await MainActor.run { isSaving = true }
-
-            do {
-                let profile = UserProfile(nickname: nickname, gender: selectedGender)
-                try await saveUserProfileUseCase.execute(profile: profile)
-
-                await MainActor.run {
-                    Haptics.success()
-                    isSaving = false
-                    onComplete()
-                }
-            } catch {
-                await MainActor.run {
-                    isSaving = false
-                    showError = true
-                }
-            }
         }
     }
 }

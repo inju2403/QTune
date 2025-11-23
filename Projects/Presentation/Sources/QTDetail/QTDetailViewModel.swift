@@ -6,16 +6,13 @@
 //
 
 import Foundation
-import SwiftUI
 import Domain
 
 /// QT 상세 화면 ViewModel
-public final class QTDetailViewModel: ObservableObject {
-    // MARK: - Published State
-    @Published public var showDeleteAlert = false
-    @Published public var showShareSheet = false
-    @Published public var showEditSheet = false
-    @Published public var shareText: String = ""
+@Observable
+public final class QTDetailViewModel {
+    // MARK: - State
+    public private(set) var state: QTDetailState
 
     // MARK: - Dependencies
     private let toggleFavoriteUseCase: ToggleFavoriteUseCase
@@ -23,7 +20,6 @@ public final class QTDetailViewModel: ObservableObject {
     private let session: UserSession
 
     // MARK: - Properties
-    public let qt: QuietTime
     public var onDeleted: (() -> Void)?
 
     // MARK: - Init
@@ -33,28 +29,45 @@ public final class QTDetailViewModel: ObservableObject {
         deleteQTUseCase: DeleteQTUseCase,
         session: UserSession
     ) {
-        self.qt = qt
+        self.state = QTDetailState(qt: qt)
         self.toggleFavoriteUseCase = toggleFavoriteUseCase
         self.deleteQTUseCase = deleteQTUseCase
         self.session = session
     }
 
+    // MARK: - Send Action
+    public func send(_ action: QTDetailAction) {
+        switch action {
+        case .toggleFavorite:
+            Task { await toggleFavorite() }
+
+        case .confirmDelete:
+            state.showDeleteAlert = true
+
+        case .deleteQT:
+            Task { await deleteQT() }
+
+        case .prepareShare:
+            state.shareText = generateShareText()
+            state.showShareSheet = true
+
+        case .showEditSheet(let show):
+            state.showEditSheet = show
+        }
+    }
+
     // MARK: - Actions
-    public func toggleFavorite() async {
+    private func toggleFavorite() async {
         do {
-            _ = try await toggleFavoriteUseCase.execute(id: qt.id, session: session)
+            _ = try await toggleFavoriteUseCase.execute(id: state.qt.id, session: session)
         } catch {
             print("❌ Failed to toggle favorite: \(error)")
         }
     }
 
-    public func confirmDelete() {
-        showDeleteAlert = true
-    }
-
-    public func deleteQT() async {
+    private func deleteQT() async {
         do {
-            try await deleteQTUseCase.execute(id: qt.id, session: session)
+            try await deleteQTUseCase.execute(id: state.qt.id, session: session)
             await MainActor.run {
                 onDeleted?()
             }
@@ -63,45 +76,40 @@ public final class QTDetailViewModel: ObservableObject {
         }
     }
 
-    public func prepareShare() {
-        shareText = generateShareText()
-        showShareSheet = true
-    }
-
     // MARK: - Share Text Generation
     private func generateShareText() -> String {
         var text = """
-        📖 \(qt.verse.id)
+        📖 \(state.qt.verse.id)
 
-        \(qt.verse.text)
+        \(state.qt.verse.text)
 
         """
 
-        if let korean = qt.korean, !korean.isEmpty {
+        if let korean = state.qt.korean, !korean.isEmpty {
             text += "\n\(korean)\n"
         }
 
-        if qt.template == "SOAP" {
-            if let observation = qt.soapObservation, !observation.isEmpty {
+        if state.qt.template == "SOAP" {
+            if let observation = state.qt.soapObservation, !observation.isEmpty {
                 text += "\n🔎 관찰\n\(observation)\n"
             }
-            if let application = qt.soapApplication, !application.isEmpty {
+            if let application = state.qt.soapApplication, !application.isEmpty {
                 text += "\n📝 적용\n\(application)\n"
             }
-            if let prayer = qt.soapPrayer, !prayer.isEmpty {
+            if let prayer = state.qt.soapPrayer, !prayer.isEmpty {
                 text += "\n🙏 기도\n\(prayer)\n"
             }
         } else {
-            if let adoration = qt.actsAdoration, !adoration.isEmpty {
+            if let adoration = state.qt.actsAdoration, !adoration.isEmpty {
                 text += "\n✨ 찬양\n\(adoration)\n"
             }
-            if let confession = qt.actsConfession, !confession.isEmpty {
+            if let confession = state.qt.actsConfession, !confession.isEmpty {
                 text += "\n💧 회개\n\(confession)\n"
             }
-            if let thanksgiving = qt.actsThanksgiving, !thanksgiving.isEmpty {
+            if let thanksgiving = state.qt.actsThanksgiving, !thanksgiving.isEmpty {
                 text += "\n💚 감사\n\(thanksgiving)\n"
             }
-            if let supplication = qt.actsSupplication, !supplication.isEmpty {
+            if let supplication = state.qt.actsSupplication, !supplication.isEmpty {
                 text += "\n🤲 간구\n\(supplication)\n"
             }
         }

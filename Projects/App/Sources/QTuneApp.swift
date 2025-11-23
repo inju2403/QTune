@@ -69,21 +69,26 @@ struct QTuneApp: App {
 
     var body: some Scene {
         WindowGroup {
-            Group {
-                if !hasCompletedOnboarding {
-                    // 온보딩 미완료: 온보딩 화면 표시
-                    OnboardingView(
-                        saveUserProfileUseCase: container.makeSaveUserProfileUseCase()
-                    ) {
-                        hasCompletedOnboarding = true
-                    }
-                } else {
-                    // 온보딩 완료: 정상 앱 실행
-                    mainContent
-                }
+            if !hasCompletedOnboarding {
+                // 온보딩 미완료: 온보딩 화면 표시
+                onboardingView
+                    .background(DS.Color.background)
+            } else {
+                // 온보딩 완료: 정상 앱 실행
+                mainContent
+                    .background(DS.Color.background)
             }
-            .background(DS.Color.background)
         }
+    }
+
+    @ViewBuilder
+    private var onboardingView: some View {
+        OnboardingViewWrapper(
+            saveUserProfileUseCase: container.makeSaveUserProfileUseCase(),
+            onComplete: {
+                hasCompletedOnboarding = true
+            }
+        )
     }
 
     @ViewBuilder
@@ -125,6 +130,12 @@ struct QTuneApp: App {
                                     session: container.dummySession
                                 )
                             },
+                            profileEditViewModelFactory: { currentProfile in
+                                ProfileEditViewModel(
+                                    currentProfile: currentProfile,
+                                    saveUserProfileUseCase: container.makeSaveUserProfileUseCase()
+                                )
+                            },
                             generateVerseUseCase: generateVerseUseCase,
                             commitQTUseCase: commitQTUseCase,
                             getUserProfileUseCase: container.makeGetUserProfileUseCase(),
@@ -143,5 +154,18 @@ struct QTuneApp: App {
             }
         }
     }
+}
 
+// MARK: - Helper Wrappers
+struct OnboardingViewWrapper: View {
+    let saveUserProfileUseCase: SaveUserProfileUseCase
+    let onComplete: () -> Void
+
+    var body: some View {
+        let onboardingVM = OnboardingViewModel(
+            saveUserProfileUseCase: saveUserProfileUseCase
+        )
+        onboardingVM.onComplete = onComplete
+        return OnboardingView(viewModel: onboardingVM)
+    }
 }

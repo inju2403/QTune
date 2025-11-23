@@ -6,19 +6,13 @@
 //
 
 import Foundation
-import SwiftUI
 import Domain
 
 /// QT 리스트 화면 ViewModel
-public final class QTListViewModel: ObservableObject {
-    // MARK: - Published State
-    @Published public var searchText: String = ""
-    @Published public var selectedFilter: FilterType = .all
-    @Published public var selectedSort: SortType = .newest
-    @Published public var showDeleteAlert = false
-    @Published public var qtToDelete: QuietTime?
-    @Published public var qtList: [QuietTime] = []
-    @Published public var isLoading = false
+@Observable
+public final class QTListViewModel {
+    // MARK: - State
+    public private(set) var state: QTListState
 
     // MARK: - Dependencies
     private let fetchQTListUseCase: FetchQTListUseCase
@@ -33,51 +27,61 @@ public final class QTListViewModel: ObservableObject {
         deleteQTUseCase: DeleteQTUseCase,
         session: UserSession
     ) {
+        self.state = QTListState()
         self.fetchQTListUseCase = fetchQTListUseCase
         self.toggleFavoriteUseCase = toggleFavoriteUseCase
         self.deleteQTUseCase = deleteQTUseCase
         self.session = session
     }
 
-    // MARK: - Filter Types
-    public enum FilterType: String, CaseIterable {
-        case all = "전체"
-        case favorite = "즐겨찾기"
-        case soap = "S.O.A.P"
-        case acts = "A.C.T.S"
+    // MARK: - Send Action
+    public func send(_ action: QTListAction) {
+        switch action {
+        case .load:
+            Task { await load() }
 
-        var displayName: String { rawValue }
-    }
+        case .updateSearchText(let text):
+            state.searchText = text
 
-    // MARK: - Sort Types
-    public enum SortType: String, CaseIterable {
-        case newest = "최신순"
-        case oldest = "오래된순"
+        case .selectFilter(let filter):
+            state.selectedFilter = filter
 
-        var displayName: String { rawValue }
+        case .selectSort(let sort):
+            state.selectedSort = sort
+
+        case .toggleFavorite(let qt):
+            Task { await toggleFavorite(qt) }
+
+        case .confirmDelete(let qt):
+            state.qtToDelete = qt
+            state.showDeleteAlert = true
+
+        case .deleteQT:
+            Task { await deleteQT() }
+
+        case .cancelDelete:
+            state.qtToDelete = nil
+            state.showDeleteAlert = false
+        }
     }
 
     // MARK: - Actions
-    public func load() async {
-        await MainActor.run { isLoading = true }
+    private func load() async {
+        state.isLoading = true
 
         do {
             let query = QTQuery(limit: 100, offset: 0)
             let list = try await fetchQTListUseCase.execute(query: query, session: session)
 
-            await MainActor.run {
-                qtList = list
-                isLoading = false
-            }
+            state.qtList = list
+            state.isLoading = false
         } catch {
-            await MainActor.run {
-                qtList = []
-                isLoading = false
-            }
+            state.qtList = []
+            state.isLoading = false
         }
     }
 
-    public func toggleFavorite(_ qt: QuietTime) async {
+    private func toggleFavorite(_ qt: QuietTime) async {
         do {
             _ = try await toggleFavoriteUseCase.execute(id: qt.id, session: session)
             await load()  // 리로드
@@ -86,39 +90,25 @@ public final class QTListViewModel: ObservableObject {
         }
     }
 
-    public func confirmDelete(_ qt: QuietTime) {
-        qtToDelete = qt
-        showDeleteAlert = true
-    }
-
-    public func deleteQT() async {
-        guard let qt = qtToDelete else { return }
+    private func deleteQT() async {
+        guard let qt = state.qtToDelete else { return }
 
         do {
             try await deleteQTUseCase.execute(id: qt.id, session: session)
             await load()  // 리로드
-            await MainActor.run {
-                qtToDelete = nil
-                showDeleteAlert = false
-            }
+            state.qtToDelete = nil
+            state.showDeleteAlert = false
         } catch {
-            await MainActor.run {
-                showDeleteAlert = false
-            }
+            state.showDeleteAlert = false
         }
-    }
-
-    public func cancelDelete() {
-        qtToDelete = nil
-        showDeleteAlert = false
     }
 
     // MARK: - Filter Logic
     public var filteredAndSortedList: [QuietTime] {
-        var filtered = qtList
+        var filtered = state.qtList
 
         // 필터 적용
-        switch selectedFilter {
+        switch state.selectedFilter {
         case .all:
             break
         case .favorite:
@@ -130,8 +120,8 @@ public final class QTListViewModel: ObservableObject {
         }
 
         // 검색 적용
-        if !searchText.isEmpty {
-            let searchLower = searchText.lowercased()
+        if !state.searchText.isEmpty {
+            let searchLower = state.searchText.lowercased()
             filtered = filtered.filter { qt in
                 let matchesVerse = qt.verse.id.lowercased().contains(searchLower)
                 let matchesKorean = (qt.korean ?? "").lowercased().contains(searchLower)
@@ -154,7 +144,7 @@ public final class QTListViewModel: ObservableObject {
         }
 
         // 정렬 적용
-        switch selectedSort {
+        switch state.selectedSort {
         case .newest:
             filtered.sort { $0.date > $1.date }
         case .oldest:

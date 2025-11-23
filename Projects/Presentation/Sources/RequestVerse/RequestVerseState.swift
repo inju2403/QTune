@@ -8,7 +8,7 @@
 import Foundation
 import Domain
 
-struct RequestVerseState {
+public struct RequestVerseState: Equatable {
     // 입력
     var moodText: String = ""        // 감정/상황 (필수)
     var noteText: String = ""        // 추가 메모 (선택)

@@ -9,27 +9,26 @@ import SwiftUI
 import Domain
 
 public struct QTListView: View {
-    @StateObject private var viewModel: QTListViewModel
-    @State private var userProfile: UserProfile?
+    @State private var viewModel: QTListViewModel
+    @Binding var userProfile: UserProfile?
     @State private var showProfileEdit = false
 
     let detailViewModelFactory: (QuietTime) -> QTDetailViewModel
     let editorViewModelFactory: () -> QTEditorViewModel
-    let getUserProfileUseCase: GetUserProfileUseCase
-    let saveUserProfileUseCase: SaveUserProfileUseCase
+    let profileEditViewModelFactory: (UserProfile?) -> ProfileEditViewModel
 
     public init(
         viewModel: QTListViewModel,
+        userProfile: Binding<UserProfile?>,
         detailViewModelFactory: @escaping (QuietTime) -> QTDetailViewModel,
         editorViewModelFactory: @escaping () -> QTEditorViewModel,
-        getUserProfileUseCase: GetUserProfileUseCase,
-        saveUserProfileUseCase: SaveUserProfileUseCase
+        profileEditViewModelFactory: @escaping (UserProfile?) -> ProfileEditViewModel
     ) {
-        _viewModel = StateObject(wrappedValue: viewModel)
+        _viewModel = State(wrappedValue: viewModel)
+        _userProfile = userProfile
         self.detailViewModelFactory = detailViewModelFactory
         self.editorViewModelFactory = editorViewModelFactory
-        self.getUserProfileUseCase = getUserProfileUseCase
-        self.saveUserProfileUseCase = saveUserProfileUseCase
+        self.profileEditViewModelFactory = profileEditViewModelFactory
     }
 
     public var body: some View {
@@ -47,7 +46,7 @@ public struct QTListView: View {
                         filterBar()
 
                         // 리스트
-                        if viewModel.isLoading {
+                        if viewModel.state.isLoading {
                             VStack {
                                 Spacer()
                                     .frame(height: 100)
@@ -83,17 +82,17 @@ public struct QTListView: View {
                 }
             }
             .task {
-                await viewModel.load()
-                loadUserProfile()
+                viewModel.send(.load)
             }
-            .alert("기록 삭제", isPresented: $viewModel.showDeleteAlert) {
+            .alert("기록 삭제", isPresented: Binding(
+                get: { viewModel.state.showDeleteAlert },
+                set: { _ in }
+            )) {
                 Button("취소", role: .cancel) {
-                    viewModel.cancelDelete()
+                    viewModel.send(.cancelDelete)
                 }
                 Button("삭제", role: .destructive) {
-                    Task {
-                        await viewModel.deleteQT()
-                    }
+                    viewModel.send(.deleteQT)
                 }
             } message: {
                 Text("이 기록을 삭제할까요? 이 작업은 되돌릴 수 없습니다.")
@@ -101,26 +100,9 @@ public struct QTListView: View {
             .sheet(isPresented: $showProfileEdit) {
                 NavigationStack {
                     ProfileEditView(
-                        currentProfile: userProfile,
-                        saveUseCase: saveUserProfileUseCase,
-                        onSave: {
-                            loadUserProfile()
-                        }
+                        viewModel: profileEditViewModelFactory(userProfile)
                     )
                 }
-            }
-        }
-    }
-
-    private func loadUserProfile() {
-        Task {
-            do {
-                let profile = try await getUserProfileUseCase.execute()
-                await MainActor.run {
-                    userProfile = profile
-                }
-            } catch {
-                print("Failed to load user profile: \(error)")
             }
         }
     }
@@ -135,18 +117,21 @@ private extension QTListView {
                 .foregroundStyle(DS.Color.gold)
                 .font(DS.Font.bodyL())
 
-            TextField("말씀, 태그, 내용으로 검색", text: $viewModel.searchText)
+            TextField("말씀, 태그, 내용으로 검색", text: Binding(
+                get: { viewModel.state.searchText },
+                set: { viewModel.send(.updateSearchText($0)) }
+            ))
                 .font(DS.Font.bodyM())
                 .foregroundStyle(DS.Color.textPrimary)
                 .textFieldStyle(.plain)
                 .autocapitalization(.none)
                 .disableAutocorrection(true)
 
-            if !viewModel.searchText.isEmpty {
+            if !viewModel.state.searchText.isEmpty {
                 Button {
                     Haptics.tap()
                     withAnimation(Motion.appear) {
-                        viewModel.searchText = ""
+                        viewModel.send(.updateSearchText(""))
                     }
                 } label: {
                     Image(systemName: "xmark.circle.fill")
@@ -169,40 +154,40 @@ private extension QTListView {
             HStack(spacing: DS.Spacing.m) {
                 // 필터
                 Menu {
-                    ForEach(QTListViewModel.FilterType.allCases, id: \.self) { filter in
+                    ForEach(QTListState.FilterType.allCases, id: \.self) { filter in
                         Button {
                             Haptics.tap()
-                            viewModel.selectedFilter = filter
+                            viewModel.send(.selectFilter(filter))
                         } label: {
                             HStack {
                                 Text(filter.displayName)
-                                if viewModel.selectedFilter == filter {
+                                if viewModel.state.selectedFilter == filter {
                                     Image(systemName: "checkmark")
                                 }
                             }
                         }
                     }
                 } label: {
-                    filterButton(text: viewModel.selectedFilter.displayName)
+                    filterButton(text: viewModel.state.selectedFilter.displayName)
                 }
 
                 // 정렬
                 Menu {
-                    ForEach(QTListViewModel.SortType.allCases, id: \.self) { sort in
+                    ForEach(QTListState.SortType.allCases, id: \.self) { sort in
                         Button {
                             Haptics.tap()
-                            viewModel.selectedSort = sort
+                            viewModel.send(.selectSort(sort))
                         } label: {
                             HStack {
                                 Text(sort.displayName)
-                                if viewModel.selectedSort == sort {
+                                if viewModel.state.selectedSort == sort {
                                     Image(systemName: "checkmark")
                                 }
                             }
                         }
                     }
                 } label: {
-                    sortButton(text: viewModel.selectedSort.displayName)
+                    sortButton(text: viewModel.state.selectedSort.displayName)
                 }
             }
             .padding(.horizontal, DS.Spacing.l)
@@ -320,9 +305,7 @@ private extension QTListView {
                     // 즐겨찾기 토글
                     Button {
                         Haptics.tap()
-                        Task {
-                            await viewModel.toggleFavorite(qt)
-                        }
+                        viewModel.send(.toggleFavorite(qt))
                     } label: {
                         Image(systemName: qt.isFavorite ? "star.fill" : "star")
                             .foregroundStyle(qt.isFavorite ? DS.Color.gold : DS.Color.textSecondary)

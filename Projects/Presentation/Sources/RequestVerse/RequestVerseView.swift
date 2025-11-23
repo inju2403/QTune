@@ -10,7 +10,7 @@ import Domain
 
 public struct RequestVerseView: View {
     // MARK: - State
-    @StateObject private var viewModel: RequestVerseViewModel
+    @State private var viewModel: RequestVerseViewModel
     @State private var showConflict = false
     @State private var resultPhase: ResultPhase = .idle
     @State private var userProfile: UserProfile?
@@ -35,7 +35,7 @@ public struct RequestVerseView: View {
         saveUserProfileUseCase: SaveUserProfileUseCase,
         onNavigateToRecordTab: @escaping () -> Void
     ) {
-        _viewModel = StateObject(wrappedValue: viewModel)
+        _viewModel = State(wrappedValue: viewModel)
         _path = path
         self.commitQTUseCase = commitQTUseCase
         self.session = session
@@ -184,15 +184,7 @@ public struct RequestVerseView: View {
             Text("새로 시작하면 기존 초안은 삭제돼요. 어떻게 할까요?")
         }
         .sheet(isPresented: $showProfileEdit) {
-            NavigationStack {
-                ProfileEditView(
-                    currentProfile: userProfile,
-                    saveUseCase: saveUserProfileUseCase,
-                    onSave: {
-                        loadUserProfile()
-                    }
-                )
-            }
+            profileEditSheet()
         }
     }
 }
@@ -459,5 +451,35 @@ private extension RequestVerseView {
                 print("Failed to load user profile: \(error)")
             }
         }
+    }
+
+    @ViewBuilder
+    private func profileEditSheet() -> some View {
+        NavigationStack {
+            ProfileEditViewWrapper(
+                userProfile: userProfile,
+                saveUserProfileUseCase: saveUserProfileUseCase,
+                onSaveComplete: {
+                    loadUserProfile()
+                    showProfileEdit = false
+                }
+            )
+        }
+    }
+}
+
+// MARK: - Helper View
+struct ProfileEditViewWrapper: View {
+    let userProfile: UserProfile?
+    let saveUserProfileUseCase: SaveUserProfileUseCase
+    let onSaveComplete: () -> Void
+
+    var body: some View {
+        let profileVM = ProfileEditViewModel(
+            currentProfile: userProfile,
+            saveUserProfileUseCase: saveUserProfileUseCase
+        )
+        profileVM.onSaveComplete = onSaveComplete
+        return ProfileEditView(viewModel: profileVM)
     }
 }

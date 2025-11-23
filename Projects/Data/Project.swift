@@ -8,7 +8,7 @@ let project = Project(
       destinations: [.iPhone],
       product: .framework,
       bundleId: "com.qtune.data",
-      deploymentTargets: .iOS("16.0"),
+      deploymentTargets: .iOS("17.0"),
       infoPlist: .default,
       sources: nil,
       buildableFolders: [.folder("Sources")],

@@ -13,6 +13,7 @@ public struct MainTabViewWrapper: View {
     let qtListViewModel: QTListViewModel
     let detailViewModelFactory: (QuietTime) -> QTDetailViewModel
     let editorViewModelFactory: () -> QTEditorViewModel
+    let profileEditViewModelFactory: (UserProfile?) -> ProfileEditViewModel
     let generateVerseUseCase: GenerateVerseUseCase
     let commitQTUseCase: CommitQTUseCase
     let getUserProfileUseCase: GetUserProfileUseCase
@@ -20,11 +21,13 @@ public struct MainTabViewWrapper: View {
     let session: UserSession
 
     @State private var selectedTab = 0
+    @State private var userProfile: UserProfile?
 
     public init(
         qtListViewModel: QTListViewModel,
         detailViewModelFactory: @escaping (QuietTime) -> QTDetailViewModel,
         editorViewModelFactory: @escaping () -> QTEditorViewModel,
+        profileEditViewModelFactory: @escaping (UserProfile?) -> ProfileEditViewModel,
         generateVerseUseCase: GenerateVerseUseCase,
         commitQTUseCase: CommitQTUseCase,
         getUserProfileUseCase: GetUserProfileUseCase,
@@ -34,6 +37,7 @@ public struct MainTabViewWrapper: View {
         self.qtListViewModel = qtListViewModel
         self.detailViewModelFactory = detailViewModelFactory
         self.editorViewModelFactory = editorViewModelFactory
+        self.profileEditViewModelFactory = profileEditViewModelFactory
         self.generateVerseUseCase = generateVerseUseCase
         self.commitQTUseCase = commitQTUseCase
         self.getUserProfileUseCase = getUserProfileUseCase
@@ -73,10 +77,10 @@ public struct MainTabViewWrapper: View {
 
             QTListView(
                 viewModel: qtListViewModel,
+                userProfile: $userProfile,
                 detailViewModelFactory: detailViewModelFactory,
                 editorViewModelFactory: editorViewModelFactory,
-                getUserProfileUseCase: getUserProfileUseCase,
-                saveUserProfileUseCase: saveUserProfileUseCase
+                profileEditViewModelFactory: profileEditViewModelFactory
             )
             .tabItem {
                 Label("기록", systemImage: "book.closed")
@@ -86,6 +90,9 @@ public struct MainTabViewWrapper: View {
                 insertion: .move(edge: .trailing).combined(with: .opacity),
                 removal: .move(edge: .leading).combined(with: .opacity)
             ))
+            .task {
+                await loadUserProfile()
+            }
         }
         .accentColor(DSColor.mocha)
         .animation(.easeInOut(duration: 0.35), value: selectedTab)
@@ -106,6 +113,18 @@ public struct MainTabViewWrapper: View {
 
             UITabBar.appearance().standardAppearance = appearance
             UITabBar.appearance().scrollEdgeAppearance = appearance
+        }
+    }
+
+    // MARK: - Private Methods
+    private func loadUserProfile() async {
+        do {
+            let profile = try await getUserProfileUseCase.execute()
+            await MainActor.run {
+                userProfile = profile
+            }
+        } catch {
+            print("Failed to load user profile: \(error)")
         }
     }
 }

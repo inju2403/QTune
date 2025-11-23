@@ -21,10 +21,12 @@ public enum QTTemplateType: String, CaseIterable {
 }
 
 /// S.O.A.P 템플릿 상태
-public struct SOAPTemplate {
-    var observation: String = ""      // O: 관찰
-    var application: String = ""      // A: 적용
-    var prayer: String = ""           // P: 기도
+public struct SOAPTemplate: Equatable {
+    public var observation: String = ""      // O: 관찰
+    public var application: String = ""      // A: 적용
+    public var prayer: String = ""           // P: 기도
+
+    public init() {}
 
     var observationPlaceholder: String {
         "반복되는 단어/대조/약속은 무엇인가요?"
@@ -40,11 +42,13 @@ public struct SOAPTemplate {
 }
 
 /// A.C.T.S 템플릿 상태
-public struct ACTSTemplate {
-    var adoration: String = ""        // A: 찬양
-    var confession: String = ""       // C: 회개
-    var thanksgiving: String = ""     // T: 감사
-    var supplication: String = ""     // S: 간구
+public struct ACTSTemplate: Equatable {
+    public var adoration: String = ""        // A: 찬양
+    public var confession: String = ""       // C: 회개
+    public var thanksgiving: String = ""     // T: 감사
+    public var supplication: String = ""     // S: 간구
+
+    public init() {}
 
     var adorationPlaceholder: String {
         "하나님의 어떤 성품이 드러났나요?"

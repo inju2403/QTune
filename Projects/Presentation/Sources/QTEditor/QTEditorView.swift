@@ -29,10 +29,10 @@ enum QTFlowStep: Equatable {
 
 public struct QTEditorView: View {
     public let draft: QuietTime
-    @StateObject private var viewModel: QTEditorViewModel
+    @State private var viewModel: QTEditorViewModel
     @Environment(\.dismiss) private var dismiss
 
-    // Flow state
+    // Flow state (UI 로컬 상태)
     @State private var currentStep: QTFlowStep = .templateSelection
     @State private var selectedTemplateType: QTTemplateType? = nil
 
@@ -41,7 +41,7 @@ public struct QTEditorView: View {
         viewModel: QTEditorViewModel
     ) {
         self.draft = draft
-        _viewModel = StateObject(wrappedValue: viewModel)
+        _viewModel = State(wrappedValue: viewModel)
     }
 
     public var body: some View {
@@ -72,31 +72,33 @@ public struct QTEditorView: View {
         .navigationTitle("QT 작성")
         .navigationBarTitleDisplayMode(.inline)
         .onAppear {
-            viewModel.loadQT(draft)
+            viewModel.send(.loadQT(draft))
             // 기존에 템플릿이 선택되어 있으면 해당 템플릿의 첫 단계로 이동
-            if viewModel.selectedTemplate == .soap {
+            if viewModel.state.selectedTemplate == .soap {
                 selectedTemplateType = .soap
                 currentStep = .observation
-            } else if viewModel.selectedTemplate == .acts {
+            } else if viewModel.state.selectedTemplate == .acts {
                 selectedTemplateType = .acts
                 currentStep = .adoration
             }
         }
-        .alert("저장 실패", isPresented: $viewModel.showSaveErrorAlert) {
+        .alert("저장 실패", isPresented: Binding(
+            get: { viewModel.state.showSaveErrorAlert },
+            set: { _ in }
+        )) {
             Button("확인", role: .cancel) {}
         } message: {
             Text("저장에 실패했어요. 다시 시도해 주세요.")
         }
         .overlay(alignment: .bottom) {
-            if viewModel.showSaveSuccessToast {
+            if viewModel.state.showSaveSuccessToast {
                 successToast()
                     .transition(.move(edge: .bottom).combined(with: .opacity))
-                    .animation(Motion.appear, value: viewModel.showSaveSuccessToast)
+                    .animation(Motion.appear, value: viewModel.state.showSaveSuccessToast)
                     .onAppear {
                         Haptics.success()
                         DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
                             withAnimation(Motion.appear) {
-                                viewModel.showSaveSuccessToast = false
                                 dismiss()
                             }
                         }
@@ -125,9 +127,9 @@ private extension QTEditorView {
                     icon: "eye",
                     title: "Observation",
                     subtitle: "관찰",
-                    text: $viewModel.soapTemplate.observation,
-                    placeholder: viewModel.soapTemplate.observationPlaceholder,
-                    onChanged: viewModel.updateSOAPObservation
+                    text: viewModel.state.soapTemplate.observation,
+                    placeholder: viewModel.state.soapTemplate.observationPlaceholder,
+                    onChanged: { viewModel.send(.updateSOAPObservation($0)) }
                 )
                 .transition(slideTransition)
 
@@ -136,9 +138,9 @@ private extension QTEditorView {
                     icon: "arrow.right.circle",
                     title: "Application",
                     subtitle: "적용",
-                    text: $viewModel.soapTemplate.application,
-                    placeholder: viewModel.soapTemplate.applicationPlaceholder,
-                    onChanged: viewModel.updateSOAPApplication
+                    text: viewModel.state.soapTemplate.application,
+                    placeholder: viewModel.state.soapTemplate.applicationPlaceholder,
+                    onChanged: { viewModel.send(.updateSOAPApplication($0)) }
                 )
                 .transition(slideTransition)
 
@@ -147,9 +149,9 @@ private extension QTEditorView {
                     icon: "hands.sparkles",
                     title: "Prayer",
                     subtitle: "기도",
-                    text: $viewModel.soapTemplate.prayer,
-                    placeholder: viewModel.soapTemplate.prayerPlaceholder,
-                    onChanged: viewModel.updateSOAPPrayer
+                    text: viewModel.state.soapTemplate.prayer,
+                    placeholder: viewModel.state.soapTemplate.prayerPlaceholder,
+                    onChanged: { viewModel.send(.updateSOAPPrayer($0)) }
                 )
                 .transition(slideTransition)
 
@@ -158,9 +160,9 @@ private extension QTEditorView {
                     icon: "sparkles",
                     title: "Adoration",
                     subtitle: "경배",
-                    text: $viewModel.actsTemplate.adoration,
-                    placeholder: viewModel.actsTemplate.adorationPlaceholder,
-                    onChanged: viewModel.updateACTSAdoration
+                    text: viewModel.state.actsTemplate.adoration,
+                    placeholder: viewModel.state.actsTemplate.adorationPlaceholder,
+                    onChanged: { viewModel.send(.updateACTSAdoration($0)) }
                 )
                 .transition(slideTransition)
 
@@ -169,9 +171,9 @@ private extension QTEditorView {
                     icon: "heart",
                     title: "Confession",
                     subtitle: "고백",
-                    text: $viewModel.actsTemplate.confession,
-                    placeholder: viewModel.actsTemplate.confessionPlaceholder,
-                    onChanged: viewModel.updateACTSConfession
+                    text: viewModel.state.actsTemplate.confession,
+                    placeholder: viewModel.state.actsTemplate.confessionPlaceholder,
+                    onChanged: { viewModel.send(.updateACTSConfession($0)) }
                 )
                 .transition(slideTransition)
 
@@ -180,9 +182,9 @@ private extension QTEditorView {
                     icon: "leaf",
                     title: "Thanksgiving",
                     subtitle: "감사",
-                    text: $viewModel.actsTemplate.thanksgiving,
-                    placeholder: viewModel.actsTemplate.thanksgivingPlaceholder,
-                    onChanged: viewModel.updateACTSThanksgiving
+                    text: viewModel.state.actsTemplate.thanksgiving,
+                    placeholder: viewModel.state.actsTemplate.thanksgivingPlaceholder,
+                    onChanged: { viewModel.send(.updateACTSThanksgiving($0)) }
                 )
                 .transition(slideTransition)
 
@@ -191,9 +193,9 @@ private extension QTEditorView {
                     icon: "hands.and.sparkles",
                     title: "Supplication",
                     subtitle: "간구",
-                    text: $viewModel.actsTemplate.supplication,
-                    placeholder: viewModel.actsTemplate.supplicationPlaceholder,
-                    onChanged: viewModel.updateACTSSupplication
+                    text: viewModel.state.actsTemplate.supplication,
+                    placeholder: viewModel.state.actsTemplate.supplicationPlaceholder,
+                    onChanged: { viewModel.send(.updateACTSSupplication($0)) }
                 )
                 .transition(slideTransition)
             }
@@ -237,7 +239,7 @@ private extension QTEditorView {
                     Haptics.tap()
                     withAnimation(.easeInOut(duration: 0.35)) {
                         selectedTemplateType = .soap
-                        viewModel.switchTemplate(to: .soap)
+                        viewModel.send(.switchTemplate(.soap))
                         currentStep = .observation
                     }
                 } label: {
@@ -254,7 +256,7 @@ private extension QTEditorView {
                     Haptics.tap()
                     withAnimation(.easeInOut(duration: 0.35)) {
                         selectedTemplateType = .acts
-                        viewModel.switchTemplate(to: .acts)
+                        viewModel.send(.switchTemplate(.acts))
                         currentStep = .adoration
                     }
                 } label: {
@@ -316,7 +318,7 @@ private extension QTEditorView {
         icon: String,
         title: String,
         subtitle: String,
-        text: Binding<String>,
+        text: String,
         placeholder: String,
         onChanged: @escaping (String) -> Void
     ) -> some View {
@@ -345,13 +347,13 @@ private extension QTEditorView {
                     VStack(alignment: .leading, spacing: DS.Spacing.m) {
                         HStack {
                             Spacer()
-                            Text(viewModel.characterCount(for: text.wrappedValue))
+                            Text(viewModel.characterCount(for: text))
                                 .font(DS.Font.caption())
-                                .foregroundStyle(viewModel.isOverLimit(for: text.wrappedValue) ? .red : DS.Color.textSecondary)
+                                .foregroundStyle(viewModel.isOverLimit(for: text) ? .red : DS.Color.textSecondary)
                         }
 
                         ZStack(alignment: .topLeading) {
-                            if text.wrappedValue.isEmpty {
+                            if text.isEmpty {
                                 Text(placeholder)
                                     .font(DS.Font.bodyM())
                                     .foregroundStyle(DS.Color.textSecondary.opacity(0.4))
@@ -359,7 +361,10 @@ private extension QTEditorView {
                                     .padding(.vertical, DS.Spacing.s)
                             }
 
-                            TextEditor(text: text)
+                            TextEditor(text: Binding(
+                                get: { text },
+                                set: { onChanged($0) }
+                            ))
                                 .font(DS.Font.bodyM())
                                 .foregroundStyle(DS.Color.textPrimary)
                                 .frame(minHeight: 200)
@@ -414,9 +419,7 @@ private extension QTEditorView {
     func handleNextButton() {
         if isLastStep {
             // 완료: 저장 처리
-            Task { @MainActor in
-                await viewModel.saveQT(draft: draft)
-            }
+            viewModel.send(.saveQT(draft))
         } else {
             // 다음 단계로 이동
             withAnimation(.easeInOut(duration: 0.35)) {

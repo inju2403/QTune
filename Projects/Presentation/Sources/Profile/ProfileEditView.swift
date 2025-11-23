@@ -11,27 +11,13 @@ import Domain
 
 public struct ProfileEditView: View {
     @Environment(\.dismiss) private var dismiss
-    @State private var nickname: String
-    @State private var selectedGender: UserProfile.Gender
-    @State private var profileImage: UIImage?
+    @State private var viewModel: ProfileEditViewModel
     @State private var selectedPhotoItem: PhotosPickerItem?
 
-    let saveUseCase: SaveUserProfileUseCase
-    let onSave: () -> Void
-
     public init(
-        currentProfile: UserProfile?,
-        saveUseCase: SaveUserProfileUseCase,
-        onSave: @escaping () -> Void
+        viewModel: ProfileEditViewModel
     ) {
-        _nickname = State(initialValue: currentProfile?.nickname ?? "")
-        _selectedGender = State(initialValue: currentProfile?.gender ?? .brother)
-        if let imageData = currentProfile?.profileImageData,
-           let uiImage = UIImage(data: imageData) {
-            _profileImage = State(initialValue: uiImage)
-        }
-        self.saveUseCase = saveUseCase
-        self.onSave = onSave
+        _viewModel = State(wrappedValue: viewModel)
     }
 
     public var body: some View {
@@ -63,9 +49,7 @@ public struct ProfileEditView: View {
                     // 저장 버튼
                     PrimaryCTAButton(title: "저장", icon: "checkmark") {
                         Haptics.tap()
-                        Task {
-                            await saveProfile()
-                        }
+                        viewModel.send(.saveProfile)
                     }
                     .padding(.top, 20)
 
@@ -79,11 +63,24 @@ public struct ProfileEditView: View {
         .navigationBarTitleDisplayMode(.inline)
         .onChange(of: selectedPhotoItem) { newItem in
             Task {
-                if let data = try? await newItem?.loadTransferable(type: Data.self),
-                   let image = UIImage(data: data) {
-                    profileImage = image
+                if let data = try? await newItem?.loadTransferable(type: Data.self) {
+                    viewModel.send(.updateProfileImage(data))
                 }
             }
+        }
+        .onChange(of: viewModel.state.isSaving) { isSaving in
+            if !isSaving && !viewModel.state.showError {
+                Haptics.success()
+                dismiss()
+            }
+        }
+        .alert("오류", isPresented: Binding(
+            get: { viewModel.state.showError },
+            set: { _ in }
+        )) {
+            Button("확인", role: .cancel) {}
+        } message: {
+            Text("프로필 저장에 실패했습니다. 다시 시도해주세요.")
         }
     }
 }
@@ -96,8 +93,9 @@ private extension ProfileEditView {
         VStack(spacing: 16) {
             // 이미지
             ZStack(alignment: .bottomTrailing) {
-                if let image = profileImage {
-                    Image(uiImage: image)
+                if let imageData = viewModel.state.profileImageData,
+                   let uiImage = UIImage(data: imageData) {
+                    Image(uiImage: uiImage)
                         .resizable()
                         .scaledToFill()
                         .frame(width: 120, height: 120)
@@ -136,11 +134,11 @@ private extension ProfileEditView {
             }
 
             // 기본 이미지로 변경 버튼
-            if profileImage != nil {
+            if viewModel.state.profileImageData != nil {
                 Button {
                     Haptics.tap()
                     withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
-                        profileImage = nil
+                        viewModel.send(.updateProfileImage(nil))
                         selectedPhotoItem = nil
                     }
                 } label: {
@@ -170,7 +168,10 @@ private extension ProfileEditView {
                         .foregroundStyle(DS.Color.deepCocoa)
                 }
 
-                TextField("이름을 입력하세요", text: $nickname)
+                TextField("이름을 입력하세요", text: Binding(
+                    get: { viewModel.state.nickname },
+                    set: { viewModel.send(.updateNickname($0)) }
+                ))
                     .font(DS.Font.bodyL())
                     .foregroundStyle(DS.Color.textPrimary)
                     .padding(18)
@@ -213,55 +214,32 @@ private extension ProfileEditView {
         Button {
             Haptics.tap()
             withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
-                selectedGender = gender
+                viewModel.send(.updateGender(gender))
             }
         } label: {
             HStack(spacing: 8) {
-                Image(systemName: selectedGender == gender ? "checkmark.circle.fill" : "circle")
-                    .foregroundStyle(selectedGender == gender ? DS.Color.gold : DS.Color.textSecondary)
+                Image(systemName: viewModel.state.selectedGender == gender ? "checkmark.circle.fill" : "circle")
+                    .foregroundStyle(viewModel.state.selectedGender == gender ? DS.Color.gold : DS.Color.textSecondary)
                     .font(.system(size: 20))
 
                 Text(gender.rawValue)
                     .font(DS.Font.bodyL(.medium))
-                    .foregroundStyle(selectedGender == gender ? DS.Color.deepCocoa : DS.Color.textSecondary)
+                    .foregroundStyle(viewModel.state.selectedGender == gender ? DS.Color.deepCocoa : DS.Color.textSecondary)
             }
             .frame(maxWidth: .infinity)
             .padding(.vertical, 16)
             .background(
                 RoundedRectangle(cornerRadius: 12)
-                    .fill(selectedGender == gender ? DS.Color.gold.opacity(0.1) : Color.white.opacity(0.5))
+                    .fill(viewModel.state.selectedGender == gender ? DS.Color.gold.opacity(0.1) : Color.white.opacity(0.5))
             )
             .overlay(
                 RoundedRectangle(cornerRadius: 12)
                     .stroke(
-                        selectedGender == gender ? DS.Color.gold : DS.Color.divider,
-                        lineWidth: selectedGender == gender ? 2 : 1
+                        viewModel.state.selectedGender == gender ? DS.Color.gold : DS.Color.divider,
+                        lineWidth: viewModel.state.selectedGender == gender ? 2 : 1
                     )
             )
         }
         .buttonStyle(.plain)
-    }
-
-    // MARK: - Actions
-
-    func saveProfile() async {
-        let imageData = profileImage?.jpegData(compressionQuality: 0.8)
-        let profile = UserProfile(
-            nickname: nickname,
-            gender: selectedGender,
-            profileImageData: imageData
-        )
-
-        do {
-            try await saveUseCase.execute(profile: profile)
-            Haptics.success()
-            await MainActor.run {
-                onSave()
-                dismiss()
-            }
-        } catch {
-            print("Failed to save profile: \(error)")
-            Haptics.error()
-        }
     }
 }
