@@ -277,10 +277,10 @@ private extension QTListView {
                         .foregroundStyle(DS.Color.textSecondary)
                 }
 
-                // 2행: 말씀 본문 (크게, 3~4줄)
-                if !qt.verse.text.isEmpty {
-                    Text(qt.verse.text)
-                        .font(.system(size: 17, weight: .regular, design: .serif))
+                // 2행: 사용자 작성 내용 (크게, 3~4줄)
+                if let summary = summaryText(qt), !summary.isEmpty {
+                    Text(summary)
+                        .font(.system(size: 17, weight: .regular, design: .default))
                         .foregroundStyle(DS.Color.textPrimary)
                         .lineLimit(4)
                         .lineSpacing(6)
@@ -351,10 +351,39 @@ private extension QTListView {
     // MARK: - Helpers
     func summaryText(_ qt: QuietTime) -> String? {
         if qt.template == "SOAP" {
-            return qt.soapObservation?.trimmingCharacters(in: .whitespacesAndNewlines)
+            // SOAP: Observation → Application → Prayer 순서로 첫 번째 작성된 내용 반환
+            if let observation = qt.soapObservation?.trimmingCharacters(in: .whitespacesAndNewlines),
+               !observation.isEmpty {
+                return observation
+            }
+            if let application = qt.soapApplication?.trimmingCharacters(in: .whitespacesAndNewlines),
+               !application.isEmpty {
+                return application
+            }
+            if let prayer = qt.soapPrayer?.trimmingCharacters(in: .whitespacesAndNewlines),
+               !prayer.isEmpty {
+                return prayer
+            }
         } else {
-            return qt.actsAdoration?.trimmingCharacters(in: .whitespacesAndNewlines)
+            // ACTS: Adoration → Confession → Thanksgiving → Supplication 순서로 첫 번째 작성된 내용 반환
+            if let adoration = qt.actsAdoration?.trimmingCharacters(in: .whitespacesAndNewlines),
+               !adoration.isEmpty {
+                return adoration
+            }
+            if let confession = qt.actsConfession?.trimmingCharacters(in: .whitespacesAndNewlines),
+               !confession.isEmpty {
+                return confession
+            }
+            if let thanksgiving = qt.actsThanksgiving?.trimmingCharacters(in: .whitespacesAndNewlines),
+               !thanksgiving.isEmpty {
+                return thanksgiving
+            }
+            if let supplication = qt.actsSupplication?.trimmingCharacters(in: .whitespacesAndNewlines),
+               !supplication.isEmpty {
+                return supplication
+            }
         }
+        return nil
     }
 
     func formattedDate(_ date: Date) -> String {

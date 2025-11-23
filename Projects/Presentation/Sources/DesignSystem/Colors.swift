@@ -31,7 +31,7 @@ public enum DSColor {
 
     // Legacy support
     public static let success    = Color(hex: "#2FAF66")
-    public static let olive      = Color(hex: "#7C8B6D")
+    public static let olive      = Color(hex: "#9DC183")
     public static let divider    = Color.black.opacity(0.06)
 }
 

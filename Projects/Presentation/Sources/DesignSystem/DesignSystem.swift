@@ -18,7 +18,7 @@ public enum DS {
         public static let cocoa         = SwiftUI.Color(hex: "#6B4F4F")
         public static let deepCocoa     = SwiftUI.Color(hex: "#3E2C1C")
         public static let gold          = SwiftUI.Color(hex: "#D7B46A")   // 포인트
-        public static let olive         = SwiftUI.Color(hex: "#71816D")   // 보조 포인트
+        public static let olive         = SwiftUI.Color(hex: "#9DC183")   // 보조 포인트 (SOAP)
         public static let mocha         = SwiftUI.Color(hex: "#8B6F47")   // 탭 선택 (신규)
         public static let lightBrown    = SwiftUI.Color(hex: "#B8A598")   // 탭 비선택 (신규)
         public static let success       = SwiftUI.Color(hex: "#2FAF66")
