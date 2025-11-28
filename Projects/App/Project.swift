@@ -7,7 +7,7 @@ let project = Project(
       name: "App",
       destinations: [.iPhone],
       product: .app,
-      bundleId: "com.yourcompany.app",
+      bundleId: "com.inju.qtune",
       deploymentTargets: .iOS("17.0"),
       infoPlist: .extendingDefault(with: [
         "CFBundleDisplayName": "QTune",
