@@ -150,25 +150,19 @@ public struct RequestVerseView: View {
             }
         }
         .navigationDestination(for: QTRoute.self) { route in
-            switch route {
-            case .result(let result):
-                ResultView(result: result, path: $path)
-            case .editor(let template, let verseEN, let verseRef, let explKR, let verse):
-                QTEditorWizardView(
-                    template: template,
-                    verseEN: verseEN,
-                    verseRef: verseRef,
-                    explKR: explKR,
-                    verse: verse,
-                    commitQTUseCase: commitQTUseCase,
-                    session: session,
-                    onSaveComplete: {
-                        // 네비게이션 스택 초기화
-                        path = NavigationPath()
-                        // 기록 탭으로 전환
-                        onNavigateToRecordTab()
-                    }
-                )
+            Group {
+                switch route {
+                case .result(let result):
+                    buildResultView(result: result)
+                case .editor(let template, let verseEN, let verseRef, let explKR, let verse):
+                    buildEditorWizardView(
+                        template: template,
+                        verseEN: verseEN,
+                        verseRef: verseRef,
+                        explKR: explKR,
+                        verse: verse
+                    )
+                }
             }
         }
         .confirmationDialog("작성 중인 QT가 있어요",
@@ -466,9 +460,43 @@ private extension RequestVerseView {
             )
         }
     }
+
+    @ViewBuilder
+    private func buildResultView(result: GeneratedVerseResult) -> some View {
+        ResultViewWrapper(
+            result: result,
+            path: $path
+        )
+    }
+
+    @ViewBuilder
+    private func buildEditorWizardView(
+        template: TemplateKind,
+        verseEN: String,
+        verseRef: String,
+        explKR: String,
+        verse: Verse
+    ) -> some View {
+        QTEditorWizardViewWrapper(
+            template: template,
+            verseEN: verseEN,
+            verseRef: verseRef,
+            explKR: explKR,
+            verse: verse,
+            commitQTUseCase: commitQTUseCase,
+            session: session,
+            onSaveComplete: {
+                // 네비게이션 스택 초기화
+                self.path = NavigationPath()
+                // 기록 탭으로 전환
+                self.onNavigateToRecordTab()
+            }
+        )
+    }
 }
 
-// MARK: - Helper View
+// MARK: - Helper Views
+
 struct ProfileEditViewWrapper: View {
     let userProfile: UserProfile?
     let saveUserProfileUseCase: SaveUserProfileUseCase
@@ -481,5 +509,54 @@ struct ProfileEditViewWrapper: View {
         )
         profileVM.onSaveComplete = onSaveComplete
         return ProfileEditView(viewModel: profileVM)
+    }
+}
+
+struct ResultViewWrapper: View {
+    let result: GeneratedVerseResult
+    @Binding var path: NavigationPath
+
+    var body: some View {
+        let resultState = ResultState(result: result)
+        let resultViewModel = ResultViewModel(initialState: resultState)
+        resultViewModel.onNavigateToEditor = { template in
+            let editorRoute = QTRoute.editor(
+                template: template,
+                verseEN: result.verse.text,
+                verseRef: result.verseRef,
+                explKR: result.korean,
+                verse: result.verse
+            )
+            path.append(editorRoute)
+        }
+        return ResultView(viewModel: resultViewModel)
+    }
+}
+
+struct QTEditorWizardViewWrapper: View {
+    let template: TemplateKind
+    let verseEN: String
+    let verseRef: String
+    let explKR: String
+    let verse: Verse
+    let commitQTUseCase: CommitQTUseCase
+    let session: UserSession
+    let onSaveComplete: () -> Void
+
+    var body: some View {
+        let initialState = QTEditorWizardState(
+            template: template,
+            verseEN: verseEN,
+            verseRef: verseRef,
+            explKR: explKR,
+            verse: verse
+        )
+        let wizardViewModel = QTEditorWizardViewModel(
+            commitQTUseCase: commitQTUseCase,
+            session: session,
+            initialState: initialState
+        )
+        wizardViewModel.onSaveComplete = onSaveComplete
+        return QTEditorWizardView(viewModel: wizardViewModel)
     }
 }

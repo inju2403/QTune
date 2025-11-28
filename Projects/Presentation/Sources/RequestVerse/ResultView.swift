@@ -10,15 +10,15 @@ import Domain
 
 /// 추천 결과 화면 (영어 + 해설 + 이유 + "QT 하러가기" 버튼)
 public struct ResultView: View {
-    let result: GeneratedVerseResult
-    @Binding var path: NavigationPath
-    @State private var showTemplateSheet = false
+    // MARK: - ViewModel
+    @State private var viewModel: ResultViewModel
 
-    public init(result: GeneratedVerseResult, path: Binding<NavigationPath>) {
-        self.result = result
-        _path = path
+    // MARK: - Init
+    public init(viewModel: ResultViewModel) {
+        _viewModel = State(wrappedValue: viewModel)
     }
 
+    // MARK: - Body
     public var body: some View {
         ZStack {
             CrossSunsetBackground()
@@ -37,12 +37,12 @@ public struct ResultView: View {
                     verseBlock()
 
                     // 한글 해설
-                    if !result.korean.isEmpty {
+                    if !viewModel.state.result.korean.isEmpty {
                         explanationBlock()
                     }
 
                     // 추천 이유
-                    if !result.rationale.isEmpty {
+                    if !viewModel.state.result.rationale.isEmpty {
                         rationaleBlock()
                     }
 
@@ -53,7 +53,7 @@ public struct ResultView: View {
                         Spacer()
                         PrimaryCTAButton(title: "QT 하러가기", icon: "hand.raised.fill") {
                             Haptics.tap()
-                            showTemplateSheet = true
+                            viewModel.send(.tapGoToQT)
                         }
                         Spacer()
                     }
@@ -64,22 +64,13 @@ public struct ResultView: View {
         .navigationTitle("")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar(.hidden, for: .tabBar)
-        .sheet(isPresented: $showTemplateSheet) {
+        .sheet(isPresented: Binding(
+            get: { viewModel.state.showTemplateSheet },
+            set: { if !$0 { viewModel.send(.dismissSheet) } }
+        )) {
             TemplatePickerSheet { template in
-                // Editor로 push
-                let route = QTRoute.editor(
-                    template: template,
-                    verseEN: result.verse.text,
-                    verseRef: result.verseRef,
-                    explKR: result.korean,
-                    verse: result.verse
-                )
-                path.append(route)
-
-                // Sheet 닫기
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                    showTemplateSheet = false
-                }
+                Haptics.tap()
+                viewModel.send(.selectTemplate(template))
             }
             .presentationDetents([.height(260)])
         }
@@ -96,12 +87,12 @@ private extension ResultView {
                 Image(systemName: "book.closed.fill")
                     .foregroundStyle(DS.Color.gold)
                     .font(.system(size: 20))
-                Text(result.verseRef)
+                Text(viewModel.state.result.verseRef)
                     .font(DS.Font.titleM(.semibold))
                     .foregroundStyle(DS.Color.deepCocoa)
             }
 
-            Text(result.verse.text)
+            Text(viewModel.state.result.verse.text)
                 .font(DS.Font.verse(17, .regular))
                 .foregroundStyle(DS.Color.textPrimary)
                 .lineSpacing(6)
@@ -113,7 +104,7 @@ private extension ResultView {
                     .font(.system(size: 11))
                     .foregroundStyle(DS.Color.gold.opacity(0.7))
 
-                Text(result.verse.translation.uppercased())
+                Text(viewModel.state.result.verse.translation.uppercased())
                     .font(.system(size: 12, weight: .medium, design: .rounded))
                     .foregroundStyle(DS.Color.gold.opacity(0.8))
 
@@ -146,7 +137,7 @@ private extension ResultView {
             }
 
             // 첫 줄이 볼드인 경우 분리
-            let lines = result.korean.split(separator: "\n", maxSplits: 1, omittingEmptySubsequences: false)
+            let lines = viewModel.state.result.korean.split(separator: "\n", maxSplits: 1, omittingEmptySubsequences: false)
             if lines.count == 2 {
                 VStack(alignment: .leading, spacing: 8) {
                     Text(String(lines[0]))
@@ -159,7 +150,7 @@ private extension ResultView {
                         .lineSpacing(6)
                 }
             } else {
-                Text(result.korean)
+                Text(viewModel.state.result.korean)
                     .font(DS.Font.bodyM())
                     .foregroundStyle(DS.Color.textPrimary)
                     .lineSpacing(6)
@@ -185,7 +176,7 @@ private extension ResultView {
                     .foregroundStyle(DS.Color.deepCocoa)
             }
 
-            Text(result.rationale)
+            Text(viewModel.state.result.rationale)
                 .font(DS.Font.bodyM())
                 .foregroundStyle(DS.Color.textPrimary)
                 .lineSpacing(6)
