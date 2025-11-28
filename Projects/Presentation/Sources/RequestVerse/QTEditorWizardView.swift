@@ -49,9 +49,6 @@ public struct QTEditorWizardView: View {
     @State private var thanksgiving = ""
     @State private var supplication = ""
 
-    // 해설 팝업
-    @State private var showExplanation = false
-
     // 저장 상태
     @State private var isSaving = false
     @State private var showSaveSuccessToast = false
@@ -86,8 +83,8 @@ public struct QTEditorWizardView: View {
                 .ignoresSafeArea()
 
             VStack(spacing: 0) {
-                // 상단: 영어 말씀 고정 (해설 보기 버튼 포함)
-                verseHeaderWithExplanationButton()
+                // 상단: 영어 말씀 + 해설
+                verseHeader()
 
                 // 중앙: 현재 스텝의 입력 카드
                 ScrollView {
@@ -217,39 +214,6 @@ public struct QTEditorWizardView: View {
                         .ignoresSafeArea(edges: .bottom)
                 )
             }
-
-            // 해설 말풍선 오버레이
-            if showExplanation {
-                Color.black.opacity(0.001)
-                    .ignoresSafeArea()
-                    .onTapGesture {
-                        withAnimation(.easeInOut(duration: reduceMotion ? 0 : 0.2)) {
-                            showExplanation = false
-                        }
-                    }
-
-                VStack(spacing: 0) {
-                    Spacer().frame(height: 110)
-
-                    ExplanationBubble(text: explKR) {
-                        withAnimation(.easeInOut(duration: reduceMotion ? 0 : 0.2)) {
-                            showExplanation = false
-                        }
-                    }
-                    .transition(
-                        reduceMotion
-                            ? .opacity
-                            : .asymmetric(
-                                insertion: .move(edge: .top).combined(with: .opacity),
-                                removal: .move(edge: .top).combined(with: .opacity)
-                            )
-                    )
-                    .padding(.horizontal, 20)
-
-                    Spacer()
-                }
-                .animation(.easeInOut(duration: reduceMotion ? 0 : 0.25), value: showExplanation)
-            }
         }
         .navigationBarTitleDisplayMode(.inline)
         .navigationTitle("QT 작성")
@@ -297,59 +261,60 @@ public struct QTEditorWizardView: View {
     // MARK: - Subviews
 
     @ViewBuilder
-    private func verseHeaderWithExplanationButton() -> some View {
+    private func verseHeader() -> some View {
         VStack(alignment: .leading, spacing: 0) {
-            HStack(spacing: 6) {
-                Image(systemName: "book.closed.fill")
-                    .foregroundStyle(DS.Color.gold)
-                    .font(.system(size: 14))
-                Text(verseRef)
-                    .font(DS.Font.caption(.semibold))
-                    .foregroundStyle(DS.Color.deepCocoa)
-            }
-            .padding(.horizontal, 20)
-            .padding(.top, 12)
+            // 영어 말씀
+            VStack(alignment: .leading, spacing: 12) {
+                // 성경 구절 참조
+                HStack(spacing: 6) {
+                    Image(systemName: "book.closed.fill")
+                        .foregroundStyle(DS.Color.gold)
+                        .font(.system(size: 14))
+                    Text(verseRef)
+                        .font(DS.Font.caption(.semibold))
+                        .foregroundStyle(DS.Color.deepCocoa)
+                }
 
-            ZStack(alignment: .bottomTrailing) {
-                // 영어 말씀
                 Text(verseEN)
                     .font(DS.Font.verse(18, .regular))
                     .foregroundStyle(DS.Color.textPrimary)
                     .lineSpacing(6)
                     .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(20)
-
-                // 해설 보기 버튼 (우측 하단)
-                Button {
-                    withAnimation(.easeInOut(duration: reduceMotion ? 0 : 0.25)) {
-                        showExplanation.toggle()
-                    }
-                } label: {
-                    HStack(spacing: 4) {
-                        Image(systemName: "lightbulb.fill")
-                            .font(.system(size: 10))
-                        Text("해설")
-                            .font(.system(size: 12, weight: .medium))
-                    }
-                    .foregroundStyle(DS.Color.gold)
-                    .padding(.horizontal, 8)
-                    .padding(.vertical, 4)
-                    .background(
-                        Capsule()
-                            .fill(DS.Color.background.opacity(0.9))
-                            .shadow(color: .black.opacity(0.1), radius: 2, y: 1)
-                    )
-                }
-                .buttonStyle(.plain)
-                .padding(12)
-                .accessibilityLabel("해설 보기")
-                .accessibilityHint("한글 해설을 말풍선으로 표시합니다.")
             }
+            .padding(20)
             .background(DS.Color.canvas.opacity(0.9))
             .cornerRadius(DS.Radius.m)
             .padding(.horizontal, 20)
-            .padding(.top, 8)
-            .padding(.bottom, 12)
+            .padding(.top, 12)
+
+            // 한글 해설 (영구 표시)
+            if !explKR.isEmpty {
+                VStack(alignment: .leading, spacing: 10) {
+                    HStack(spacing: 6) {
+                        Image(systemName: "lightbulb.fill")
+                            .foregroundStyle(DS.Color.gold)
+                            .font(.system(size: 12))
+                        Text("해설")
+                            .font(DS.Font.caption(.semibold))
+                            .foregroundStyle(DS.Color.deepCocoa)
+                    }
+
+                    Text(explKR)
+                        .font(DS.Font.bodyM())
+                        .foregroundStyle(DS.Color.textPrimary)
+                        .lineSpacing(5)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                }
+                .padding(16)
+                .background(DS.Color.canvas.opacity(0.9))
+                .cornerRadius(DS.Radius.m)
+                .padding(.horizontal, 20)
+                .padding(.top, 8)
+                .padding(.bottom, 12)
+            } else {
+                Spacer()
+                    .frame(height: 12)
+            }
         }
         .background(DS.Color.background.opacity(0.95))
     }
