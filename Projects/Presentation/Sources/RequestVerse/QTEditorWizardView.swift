@@ -44,89 +44,93 @@ public struct QTEditorWizardView: View {
                 .ignoresSafeArea()
 
             VStack(spacing: 0) {
-                // 상단: 영어 말씀 + 해설
-                verseHeader()
-
-                // 중앙: 현재 스텝의 입력 카드
+                // 전체 스크롤뷰 (말씀 + 해설 + 입력 카드)
                 ScrollView {
-                    ZStack {
-                        if viewModel.state.template == .soap {
-                            StepPager(currentIndex: viewModel.currentStepIndex, total: viewModel.totalSteps) {
-                                switch viewModel.state.soapStep {
-                                case .observation:
-                                    SingleFieldCard(
-                                        title: "Observation · 관찰",
-                                        placeholder: "무엇이 보이나요?",
-                                        text: Binding(
-                                            get: { viewModel.state.observation },
-                                            set: { viewModel.send(.updateObservation($0)) }
+                    VStack(spacing: 0) {
+                        // 상단: 영어 말씀 + 해설
+                        verseHeaderContent()
+
+                        // 중앙: 현재 스텝의 입력 카드
+                        ZStack {
+                            if viewModel.state.template == .soap {
+                                StepPager(currentIndex: viewModel.currentStepIndex, total: viewModel.totalSteps) {
+                                    switch viewModel.state.soapStep {
+                                    case .observation:
+                                        SingleFieldCard(
+                                            title: "Observation · 관찰",
+                                            placeholder: "무엇이 보이나요?",
+                                            text: Binding(
+                                                get: { viewModel.state.observation },
+                                                set: { viewModel.send(.updateObservation($0)) }
+                                            )
                                         )
-                                    )
-                                case .application:
-                                    SingleFieldCard(
-                                        title: "Application · 적용",
-                                        placeholder: "어떻게 살기로 결단하나요?",
-                                        text: Binding(
-                                            get: { viewModel.state.application },
-                                            set: { viewModel.send(.updateApplication($0)) }
+                                    case .application:
+                                        SingleFieldCard(
+                                            title: "Application · 적용",
+                                            placeholder: "어떻게 살기로 결단하나요?",
+                                            text: Binding(
+                                                get: { viewModel.state.application },
+                                                set: { viewModel.send(.updateApplication($0)) }
+                                            )
                                         )
-                                    )
-                                case .prayer:
-                                    SingleFieldCard(
-                                        title: "Prayer · 기도",
-                                        placeholder: "이 말씀으로 드리는 기도",
-                                        text: Binding(
-                                            get: { viewModel.state.prayer },
-                                            set: { viewModel.send(.updatePrayer($0)) }
+                                    case .prayer:
+                                        SingleFieldCard(
+                                            title: "Prayer · 기도",
+                                            placeholder: "이 말씀으로 드리는 기도",
+                                            text: Binding(
+                                                get: { viewModel.state.prayer },
+                                                set: { viewModel.send(.updatePrayer($0)) }
+                                            )
                                         )
-                                    )
+                                    }
                                 }
-                            }
-                        } else {
-                            StepPager(currentIndex: viewModel.currentStepIndex, total: viewModel.totalSteps) {
-                                switch viewModel.state.actsStep {
-                                case .adoration:
-                                    SingleFieldCard(
-                                        title: "Adoration · 찬양",
-                                        placeholder: "주님은 어떤 분이신가요?",
-                                        text: Binding(
-                                            get: { viewModel.state.adoration },
-                                            set: { viewModel.send(.updateAdoration($0)) }
+                            } else {
+                                StepPager(currentIndex: viewModel.currentStepIndex, total: viewModel.totalSteps) {
+                                    switch viewModel.state.actsStep {
+                                    case .adoration:
+                                        SingleFieldCard(
+                                            title: "Adoration · 찬양",
+                                            placeholder: "주님은 어떤 분이신가요?",
+                                            text: Binding(
+                                                get: { viewModel.state.adoration },
+                                                set: { viewModel.send(.updateAdoration($0)) }
+                                            )
                                         )
-                                    )
-                                case .confession:
-                                    SingleFieldCard(
-                                        title: "Confession · 고백",
-                                        placeholder: "회개할 것은 무엇인가요?",
-                                        text: Binding(
-                                            get: { viewModel.state.confession },
-                                            set: { viewModel.send(.updateConfession($0)) }
+                                    case .confession:
+                                        SingleFieldCard(
+                                            title: "Confession · 고백",
+                                            placeholder: "회개할 것은 무엇인가요?",
+                                            text: Binding(
+                                                get: { viewModel.state.confession },
+                                                set: { viewModel.send(.updateConfession($0)) }
+                                            )
                                         )
-                                    )
-                                case .thanksgiving:
-                                    SingleFieldCard(
-                                        title: "Thanksgiving · 감사",
-                                        placeholder: "감사 제목을 적어보세요",
-                                        text: Binding(
-                                            get: { viewModel.state.thanksgiving },
-                                            set: { viewModel.send(.updateThanksgiving($0)) }
+                                    case .thanksgiving:
+                                        SingleFieldCard(
+                                            title: "Thanksgiving · 감사",
+                                            placeholder: "감사 제목을 적어보세요",
+                                            text: Binding(
+                                                get: { viewModel.state.thanksgiving },
+                                                set: { viewModel.send(.updateThanksgiving($0)) }
+                                            )
                                         )
-                                    )
-                                case .supplication:
-                                    SingleFieldCard(
-                                        title: "Supplication · 간구",
-                                        placeholder: "구하는 바를 적어보세요",
-                                        text: Binding(
-                                            get: { viewModel.state.supplication },
-                                            set: { viewModel.send(.updateSupplication($0)) }
+                                    case .supplication:
+                                        SingleFieldCard(
+                                            title: "Supplication · 간구",
+                                            placeholder: "구하는 바를 적어보세요",
+                                            text: Binding(
+                                                get: { viewModel.state.supplication },
+                                                set: { viewModel.send(.updateSupplication($0)) }
+                                            )
                                         )
-                                    )
+                                    }
                                 }
                             }
                         }
+                        .padding(.horizontal, 20)
+                        .padding(.top, 12)
+                        .padding(.bottom, 20)
                     }
-                    .padding(.horizontal, 20)
-                    .padding(.top, 12)
                 }
 
                 // 하단: 이전/다음 버튼
@@ -253,7 +257,7 @@ public struct QTEditorWizardView: View {
     // MARK: - Subviews
 
     @ViewBuilder
-    private func verseHeader() -> some View {
+    private func verseHeaderContent() -> some View {
         VStack(alignment: .leading, spacing: 0) {
             // 영어 말씀
             VStack(alignment: .leading, spacing: 12) {
@@ -267,10 +271,11 @@ public struct QTEditorWizardView: View {
                         .foregroundStyle(DS.Color.deepCocoa)
                 }
 
-                Text(viewModel.state.verseEN)
+                Text(viewModel.state.verseEN.trimmingCharacters(in: .whitespacesAndNewlines))
                     .font(DS.Font.verse(18, .regular))
                     .foregroundStyle(DS.Color.textPrimary)
                     .lineSpacing(6)
+                    .fixedSize(horizontal: false, vertical: true)
                     .frame(maxWidth: .infinity, alignment: .leading)
             }
             .padding(20)
@@ -291,10 +296,11 @@ public struct QTEditorWizardView: View {
                             .foregroundStyle(DS.Color.deepCocoa)
                     }
 
-                    Text(viewModel.state.explKR)
+                    Text(viewModel.state.explKR.trimmingCharacters(in: .whitespacesAndNewlines))
                         .font(DS.Font.bodyM())
                         .foregroundStyle(DS.Color.textPrimary)
                         .lineSpacing(5)
+                        .fixedSize(horizontal: false, vertical: true)
                         .frame(maxWidth: .infinity, alignment: .leading)
                 }
                 .padding(16)
@@ -308,7 +314,6 @@ public struct QTEditorWizardView: View {
                     .frame(height: 12)
             }
         }
-        .background(DS.Color.background.opacity(0.95))
     }
 }
 
