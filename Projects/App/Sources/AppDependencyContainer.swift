@@ -8,26 +8,17 @@
 import Foundation
 import Domain
 import Data
+import FirebaseFunctions
 
 /// 앱 전체 의존성 조립 컨테이너
 ///
-/// 의존성 주입(DI) 순서:
-/// 1. OPENAI_API_KEY 환경변수 읽기
-/// 2. HTTP 클라이언트 준비
-/// 3. OpenAI RemoteDataSource 생성
-/// 4. AIRepository 생성
-/// 5. GenerateVerseUseCase 생성
+/// Firebase Functions 기반 OpenAI 프록시 사용
+/// - OPENAI_API_KEY는 Firebase Functions 환경변수에서만 관리
+/// - iOS 앱은 Firebase Functions만 호출
 final class AppDependencyContainer {
 
     // MARK: - Properties
 
-    /// API 키 설정 상태
-    enum APIKeyStatus {
-        case valid(String)
-        case missing
-    }
-
-    let apiKeyStatus: APIKeyStatus
     let dummySession: UserSession
 
     /// QTRepository 인스턴스 (lazy 캐싱)
@@ -42,42 +33,29 @@ final class AppDependencyContainer {
     // MARK: - Initialization
 
     init() {
-        // 1. OPENAI_API_KEY 환경변수 읽기
-        if let apiKey = ProcessInfo.processInfo.environment["OPENAI_API_KEY"],
-           !apiKey.isEmpty {
-            self.apiKeyStatus = .valid(apiKey)
-        } else {
-            self.apiKeyStatus = .missing
-        }
-
-        // 2. 더미 UserSession 생성 (익명 세션)
+        // 더미 UserSession 생성 (익명 세션)
         self.dummySession = UserSession.anonymous(deviceId: "local_device")
     }
 
     // MARK: - Repository Factory
 
-    /// AIRepository 생성 (lazy cached)
-    func makeAIRepository() -> AIRepository? {
+    /// AIRepository 생성 (Firebase Functions 기반, lazy cached)
+    func makeAIRepository() -> AIRepository {
         if let cached = _aiRepository {
             return cached
         }
 
-        guard case .valid(let apiKey) = apiKeyStatus else {
-            return nil
-        }
-
-        // HTTP 클라이언트 준비
+        // Bible API 클라이언트 (그대로 유지)
         let bibleAPIBaseURL = URL(string: "https://bible-api.com")!
         let bibleAPIClient = URLSessionHTTPClient(baseURL: bibleAPIBaseURL)
         let bibleDataSource = BibleAPIDataSource(client: bibleAPIClient)
 
-        let openAIBaseURL = URL(string: "https://api.openai.com")!
-        let openAIClient = URLSessionHTTPClient(baseURL: openAIBaseURL)
-        let openAIDataSource = OpenAIDataSource(client: openAIClient, apiKey: apiKey)
+        // Firebase Functions AI DataSource (OpenAI 직접 호출 대체)
+        let firebaseFunctionsDataSource = FirebaseFunctionsAIDataSource()
 
         let repo = DefaultAIRepository(
             bibleDataSource: bibleDataSource,
-            openAIDataSource: openAIDataSource
+            openAIDataSource: firebaseFunctionsDataSource
         )
         _aiRepository = repo
         return repo
@@ -119,10 +97,8 @@ final class AppDependencyContainer {
     // MARK: - UseCase Factory
 
     /// GenerateVerseUseCase 생성
-    func makeGenerateVerseUseCase() -> GenerateVerseUseCase? {
-        guard let aiRepository = makeAIRepository() else {
-            return nil
-        }
+    func makeGenerateVerseUseCase() -> GenerateVerseUseCase {
+        let aiRepository = makeAIRepository()
 
         return GenerateVerseInteractor(
             aiRepository: aiRepository,

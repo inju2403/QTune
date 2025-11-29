@@ -9,12 +9,16 @@ import SwiftUI
 import Presentation
 import Domain
 import Data
+import FirebaseCore
 
 class AppDelegate: NSObject, UIApplicationDelegate {
     func application(
         _ application: UIApplication,
         didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey : Any]? = nil
     ) -> Bool {
+        // Firebase 초기화
+        FirebaseApp.configure()
+
         // Configure all windows
         configureAppearance()
         return true
@@ -93,65 +97,57 @@ struct QTuneApp: App {
 
     @ViewBuilder
     private var mainContent: some View {
-        Group {
-            Group {
-                switch container.apiKeyStatus {
-                case .valid(_):
-                    // API 키가 설정된 경우: 정상 앱 실행
-                    if #available(iOS 17, *),
-                       let generateVerseUseCase = container.makeGenerateVerseUseCase(),
-                       let commitQTUseCase = container.makeCommitQTUseCase(),
-                       let updateQTUseCase = container.makeUpdateQTUseCase(),
-                       let deleteQTUseCase = container.makeDeleteQTUseCase(),
-                       let fetchQTListUseCase = container.makeFetchQTListUseCase(),
-                       let toggleFavoriteUseCase = container.makeToggleFavoriteUseCase() {
+        // Firebase Functions 기반으로 OpenAI 호출
+        // OPENAI_API_KEY는 iOS에서 관리하지 않음
+        if #available(iOS 17, *),
+           let commitQTUseCase = container.makeCommitQTUseCase(),
+           let updateQTUseCase = container.makeUpdateQTUseCase(),
+           let deleteQTUseCase = container.makeDeleteQTUseCase(),
+           let fetchQTListUseCase = container.makeFetchQTListUseCase(),
+           let toggleFavoriteUseCase = container.makeToggleFavoriteUseCase() {
 
-                        let qtListVM = QTListViewModel(
-                            fetchQTListUseCase: fetchQTListUseCase,
-                            toggleFavoriteUseCase: toggleFavoriteUseCase,
-                            deleteQTUseCase: deleteQTUseCase,
-                            session: container.dummySession
-                        )
+            let generateVerseUseCase = container.makeGenerateVerseUseCase()
 
-                        MainTabViewWrapper(
-                            qtListViewModel: qtListVM,
-                            detailViewModelFactory: { qt in
-                                QTDetailViewModel(
-                                    qt: qt,
-                                    toggleFavoriteUseCase: toggleFavoriteUseCase,
-                                    deleteQTUseCase: deleteQTUseCase,
-                                    session: container.dummySession
-                                )
-                            },
-                            editorViewModelFactory: {
-                                QTEditorViewModel(
-                                    commitQTUseCase: commitQTUseCase,
-                                    updateQTUseCase: updateQTUseCase,
-                                    session: container.dummySession
-                                )
-                            },
-                            profileEditViewModelFactory: { currentProfile in
-                                ProfileEditViewModel(
-                                    currentProfile: currentProfile,
-                                    saveUserProfileUseCase: container.makeSaveUserProfileUseCase()
-                                )
-                            },
-                            generateVerseUseCase: generateVerseUseCase,
-                            commitQTUseCase: commitQTUseCase,
-                            getUserProfileUseCase: container.makeGetUserProfileUseCase(),
-                            saveUserProfileUseCase: container.makeSaveUserProfileUseCase(),
-                            session: container.dummySession
-                        )
-                    } else {
-                        // iOS 17 미만
-                        APIKeyMissingView()
-                    }
+            let qtListVM = QTListViewModel(
+                fetchQTListUseCase: fetchQTListUseCase,
+                toggleFavoriteUseCase: toggleFavoriteUseCase,
+                deleteQTUseCase: deleteQTUseCase,
+                session: container.dummySession
+            )
 
-                case .missing:
-                    // API 키가 없는 경우: 안내 화면
-                    APIKeyMissingView()
-                }
-            }
+            MainTabViewWrapper(
+                qtListViewModel: qtListVM,
+                detailViewModelFactory: { qt in
+                    QTDetailViewModel(
+                        qt: qt,
+                        toggleFavoriteUseCase: toggleFavoriteUseCase,
+                        deleteQTUseCase: deleteQTUseCase,
+                        session: container.dummySession
+                    )
+                },
+                editorViewModelFactory: {
+                    QTEditorViewModel(
+                        commitQTUseCase: commitQTUseCase,
+                        updateQTUseCase: updateQTUseCase,
+                        session: container.dummySession
+                    )
+                },
+                profileEditViewModelFactory: { currentProfile in
+                    ProfileEditViewModel(
+                        currentProfile: currentProfile,
+                        saveUserProfileUseCase: container.makeSaveUserProfileUseCase()
+                    )
+                },
+                generateVerseUseCase: generateVerseUseCase,
+                commitQTUseCase: commitQTUseCase,
+                getUserProfileUseCase: container.makeGetUserProfileUseCase(),
+                saveUserProfileUseCase: container.makeSaveUserProfileUseCase(),
+                session: container.dummySession
+            )
+        } else {
+            // iOS 17 미만 또는 초기화 실패
+            Text("앱을 사용할 수 없습니다.")
+                .foregroundColor(.red)
         }
     }
 }
