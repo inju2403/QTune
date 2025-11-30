@@ -10,79 +10,75 @@ import Presentation
 import Domain
 import Data
 import FirebaseCore
-
-class AppDelegate: NSObject, UIApplicationDelegate {
-    func application(
-        _ application: UIApplication,
-        didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey : Any]? = nil
-    ) -> Bool {
-        // Firebase 초기화
-        FirebaseApp.configure()
-
-        // Configure all windows
-        configureAppearance()
-        return true
-    }
-
-    func application(
-        _ application: UIApplication,
-        configurationForConnecting connectingSceneSession: UISceneSession,
-        options: UIScene.ConnectionOptions
-    ) -> UISceneConfiguration {
-        let config = UISceneConfiguration(name: nil, sessionRole: connectingSceneSession.role)
-        config.delegateClass = SceneDelegate.self
-        return config
-    }
-
-    private func configureAppearance() {
-        // Global window configuration
-        UIWindow.appearance().backgroundColor = .systemBackground
-        UIWindow.appearance().tintColor = .systemBlue
-    }
-}
-
-class SceneDelegate: NSObject, UIWindowSceneDelegate {
-    func sceneWillEnterForeground(_ scene: UIScene) {
-        if let windowScene = scene as? UIWindowScene {
-            windowScene.windows.forEach { window in
-                window.backgroundColor = .systemBackground
-                window.rootViewController?.view.backgroundColor = .systemBackground
-            }
-        }
-    }
-
-    func scene(_ scene: UIScene, willConnectTo session: UISceneSession, options connectionOptions: UIScene.ConnectionOptions) {
-        if let windowScene = scene as? UIWindowScene {
-            windowScene.windows.forEach { window in
-                window.backgroundColor = .systemBackground
-                window.rootViewController?.view.backgroundColor = .systemBackground
-            }
-        }
-    }
-}
+import FirebaseAuth
 
 @main
 struct QTuneApp: App {
     @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
 
-    /// 의존성 주입 컨테이너
-    private let container = AppDependencyContainer()
-
-    /// 온보딩 완료 여부 (UserDefaults에서 동기적으로 읽음)
     @AppStorage("hasCompletedOnboarding") private var hasCompletedOnboarding = false
+    @State private var isAuthReady = false
+
+    // Singleton container (init() 이후 첫 접근 시 lazy 초기화)
+    private let container = AppDependencyContainer.shared
+
+    init() {
+        // Firebase를 가장 먼저 초기화
+        if FirebaseApp.app() == nil {
+            FirebaseApp.configure()
+            print("🔥 [QTuneApp.init] Firebase configured")
+        }
+
+        // 전역 appearance 설정
+        UIWindow.appearance().backgroundColor = .systemBackground
+        UIWindow.appearance().tintColor = .systemBlue
+    }
 
     var body: some Scene {
         WindowGroup {
-            if !hasCompletedOnboarding {
-                // 온보딩 미완료: 온보딩 화면 표시
-                onboardingView
-                    .background(DS.Color.background)
-            } else {
-                // 온보딩 완료: 정상 앱 실행
-                mainContent
-                    .background(DS.Color.background)
+            Group {
+                if !isAuthReady {
+                    // Auth 초기화 중 - 런치 스크린과 동일한 디자인
+                    LaunchScreenView()
+                        .task {
+                            // Auth 상태 체크
+                            await checkAuthStatus()
+                        }
+                } else if !hasCompletedOnboarding {
+                    onboardingView
+                        .background(DS.Color.background)
+                } else {
+                    mainContent
+                        .background(DS.Color.background)
+                }
             }
         }
+    }
+
+    @MainActor
+    private func checkAuthStatus() async {
+        // 이미 로그인되어 있는지 체크
+        if let currentUser = Auth.auth().currentUser {
+            print("✅ [QTuneApp] Already authenticated, UID: \(currentUser.uid)")
+            isAuthReady = true
+            return
+        }
+
+        // AppDelegate의 익명 로그인이 완료될 때까지 대기
+        // 최대 5초 대기
+        for _ in 0..<50 {
+            if Auth.auth().currentUser != nil {
+                print("✅ [QTuneApp] Auth ready, UID: \(Auth.auth().currentUser!.uid)")
+                isAuthReady = true
+                return
+            }
+            try? await Task.sleep(nanoseconds: 100_000_000) // 100ms
+        }
+
+        // 5초 후에도 로그인 안 되면 에러
+        print("🔴 [QTuneApp] Auth timeout - Anonymous sign-in failed")
+        // 그래도 일단 진행 (에러는 나중에 처리)
+        isAuthReady = true
     }
 
     @ViewBuilder
@@ -97,8 +93,6 @@ struct QTuneApp: App {
 
     @ViewBuilder
     private var mainContent: some View {
-        // Firebase Functions 기반으로 OpenAI 호출
-        // OPENAI_API_KEY는 iOS에서 관리하지 않음
         if #available(iOS 17, *),
            let commitQTUseCase = container.makeCommitQTUseCase(),
            let updateQTUseCase = container.makeUpdateQTUseCase(),
@@ -145,7 +139,6 @@ struct QTuneApp: App {
                 session: container.dummySession
             )
         } else {
-            // iOS 17 미만 또는 초기화 실패
             Text("앱을 사용할 수 없습니다.")
                 .foregroundColor(.red)
         }
@@ -153,6 +146,42 @@ struct QTuneApp: App {
 }
 
 // MARK: - Helper Wrappers
+
+/// LaunchScreen과 동일한 디자인의 로딩 화면
+struct LaunchScreenView: View {
+    var body: some View {
+        GeometryReader { geometry in
+            ZStack(alignment: .bottom) {
+                // QTune_Splash 배경 이미지 (전체 화면, scaleAspectFill)
+                Image("QTune_Splash")
+                    .resizable()
+                    .scaledToFill()
+                    .frame(width: geometry.size.width, height: geometry.size.height)
+                    .clipped()
+                    .ignoresSafeArea()
+
+                // 하단 텍스트 - LaunchScreen과 정확히 동일한 위치
+                VStack(spacing: 8) {
+                    Text("주의 말씀은 내 발에 등이요")
+                        .font(.system(size: 20, weight: .semibold))
+                        .foregroundColor(Color(red: 0.51, green: 0.40, blue: 0.33).opacity(0.9))
+                        .multilineTextAlignment(.center)
+
+                    Text("Your word is a lamp to my feet. (Ps 119:105)")
+                        .font(.system(size: 14))
+                        .foregroundColor(Color(red: 0.51, green: 0.40, blue: 0.33).opacity(0.7))
+                        .multilineTextAlignment(.center)
+                }
+                .frame(maxWidth: .infinity)
+                .padding(.horizontal, 32)
+                .padding(.bottom, 120) // view의 bottom에서 120pt (SafeArea 무시)
+                .ignoresSafeArea(.all, edges: .bottom) // bottom SafeArea 무시
+            }
+        }
+        .ignoresSafeArea()
+    }
+}
+
 struct OnboardingViewWrapper: View {
     let saveUserProfileUseCase: SaveUserProfileUseCase
     let onComplete: () -> Void

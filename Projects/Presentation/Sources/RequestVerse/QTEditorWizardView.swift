@@ -369,31 +369,48 @@ struct SingleFieldCard: View {
                     .foregroundStyle(text.count > maxLength ? .red : DS.Color.textSecondary)
             }
 
-            ZStack(alignment: .topLeading) {
-                if text.isEmpty {
-                    Text(placeholder)
-                        .font(DS.Font.bodyM())
-                        .foregroundStyle(DS.Color.placeholder)
-                        .padding(.top, 12)
-                        .padding(.horizontal, 12)
-                }
+            VStack(alignment: .leading, spacing: 0) {
+                // Placeholder 또는 TextEditor
+                ZStack(alignment: .topLeading) {
+                    // 배경
+                    RoundedRectangle(cornerRadius: DS.Radius.s)
+                        .fill(DS.Color.canvas)
+                        .frame(minHeight: 180)
 
-                TextEditor(text: $text)
-                    .font(DS.Font.bodyM())
-                    .foregroundStyle(DS.Color.textPrimary)
-                    .frame(minHeight: 180)
-                    .padding(8)
-                    .scrollContentBackground(.hidden)
-                    .background(
-                        RoundedRectangle(cornerRadius: DS.Radius.s)
-                            .fill(DS.Color.canvas)
-                    )
-                    .onChange(of: text) { _, newValue in
-                        // 500자 제한
-                        if newValue.count > maxLength {
-                            text = String(newValue.prefix(maxLength))
-                        }
+                    // Placeholder
+                    if text.isEmpty {
+                        Text(placeholder)
+                            .font(DS.Font.bodyM())
+                            .foregroundStyle(DS.Color.placeholder)
+                            .padding(.top, 20)
+                            .padding(.horizontal, 16)
+                            .frame(maxWidth: .infinity, alignment: .topLeading)
                     }
+
+                    // Text 표시 (읽기 전용처럼 보이지만 편집 가능)
+                    Text(text.isEmpty ? " " : text)
+                        .font(DS.Font.bodyM())
+                        .foregroundStyle(DS.Color.textPrimary)
+                        .padding(16)
+                        .frame(maxWidth: .infinity, minHeight: 180, alignment: .topLeading)
+                        .opacity(0) // 투명하게 (높이 계산용)
+
+                    // 실제 TextEditor (내부 스크롤 비활성화)
+                    TextEditor(text: $text)
+                        .font(DS.Font.bodyM())
+                        .foregroundStyle(DS.Color.textPrimary)
+                        .padding(8)
+                        .scrollContentBackground(.hidden)
+                        .scrollDisabled(true)
+                        .frame(minHeight: 180)
+                        .background(Color.clear)
+                        .onChange(of: text) { _, newValue in
+                            // 500자 제한
+                            if newValue.count > maxLength {
+                                text = String(newValue.prefix(maxLength))
+                            }
+                        }
+                }
             }
         }
         .padding(16)

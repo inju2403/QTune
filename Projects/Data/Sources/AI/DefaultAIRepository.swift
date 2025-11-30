@@ -37,6 +37,16 @@ public final class DefaultAIRepository: AIRepository {
         do {
             recommendation = try await openAIDataSource.recommendVerse(dataRequest)
             print("✅ [DefaultAIRepository] Verse recommended: \(recommendation.verseRef)")
+        } catch let error as OpenAIDataSourceError {
+            print("🔴 [DefaultAIRepository] Verse recommendation failed: \(error)")
+            switch error {
+            case .dailyLimitExceeded:
+                throw AIRepositoryError.dailyLimitExceeded
+            case .apiKeyNotFound:
+                throw AIRepositoryError.apiKeyNotConfigured
+            default:
+                throw AIRepositoryError.koreanExplanationFailed(reason: error.localizedDescription)
+            }
         } catch {
             print("🔴 [DefaultAIRepository] Verse recommendation failed: \(error)")
             throw AIRepositoryError.koreanExplanationFailed(reason: error.localizedDescription)
@@ -64,6 +74,16 @@ public final class DefaultAIRepository: AIRepository {
                 note: request.note
             )
             print("✅ [DefaultAIRepository] Korean explanation generated")
+        } catch let error as OpenAIDataSourceError {
+            print("🔴 [DefaultAIRepository] Korean explanation failed: \(error)")
+            switch error {
+            case .dailyLimitExceeded:
+                throw AIRepositoryError.dailyLimitExceeded
+            case .apiKeyNotFound:
+                throw AIRepositoryError.apiKeyNotConfigured
+            default:
+                throw AIRepositoryError.koreanExplanationFailed(reason: error.localizedDescription)
+            }
         } catch {
             print("🔴 [DefaultAIRepository] Korean explanation failed: \(error)")
             throw AIRepositoryError.koreanExplanationFailed(reason: error.localizedDescription)

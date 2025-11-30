@@ -36,23 +36,28 @@ async function getOpenAIClient() {
 }
 
 // =========================================
-// 호출자 식별 (Firebase Auth UID 필수)
+// 호출자 식별 (installId 우선)
 // =========================================
 function getCallerId(
-  context: functions.https.CallableContext
+  context: functions.https.CallableContext,
+  data: any
 ): string {
-  // Firebase Auth UID 사용 (Anonymous Auth 포함)
-  // iOS 앱은 반드시 signInAnonymously()를 먼저 호출해야 함
+  // 1. Firebase Auth UID (로그인한 사용자)
   if (context.auth?.uid) {
-    return context.auth.uid;
+    return `uid_${context.auth.uid}`;
   }
 
-  // Auth가 없으면 에러
-  // 이제 installId나 IP로 폴백하지 않음
-  throw new functions.https.HttpsError(
-    "unauthenticated",
-    "Firebase Authentication required. Please sign in anonymously first."
-  );
+  // 2. iOS 앱에서 전달한 installId
+  if (typeof data?.installId === "string" && data.installId.length > 0) {
+    return `install_${data.installId}`;
+  }
+
+  // 3. IP 주소 (최후 수단)
+  const rawReq: any = (context as any).rawRequest;
+  const ip: string | undefined =
+    rawReq?.ip || rawReq?.headers?.["x-forwarded-for"];
+
+  return `ip_${ip ?? "unknown"}`;
 }
 
 // =========================================
@@ -110,7 +115,6 @@ type RecommendVerseRequest = {
   locale?: string;
   mood: string;
   note?: string;
-  // installId는 더 이상 사용하지 않음 (Firebase Auth UID 사용)
 };
 
 type GenerateKoreanExplanationRequest = {
@@ -118,7 +122,6 @@ type GenerateKoreanExplanationRequest = {
   verseRef: string;
   mood: string;
   note?: string;
-  // installId는 더 이상 사용하지 않음 (Firebase Auth UID 사용)
 };
 
 // =========================================
@@ -137,7 +140,7 @@ export const recommendVerse = functions.https.onCall(
       }
 
       // 호출자 식별 및 하루 10회 제한 체크
-      const callerId = getCallerId(context);
+      const callerId = getCallerId(context, data);
       await checkDailyQuota(callerId);
 
       logger.info("recommendVerse called", { locale, mood, note, callerId });
@@ -217,13 +220,6 @@ export const recommendVerse = functions.https.onCall(
         stack: error?.stack,
         raw: error,
       });
-
-      // HttpsError는 그대로 re-throw (resource-exhausted, unauthenticated 등)
-      if (error instanceof functions.https.HttpsError) {
-        throw error;
-      }
-
-      // 기타 에러는 internal로 wrapping
       throw new functions.https.HttpsError(
         "internal",
         error?.message ?? "Unknown error"
@@ -259,9 +255,9 @@ export const generateKoreanExplanation = functions.https.onCall(
         );
       }
 
-      // 한글 해설 생성은 recommendVerse의 후속 작업이므로 별도 카운트 안 함
-      // recommendVerse에서 이미 checkDailyQuota()를 호출했음
-      const callerId = getCallerId(context);
+      // 호출자 식별 및 하루 10회 제한 체크
+      const callerId = getCallerId(context, data);
+      await checkDailyQuota(callerId);
 
       logger.info("generateKoreanExplanation called", {
         verseRef,
@@ -369,13 +365,6 @@ ${englishText}
         stack: error?.stack,
         raw: error,
       });
-
-      // HttpsError는 그대로 re-throw (resource-exhausted, unauthenticated 등)
-      if (error instanceof functions.https.HttpsError) {
-        throw error;
-      }
-
-      // 기타 에러는 internal로 wrapping
       throw new functions.https.HttpsError(
         "internal",
         error?.message ?? "Unknown error"

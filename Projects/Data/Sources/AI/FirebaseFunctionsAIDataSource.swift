@@ -7,24 +7,35 @@
 
 import Foundation
 import FirebaseFunctions
+import FirebaseAuth
+import Domain
 
 /// Firebase Functions 기반 AI Data Source
 ///
 /// OpenAI API를 직접 호출하는 대신, Firebase Functions를 통해 프록시 방식으로 호출합니다.
 /// OPENAI_API_KEY는 Firebase Functions 환경변수에서만 관리되며, iOS 앱은 알 필요가 없습니다.
 public final class FirebaseFunctionsAIDataSource: OpenAIRemoteDataSource {
-    private let functions: Functions
+    // Lazy 초기화: FirebaseApp.configure() 이후에 처음 접근할 때 생성
+    private lazy var functions: Functions = Functions.functions()
 
-    public init(functions: Functions = Functions.functions()) {
-        self.functions = functions
+    public init() {
+        // functions는 lazy이므로 여기서는 생성하지 않음
     }
 
     public func recommendVerse(_ request: GenerateVerseRequest) async throws -> VerseRecommendationDTO {
+        guard let currentUser = Auth.auth().currentUser else {
+            print("🔴 [FirebaseFunctionsAIDataSource] User not authenticated")
+            throw OpenAIDataSourceError.apiKeyNotFound
+        }
+
         print("🔥 [FirebaseFunctionsAIDataSource] Calling recommendVerse function")
         print("   Mood: \(request.mood)")
         print("   Note: \(request.note ?? "none")")
+        print("   UID: \(currentUser.uid)")
+        print("   IsAnonymous: \(currentUser.isAnonymous)")
 
         // Firebase Functions 호출 데이터 준비
+        // Firebase Auth로 인증된 상태이므로 installId는 불필요
         let data: [String: Any] = [
             "locale": request.locale,
             "mood": request.mood,
@@ -60,22 +71,38 @@ public final class FirebaseFunctionsAIDataSource: OpenAIRemoteDataSource {
             return dto
 
         } catch let error as NSError {
-            print("🔴 [FirebaseFunctionsAIDataSource] Error: \(error.localizedDescription)")
+            print("🔴 [FirebaseFunctionsAIDataSource] Error occurred")
+            print("   Domain: \(error.domain)")
+            print("   Code: \(error.code)")
+            print("   Description: \(error.localizedDescription)")
+            print("   UserInfo: \(error.userInfo)")
 
             // Firebase Functions 에러 처리
             if error.domain == FunctionsErrorDomain {
                 let code = FunctionsErrorCode(rawValue: error.code)
+                print("   FunctionsErrorCode: \(code?.rawValue ?? -1)")
+
+                // 상세 메시지 추출
+                if let message = error.userInfo["NSLocalizedDescription"] as? String {
+                    print("   Message: \(message)")
+                }
+                if let details = error.userInfo["details"] as? [String: Any] {
+                    print("   Details: \(details)")
+                }
+
                 switch code {
                 case .unauthenticated:
                     throw OpenAIDataSourceError.apiKeyNotFound
                 case .invalidArgument:
                     throw OpenAIDataSourceError.invalidJSON
+                case .resourceExhausted:
+                    throw OpenAIDataSourceError.dailyLimitExceeded
                 default:
-                    throw error
+                    throw OpenAIDataSourceError.unknown
                 }
             }
 
-            throw error
+            throw OpenAIDataSourceError.unknown
         }
     }
 
@@ -85,11 +112,19 @@ public final class FirebaseFunctionsAIDataSource: OpenAIRemoteDataSource {
         mood: String,
         note: String?
     ) async throws -> KoreanExplanationDTO {
+        guard let currentUser = Auth.auth().currentUser else {
+            print("🔴 [FirebaseFunctionsAIDataSource] User not authenticated")
+            throw OpenAIDataSourceError.apiKeyNotFound
+        }
+
         print("🔥 [FirebaseFunctionsAIDataSource] Calling generateKoreanExplanation function")
         print("   VerseRef: \(verseRef)")
         print("   Mood: \(mood)")
+        print("   UID: \(currentUser.uid)")
+        print("   IsAnonymous: \(currentUser.isAnonymous)")
 
         // Firebase Functions 호출 데이터 준비
+        // Firebase Auth로 인증된 상태이므로 installId는 불필요
         var data: [String: Any] = [
             "englishText": englishText,
             "verseRef": verseRef,
@@ -129,22 +164,38 @@ public final class FirebaseFunctionsAIDataSource: OpenAIRemoteDataSource {
             return dto
 
         } catch let error as NSError {
-            print("🔴 [FirebaseFunctionsAIDataSource] Error: \(error.localizedDescription)")
+            print("🔴 [FirebaseFunctionsAIDataSource] Error occurred")
+            print("   Domain: \(error.domain)")
+            print("   Code: \(error.code)")
+            print("   Description: \(error.localizedDescription)")
+            print("   UserInfo: \(error.userInfo)")
 
             // Firebase Functions 에러 처리
             if error.domain == FunctionsErrorDomain {
                 let code = FunctionsErrorCode(rawValue: error.code)
+                print("   FunctionsErrorCode: \(code?.rawValue ?? -1)")
+
+                // 상세 메시지 추출
+                if let message = error.userInfo["NSLocalizedDescription"] as? String {
+                    print("   Message: \(message)")
+                }
+                if let details = error.userInfo["details"] as? [String: Any] {
+                    print("   Details: \(details)")
+                }
+
                 switch code {
                 case .unauthenticated:
                     throw OpenAIDataSourceError.apiKeyNotFound
                 case .invalidArgument:
                     throw OpenAIDataSourceError.invalidJSON
+                case .resourceExhausted:
+                    throw OpenAIDataSourceError.dailyLimitExceeded
                 default:
-                    throw error
+                    throw OpenAIDataSourceError.unknown
                 }
             }
 
-            throw error
+            throw OpenAIDataSourceError.unknown
         }
     }
 }

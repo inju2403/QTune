@@ -12,6 +12,8 @@ public enum OpenAIDataSourceError: Error {
     case emptyResponse
     case invalidJSON
     case apiKeyNotFound
+    case dailyLimitExceeded
+    case unknown
 }
 
 /// OpenAI Remote Data Source 프로토콜

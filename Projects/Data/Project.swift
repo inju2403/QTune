@@ -2,6 +2,9 @@ import ProjectDescription
 
 let project = Project(
   name: "Data",
+  packages: [
+    .remote(url: "https://github.com/firebase/firebase-ios-sdk", requirement: .upToNextMajor(from: "11.0.0"))
+  ],
   targets: [
     .target(
       name: "Data",
@@ -13,7 +16,9 @@ let project = Project(
       sources: nil,
       buildableFolders: [.folder("Sources")],
       dependencies: [
-        .project(target: "Domain", path: "../Domain")
+        .project(target: "Domain", path: "../Domain"),
+        .package(product: "FirebaseFunctions", type: .runtime),
+        .package(product: "FirebaseAuth", type: .runtime)
       ]
     )
   ]

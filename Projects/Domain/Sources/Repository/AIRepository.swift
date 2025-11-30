@@ -27,6 +27,7 @@ public enum AIRepositoryError: Error {
     case apiKeyNotConfigured
     case bibleAPIFailed(reason: String)
     case koreanExplanationFailed(reason: String)
+    case dailyLimitExceeded
 }
 
 /// AI 기반 말씀 생성 Repository

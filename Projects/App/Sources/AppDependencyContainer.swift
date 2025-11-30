@@ -8,7 +8,6 @@
 import Foundation
 import Domain
 import Data
-import FirebaseFunctions
 
 /// 앱 전체 의존성 조립 컨테이너
 ///
@@ -16,6 +15,10 @@ import FirebaseFunctions
 /// - OPENAI_API_KEY는 Firebase Functions 환경변수에서만 관리
 /// - iOS 앱은 Firebase Functions만 호출
 final class AppDependencyContainer {
+
+    // MARK: - Singleton
+
+    static let shared = AppDependencyContainer()
 
     // MARK: - Properties
 
@@ -32,7 +35,8 @@ final class AppDependencyContainer {
 
     // MARK: - Initialization
 
-    init() {
+    private init() {
+        print("📦 [AppDependencyContainer] Initializing (Firebase should be configured)")
         // 더미 UserSession 생성 (익명 세션)
         self.dummySession = UserSession.anonymous(deviceId: "local_device")
     }
@@ -50,7 +54,7 @@ final class AppDependencyContainer {
         let bibleAPIClient = URLSessionHTTPClient(baseURL: bibleAPIBaseURL)
         let bibleDataSource = BibleAPIDataSource(client: bibleAPIClient)
 
-        // Firebase Functions AI DataSource (OpenAI 직접 호출 대체)
+        // Firebase Functions DataSource (기본 생성자 사용)
         let firebaseFunctionsDataSource = FirebaseFunctionsAIDataSource()
 
         let repo = DefaultAIRepository(

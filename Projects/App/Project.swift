@@ -18,7 +18,8 @@ let project = Project(
       resources: [
         "Resources/Assets.xcassets",
         "Resources/LaunchScreen.storyboard",
-        "Resources/Preview Content/**"
+        "Resources/Preview Content/**",
+        "Resources/GoogleService-Info.plist"
       ],
       buildableFolders: [.folder("Sources")],
       scripts: [

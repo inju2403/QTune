@@ -53,20 +53,26 @@ public final class RequestVerseViewModel {
 
     private func loadTodayDraft(userId: String) async {
         let draft = await DraftManager.shared.loadTodayDraft(userId: userId)
-        state.todayDraft = draft
-        state.showDraftBanner = (draft != nil)
+        await MainActor.run {
+            state.todayDraft = draft
+            state.showDraftBanner = (draft != nil)
+        }
     }
 
     private func discardDraft() async {
         await DraftManager.shared.clearTodayDraft(userId: "me")
-        state.todayDraft = nil
-        state.showDraftBanner = false
+        await MainActor.run {
+            state.todayDraft = nil
+            state.showDraftBanner = false
+        }
     }
 
     private func requestVerse() async {
         // 1. 입력 검증
         guard state.isValidInput else {
-            state.errorMessage = "오늘의 감정이나 상황을 먼저 입력해 주세요"
+            await MainActor.run {
+                state.errorMessage = "오늘의 감정이나 상황을 먼저 입력해 주세요"
+            }
             return
         }
 
@@ -75,14 +81,17 @@ public final class RequestVerseViewModel {
 
         // 3. 기존 드래프트가 있으면 모달로 충돌 처리
         if state.todayDraft != nil {
-            effect.send(.presentDraftConflict)
+            await MainActor.run {
+                effect.send(.presentDraftConflict)
+            }
             return
         }
 
-        state.isLoading = true
-        state.errorMessage = nil
-        state.generatedResult = nil
-        defer { state.isLoading = false }
+        await MainActor.run {
+            state.isLoading = true
+            state.errorMessage = nil
+            state.generatedResult = nil
+        }
 
         do {
             let generated = try await generateVerseUseCase.execute(
@@ -101,7 +110,11 @@ public final class RequestVerseViewModel {
                 verse: generated.verse,
                 isSafe: true  // DomainError.moderationBlocked가 throw되지 않았으므로 안전
             )
-            state.generatedResult = result
+
+            await MainActor.run {
+                state.generatedResult = result
+                state.isLoading = false
+            }
 
         } catch let error as DomainError {
             // Domain 에러별 처리
@@ -112,7 +125,12 @@ public final class RequestVerseViewModel {
             case .moderationBlocked(let reason):
                 message = "부적절한 내용이 감지되었습니다: \(reason)"
             case .rateLimited:
-                message = "오늘 이미 말씀을 추천받으셨어요. 내일 다시 시도해 주세요"
+                message = """
+                하루에 최대 10번까지 말씀 추천을 받을 수 있어요.
+
+                오늘은 이미 10번 모두 사용하셨어요.
+                내일 다시 부탁드릴게요. 😊
+                """
             case .network(let msg):
                 message = "네트워크 오류: \(msg)"
             case .configurationError(let msg):
@@ -124,13 +142,20 @@ public final class RequestVerseViewModel {
             case .unknown:
                 message = "알 수 없는 오류가 발생했습니다"
             }
-            state.errorMessage = message
-            effect.send(.showError(message))
+
+            await MainActor.run {
+                state.errorMessage = message
+                state.isLoading = false
+                effect.send(.showError(message))
+            }
         } catch {
             // 기타 에러
             let message = "말씀 추천에 실패했어요. 잠시 후 다시 시도해 주세요"
-            state.errorMessage = message
-            effect.send(.showError(message))
+            await MainActor.run {
+                state.errorMessage = message
+                state.isLoading = false
+                effect.send(.showError(message))
+            }
         }
     }
 }
