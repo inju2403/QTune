@@ -32,6 +32,10 @@ public struct QTEditorWizardView: View {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(\.dismiss) private var dismiss
 
+    // MARK: - Focus State
+    @FocusState private var soapFocus: SoapStep?
+    @FocusState private var actsFocus: ActsStep?
+
     // MARK: - Init
     public init(viewModel: QTEditorWizardViewModel) {
         _viewModel = State(wrappedValue: viewModel)
@@ -63,7 +67,9 @@ public struct QTEditorWizardView: View {
                                             text: Binding(
                                                 get: { viewModel.state.observation },
                                                 set: { viewModel.send(.updateObservation($0)) }
-                                            )
+                                            ),
+                                            focused: $soapFocus,
+                                            focusValue: SoapStep.observation
                                         )
                                     case .application:
                                         SingleFieldCard(
@@ -73,7 +79,9 @@ public struct QTEditorWizardView: View {
                                             text: Binding(
                                                 get: { viewModel.state.application },
                                                 set: { viewModel.send(.updateApplication($0)) }
-                                            )
+                                            ),
+                                            focused: $soapFocus,
+                                            focusValue: SoapStep.application
                                         )
                                     case .prayer:
                                         SingleFieldCard(
@@ -83,7 +91,9 @@ public struct QTEditorWizardView: View {
                                             text: Binding(
                                                 get: { viewModel.state.prayer },
                                                 set: { viewModel.send(.updatePrayer($0)) }
-                                            )
+                                            ),
+                                            focused: $soapFocus,
+                                            focusValue: SoapStep.prayer
                                         )
                                     }
                                 }
@@ -98,7 +108,9 @@ public struct QTEditorWizardView: View {
                                             text: Binding(
                                                 get: { viewModel.state.adoration },
                                                 set: { viewModel.send(.updateAdoration($0)) }
-                                            )
+                                            ),
+                                            focused: $actsFocus,
+                                            focusValue: ActsStep.adoration
                                         )
                                     case .confession:
                                         SingleFieldCard(
@@ -108,7 +120,9 @@ public struct QTEditorWizardView: View {
                                             text: Binding(
                                                 get: { viewModel.state.confession },
                                                 set: { viewModel.send(.updateConfession($0)) }
-                                            )
+                                            ),
+                                            focused: $actsFocus,
+                                            focusValue: ActsStep.confession
                                         )
                                     case .thanksgiving:
                                         SingleFieldCard(
@@ -118,7 +132,9 @@ public struct QTEditorWizardView: View {
                                             text: Binding(
                                                 get: { viewModel.state.thanksgiving },
                                                 set: { viewModel.send(.updateThanksgiving($0)) }
-                                            )
+                                            ),
+                                            focused: $actsFocus,
+                                            focusValue: ActsStep.thanksgiving
                                         )
                                     case .supplication:
                                         SingleFieldCard(
@@ -128,7 +144,9 @@ public struct QTEditorWizardView: View {
                                             text: Binding(
                                                 get: { viewModel.state.supplication },
                                                 set: { viewModel.send(.updateSupplication($0)) }
-                                            )
+                                            ),
+                                            focused: $actsFocus,
+                                            focusValue: ActsStep.supplication
                                         )
                                     }
                                 }
@@ -173,6 +191,15 @@ public struct QTEditorWizardView: View {
                         Haptics.tap()
                         withAnimation(.spring(response: 0.6, dampingFraction: 0.8)) {
                             viewModel.send(.stepNext)
+                        }
+
+                        // 다음 단계로 포커스 이동
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                            if viewModel.state.template == .soap {
+                                soapFocus = viewModel.state.soapStep
+                            } else {
+                                actsFocus = viewModel.state.actsStep
+                            }
                         }
                     } label: {
                         HStack(spacing: 6) {
@@ -242,6 +269,16 @@ public struct QTEditorWizardView: View {
             if newValue {
                 DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
                     dismiss()
+                }
+            }
+        }
+        .onAppear {
+            // 화면 진입 시 첫 번째 필드에 자동 포커스
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                if viewModel.state.template == .soap {
+                    soapFocus = .observation
+                } else {
+                    actsFocus = .adoration
                 }
             }
         }
@@ -364,11 +401,13 @@ struct StepPager<Content: View>: View {
 
 // MARK: - SingleFieldCard (단일 입력 카드)
 
-struct SingleFieldCard: View {
+struct SingleFieldCard<FocusValue: Hashable>: View {
     let title: String
     let description: String
     let placeholder: String
     @Binding var text: String
+    var focused: FocusState<FocusValue?>.Binding
+    var focusValue: FocusValue
 
     private let maxLength = 500
 
@@ -430,6 +469,7 @@ struct SingleFieldCard: View {
                         .scrollDisabled(true)
                         .frame(minHeight: 180)
                         .background(Color.clear)
+                        .focused(focused, equals: focusValue)
                         .onChange(of: text) { _, newValue in
                             // 500자 제한
                             if newValue.count > maxLength {
