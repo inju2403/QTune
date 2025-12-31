@@ -61,14 +61,14 @@ public struct ProfileEditView: View {
         }
         .navigationTitle("")
         .navigationBarTitleDisplayMode(.inline)
-        .onChange(of: selectedPhotoItem) { newItem in
+        .onChange(of: selectedPhotoItem) { _, newItem in
             Task {
                 if let data = try? await newItem?.loadTransferable(type: Data.self) {
                     viewModel.send(.updateProfileImage(data))
                 }
             }
         }
-        .onChange(of: viewModel.state.isSaving) { isSaving in
+        .onChange(of: viewModel.state.isSaving) { _, isSaving in
             if !isSaving && !viewModel.state.showError {
                 Haptics.success()
                 dismiss()

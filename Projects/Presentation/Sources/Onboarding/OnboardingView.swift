@@ -178,7 +178,7 @@ public struct OnboardingView: View {
                 .padding(.bottom, 40)
             }
         }
-        .onChange(of: viewModel.state.isSaving) { isSaving in
+        .onChange(of: viewModel.state.isSaving) { _, isSaving in
             if !isSaving && !viewModel.state.showError {
                 Haptics.success()
             }

@@ -172,8 +172,8 @@ public final class QTEditorWizardViewModel {
                 state.showSaveSuccessToast = true
 
                 // 1초 후 콜백 실행
-                DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
-                    self.onSaveComplete?()
+                DispatchQueue.main.asyncAfter(deadline: .now() + 1) { [weak self] in
+                    self?.onSaveComplete?()
                 }
             }
         } catch {

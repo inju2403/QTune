@@ -138,7 +138,7 @@ public struct RequestVerseView: View {
                 break
             }
         }
-        .onChange(of: viewModel.state.generatedResult) { newValue in
+        .onChange(of: viewModel.state.generatedResult) { _, newValue in
             if let result = newValue {
                 // Haptic 피드백
                 Haptics.success()
