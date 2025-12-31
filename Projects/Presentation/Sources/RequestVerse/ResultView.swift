@@ -72,7 +72,7 @@ public struct ResultView: View {
                 Haptics.tap()
                 viewModel.send(.selectTemplate(template))
             }
-            .presentationDetents([.height(260)])
+            .presentationDetents([.height(620)])
         }
     }
 }
