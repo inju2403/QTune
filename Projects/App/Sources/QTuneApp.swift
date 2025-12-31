@@ -38,21 +38,29 @@ struct QTuneApp: App {
 
     var body: some Scene {
         WindowGroup {
-            Group {
-                if !isAuthReady || !isProfileLoaded {
-                    // Auth + Profile 로딩 중 - 런치 스크린과 동일한 디자인
-                    LaunchScreenView()
-                        .task {
-                            await checkAuthAndProfile()
-                        }
-                } else if !hasCompletedOnboarding {
+            ZStack {
+                // 메인 콘텐츠 (항상 렌더링, 뒤에 위치)
+                if !hasCompletedOnboarding {
                     onboardingView
                         .background(DS.Color.background)
                 } else {
                     mainContent
                         .background(DS.Color.background)
                 }
+
+                // 스플래시 화면 (위에 오버레이, 로딩 완료 시 페이드아웃)
+                if !isAuthReady || !isProfileLoaded {
+                    LaunchScreenView()
+                        .task {
+                            await checkAuthAndProfile()
+                        }
+                        .zIndex(1)
+                        .transition(.opacity)
+                }
             }
+            .animation(.easeInOut(duration: 0.5), value: isAuthReady)
+            .animation(.easeInOut(duration: 0.5), value: isProfileLoaded)
+            .animation(.easeInOut(duration: 0.5), value: hasCompletedOnboarding)
         }
     }
 
