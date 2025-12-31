@@ -58,7 +58,8 @@ public struct QTEditorWizardView: View {
                                     case .observation:
                                         SingleFieldCard(
                                             title: "Observation · 관찰",
-                                            placeholder: "무엇이 보이나요?",
+                                            description: "말씀에서 눈에 들어오는 표현이나 문장을 적어보세요.",
+                                            placeholder: "어떤 단어나 문장이 마음에 남았나요?",
                                             text: Binding(
                                                 get: { viewModel.state.observation },
                                                 set: { viewModel.send(.updateObservation($0)) }
@@ -67,7 +68,8 @@ public struct QTEditorWizardView: View {
                                     case .application:
                                         SingleFieldCard(
                                             title: "Application · 적용",
-                                            placeholder: "어떻게 살기로 결단하나요?",
+                                            description: "이 말씀을 오늘 내 삶과 연결해보세요.",
+                                            placeholder: "오늘 실천할 수 있는 작은 행동은 무엇일까요?",
                                             text: Binding(
                                                 get: { viewModel.state.application },
                                                 set: { viewModel.send(.updateApplication($0)) }
@@ -76,7 +78,8 @@ public struct QTEditorWizardView: View {
                                     case .prayer:
                                         SingleFieldCard(
                                             title: "Prayer · 기도",
-                                            placeholder: "이 말씀으로 드리는 기도",
+                                            description: "이 말씀을 통해 떠오른 마음이나 바람을 자유롭게 적어보세요.",
+                                            placeholder: "어떤 생각이나 감정이 떠오르나요?",
                                             text: Binding(
                                                 get: { viewModel.state.prayer },
                                                 set: { viewModel.send(.updatePrayer($0)) }
@@ -90,7 +93,8 @@ public struct QTEditorWizardView: View {
                                     case .adoration:
                                         SingleFieldCard(
                                             title: "Adoration · 찬양",
-                                            placeholder: "주님은 어떤 분이신가요?",
+                                            description: "이 말씀에서 느껴지는 메시지나 가치를 적어보세요.",
+                                            placeholder: "이 말씀은 어떤 가치를 보여주나요?",
                                             text: Binding(
                                                 get: { viewModel.state.adoration },
                                                 set: { viewModel.send(.updateAdoration($0)) }
@@ -99,7 +103,8 @@ public struct QTEditorWizardView: View {
                                     case .confession:
                                         SingleFieldCard(
                                             title: "Confession · 고백",
-                                            placeholder: "회개할 것은 무엇인가요?",
+                                            description: "말씀을 통해 돌아보고 싶은 나의 모습을 적어보세요.",
+                                            placeholder: "솔직해지고 싶은 부분은 무엇인가요?",
                                             text: Binding(
                                                 get: { viewModel.state.confession },
                                                 set: { viewModel.send(.updateConfession($0)) }
@@ -108,7 +113,8 @@ public struct QTEditorWizardView: View {
                                     case .thanksgiving:
                                         SingleFieldCard(
                                             title: "Thanksgiving · 감사",
-                                            placeholder: "감사 제목을 적어보세요",
+                                            description: "이 말씀이 떠올리게 한 감사한 일을 적어보세요.",
+                                            placeholder: "최근에 감사했던 순간이 있나요?",
                                             text: Binding(
                                                 get: { viewModel.state.thanksgiving },
                                                 set: { viewModel.send(.updateThanksgiving($0)) }
@@ -117,7 +123,8 @@ public struct QTEditorWizardView: View {
                                     case .supplication:
                                         SingleFieldCard(
                                             title: "Supplication · 간구",
-                                            placeholder: "구하는 바를 적어보세요",
+                                            description: "이 말씀처럼 살아가기 위해 필요한 도움을 적어보세요.",
+                                            placeholder: "어떤 도움이 필요할까요?",
                                             text: Binding(
                                                 get: { viewModel.state.supplication },
                                                 set: { viewModel.send(.updateSupplication($0)) }
@@ -359,6 +366,7 @@ struct StepPager<Content: View>: View {
 
 struct SingleFieldCard: View {
     let title: String
+    let description: String
     let placeholder: String
     @Binding var text: String
 
@@ -380,6 +388,12 @@ struct SingleFieldCard: View {
                     .font(DS.Font.caption())
                     .foregroundStyle(text.count > maxLength ? .red : DS.Color.textSecondary)
             }
+
+            // Description
+            Text(description)
+                .font(DS.Font.bodyM())
+                .foregroundStyle(DS.Color.textSecondary)
+                .padding(.top, 4)
 
             VStack(alignment: .leading, spacing: 0) {
                 // Placeholder 또는 TextEditor
