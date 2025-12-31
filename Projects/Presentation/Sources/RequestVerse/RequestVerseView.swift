@@ -35,11 +35,13 @@ public struct RequestVerseView: View {
         getUserProfileUseCase: GetUserProfileUseCase,
         saveUserProfileUseCase: SaveUserProfileUseCase,
         onNavigateToRecordTab: @escaping () -> Void,
-        isLoading: Binding<Bool>
+        isLoading: Binding<Bool>,
+        initialUserProfile: UserProfile? = nil
     ) {
         _viewModel = State(wrappedValue: viewModel)
         _path = path
         _isLoading = isLoading
+        _userProfile = State(initialValue: initialUserProfile)
         self.commitQTUseCase = commitQTUseCase
         self.session = session
         self.getUserProfileUseCase = getUserProfileUseCase
@@ -124,7 +126,10 @@ public struct RequestVerseView: View {
         }
         .onAppear {
             viewModel.send(.onAppear(userId: "me"))
-            loadUserProfile()
+            // 프로필이 아직 없으면 로드 (fallback)
+            if userProfile == nil {
+                loadUserProfile()
+            }
         }
         .onReceive(viewModel.effect) { eff in
             switch eff {
@@ -245,39 +250,27 @@ private extension RequestVerseView {
 
     func descriptionSection() -> some View {
         VStack(alignment: .center, spacing: 16) {
-            if let profile = userProfile {
-                // 개인화된 인사말 (큰 Serif 헤드라인)
-                VStack(spacing: 12) {
-                    Text("\(profile.nickname) \(profile.gender.rawValue)님")
-                        .font(.system(size: 36, weight: .bold, design: .serif))
-                        .foregroundStyle(DS.Color.deepCocoa)
+            // 프로필이 있으면 실제 값, 없으면 기본값 표시 (깜빡임 방지)
+            let nickname = userProfile?.nickname ?? "형제"
+            let gender = userProfile?.gender.rawValue ?? "님"
 
-                    // 부제 (SF Rounded Light)
-                    Text("오늘 어떤 일이 있으셨나요?")
-                        .font(.system(size: 18, weight: .light, design: .rounded))
-                        .foregroundStyle(DS.Color.textSecondary)
-                        .multilineTextAlignment(.center)
-                        .lineSpacing(6)
+            VStack(spacing: 12) {
+                Text("\(nickname) \(gender)님")
+                    .font(.system(size: 36, weight: .bold, design: .serif))
+                    .foregroundStyle(DS.Color.deepCocoa)
 
-                    Text("글로 알려주시면 \(profile.nickname) \(profile.gender.rawValue)님에게\n오늘의 말씀을 추천해드릴게요")
-                        .font(.system(size: 15, weight: .regular, design: .rounded))
-                        .foregroundStyle(DS.Color.textSecondary.opacity(0.8))
-                        .multilineTextAlignment(.center)
-                        .lineSpacing(6)
-                }
-            } else {
-                // 프로필 로드 전 기본 텍스트
-                VStack(spacing: 12) {
-                    Text("오늘의 말씀")
-                        .font(.system(size: 36, weight: .bold, design: .serif))
-                        .foregroundStyle(DS.Color.deepCocoa)
+                // 부제 (SF Rounded Light)
+                Text("오늘 어떤 일이 있으셨나요?")
+                    .font(.system(size: 18, weight: .light, design: .rounded))
+                    .foregroundStyle(DS.Color.textSecondary)
+                    .multilineTextAlignment(.center)
+                    .lineSpacing(6)
 
-                    Text("오늘의 생각, 감정, 상황을\n자유롭게 적어보세요")
-                        .font(.system(size: 18, weight: .light, design: .rounded))
-                        .foregroundStyle(DS.Color.textSecondary)
-                        .multilineTextAlignment(.center)
-                        .lineSpacing(6)
-                }
+                Text("글로 알려주시면 \(nickname) \(gender)님에게\n오늘의 말씀을 추천해드릴게요")
+                    .font(.system(size: 15, weight: .regular, design: .rounded))
+                    .foregroundStyle(DS.Color.textSecondary.opacity(0.8))
+                    .multilineTextAlignment(.center)
+                    .lineSpacing(6)
             }
         }
         .frame(maxWidth: .infinity)

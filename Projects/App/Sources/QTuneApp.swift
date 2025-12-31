@@ -18,6 +18,8 @@ struct QTuneApp: App {
 
     @AppStorage("hasCompletedOnboarding") private var hasCompletedOnboarding = false
     @State private var isAuthReady = false
+    @State private var isProfileLoaded = false
+    @State private var userProfile: UserProfile?
 
     // Singleton container (init() 이후 첫 접근 시 lazy 초기화)
     private let container = AppDependencyContainer.shared
@@ -37,12 +39,11 @@ struct QTuneApp: App {
     var body: some Scene {
         WindowGroup {
             Group {
-                if !isAuthReady {
-                    // Auth 초기화 중 - 런치 스크린과 동일한 디자인
+                if !isAuthReady || !isProfileLoaded {
+                    // Auth + Profile 로딩 중 - 런치 스크린과 동일한 디자인
                     LaunchScreenView()
                         .task {
-                            // Auth 상태 체크
-                            await checkAuthStatus()
+                            await checkAuthAndProfile()
                         }
                 } else if !hasCompletedOnboarding {
                     onboardingView
@@ -56,35 +57,45 @@ struct QTuneApp: App {
     }
 
     @MainActor
-    private func checkAuthStatus() async {
+    private func checkAuthAndProfile() async {
         // 스플래시 시작 시간 기록
         let startTime = Date()
 
-        // 이미 로그인되어 있는지 체크
-        if let currentUser = Auth.auth().currentUser {
-            print("✅ [QTuneApp] Already authenticated, UID: \(currentUser.uid)")
-            await ensureMinimumSplashDuration(startTime: startTime)
-            isAuthReady = true
-            return
-        }
-
-        // AppDelegate의 익명 로그인이 완료될 때까지 대기
-        // 최대 5초 대기
-        for _ in 0..<50 {
-            if Auth.auth().currentUser != nil {
-                print("✅ [QTuneApp] Auth ready, UID: \(Auth.auth().currentUser!.uid)")
-                await ensureMinimumSplashDuration(startTime: startTime)
-                isAuthReady = true
-                return
+        // 1. Auth 체크
+        if Auth.auth().currentUser == nil {
+            // AppDelegate의 익명 로그인이 완료될 때까지 대기 (최대 5초)
+            for _ in 0..<50 {
+                if Auth.auth().currentUser != nil {
+                    print("✅ [QTuneApp] Auth ready, UID: \(Auth.auth().currentUser!.uid)")
+                    break
+                }
+                try? await Task.sleep(nanoseconds: 100_000_000) // 100ms
             }
-            try? await Task.sleep(nanoseconds: 100_000_000) // 100ms
+
+            if Auth.auth().currentUser == nil {
+                print("🔴 [QTuneApp] Auth timeout - Anonymous sign-in failed")
+            }
+        } else {
+            print("✅ [QTuneApp] Already authenticated, UID: \(Auth.auth().currentUser!.uid)")
         }
 
-        // 5초 후에도 로그인 안 되면 에러
-        print("🔴 [QTuneApp] Auth timeout - Anonymous sign-in failed")
+        // 2. Profile 로드
+        do {
+            if let profile = try await container.makeGetUserProfileUseCase().execute() {
+                userProfile = profile
+                print("✅ [QTuneApp] Profile loaded: \(profile.nickname)")
+            }
+        } catch {
+            print("⚠️ [QTuneApp] Failed to load user profile: \(error)")
+            // 프로필 로드 실패해도 진행 (기본값 사용)
+        }
+
+        // 3. 최소 스플래시 시간 보장
         await ensureMinimumSplashDuration(startTime: startTime)
-        // 그래도 일단 진행 (에러는 나중에 처리)
+
+        // 4. 화면 전환
         isAuthReady = true
+        isProfileLoaded = true
     }
 
     /// 최소 1.5초 스플래시 화면 보장
@@ -154,7 +165,8 @@ struct QTuneApp: App {
                 commitQTUseCase: commitQTUseCase,
                 getUserProfileUseCase: container.makeGetUserProfileUseCase(),
                 saveUserProfileUseCase: container.makeSaveUserProfileUseCase(),
-                session: container.dummySession
+                session: container.dummySession,
+                userProfile: $userProfile
             )
         } else {
             Text("앱을 사용할 수 없습니다.")

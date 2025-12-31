@@ -21,7 +21,7 @@ public struct MainTabViewWrapper: View {
     let session: UserSession
 
     @State private var selectedTab = 0
-    @State private var userProfile: UserProfile?
+    @Binding var userProfile: UserProfile?
     @State private var isRequestVerseLoading = false
 
     public init(
@@ -33,7 +33,8 @@ public struct MainTabViewWrapper: View {
         commitQTUseCase: CommitQTUseCase,
         getUserProfileUseCase: GetUserProfileUseCase,
         saveUserProfileUseCase: SaveUserProfileUseCase,
-        session: UserSession
+        session: UserSession,
+        userProfile: Binding<UserProfile?>
     ) {
         self.qtListViewModel = qtListViewModel
         self.detailViewModelFactory = detailViewModelFactory
@@ -44,9 +45,15 @@ public struct MainTabViewWrapper: View {
         self.getUserProfileUseCase = getUserProfileUseCase
         self.saveUserProfileUseCase = saveUserProfileUseCase
         self.session = session
+        self._userProfile = userProfile
     }
 
     public var body: some View {
+        tabViewContent
+    }
+
+    @ViewBuilder
+    private var tabViewContent: some View {
         TabView(selection: $selectedTab) {
             RootNavigationView(
                 onNavigateToRecordTab: {
@@ -65,7 +72,8 @@ public struct MainTabViewWrapper: View {
                     getUserProfileUseCase: getUserProfileUseCase,
                     saveUserProfileUseCase: saveUserProfileUseCase,
                     onNavigateToRecordTab: onNavigateToRecordTab,
-                    isLoading: $isRequestVerseLoading
+                    isLoading: $isRequestVerseLoading,
+                    initialUserProfile: $userProfile.wrappedValue
                 )
             }
             .tabItem {
@@ -92,9 +100,6 @@ public struct MainTabViewWrapper: View {
                 insertion: .move(edge: .trailing).combined(with: .opacity),
                 removal: .move(edge: .leading).combined(with: .opacity)
             ))
-            .task {
-                await loadUserProfile()
-            }
         }
         .allowsHitTesting(!isRequestVerseLoading)
         .accentColor(DS.Color.mocha)
@@ -116,18 +121,6 @@ public struct MainTabViewWrapper: View {
 
             UITabBar.appearance().standardAppearance = appearance
             UITabBar.appearance().scrollEdgeAppearance = appearance
-        }
-    }
-
-    // MARK: - Private Methods
-    private func loadUserProfile() async {
-        do {
-            let profile = try await getUserProfileUseCase.execute()
-            await MainActor.run {
-                userProfile = profile
-            }
-        } catch {
-            print("Failed to load user profile: \(error)")
         }
     }
 }
