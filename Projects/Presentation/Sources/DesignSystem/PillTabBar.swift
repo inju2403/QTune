@@ -23,6 +23,20 @@ public struct PillTabBar: View {
         .padding(DS.Spacing.m)
         .background(
             ZStack {
+                // 누런/베이지 틴트 (iOS 18에서 Material이 배경 인식하도록)
+                Capsule()
+                    .fill(
+                        LinearGradient(
+                            colors: [
+                                DS.Color.canvas.opacity(0.6),
+                                DS.Color.bgMid.opacity(0.5)
+                            ],
+                            startPoint: .top,
+                            endPoint: .bottom
+                        )
+                    )
+
+                // Material 레이어
                 Capsule()
                     .fill(.ultraThinMaterial)
 
@@ -39,7 +53,7 @@ public struct PillTabBar: View {
         )
         .overlay(
             Capsule()
-                .stroke(DSColor.stroke.opacity(0.5), lineWidth: 1.5)
+                .stroke(DS.Color.stroke.opacity(0.5), lineWidth: 1.5)
         )
         .padding(.bottom, DS.Spacing.l)
         .padding(.horizontal, DS.Spacing.xl)
@@ -64,10 +78,10 @@ public struct PillTabBar: View {
                 Group {
                     if selection == index {
                         Capsule()
-                            .fill(DSColor.gold.opacity(0.25))
+                            .fill(DS.Color.gold.opacity(0.25))
                             .overlay(
                                 Capsule()
-                                    .stroke(DSColor.gold.opacity(0.6), lineWidth: 1)
+                                    .stroke(DS.Color.gold.opacity(0.6), lineWidth: 1)
                             )
                     } else {
                         Color.clear
@@ -76,7 +90,7 @@ public struct PillTabBar: View {
             )
         }
         .foregroundStyle(
-            selection == index ? DSColor.cocoa : DSColor.textSec
+            selection == index ? DS.Color.cocoa : DS.Color.textSec
         )
         .scaleEffect(selection == index ? 1.02 : 1)
         .animation(Motion.press, value: selection)

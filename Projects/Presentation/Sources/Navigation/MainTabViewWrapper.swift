@@ -97,21 +97,21 @@ public struct MainTabViewWrapper: View {
             }
         }
         .allowsHitTesting(!isRequestVerseLoading)
-        .accentColor(DSColor.mocha)
+        .accentColor(DS.Color.mocha)
         .animation(.easeInOut(duration: 0.35), value: selectedTab)
         .onAppear {
             let appearance = UITabBarAppearance()
             appearance.configureWithOpaqueBackground()
-            appearance.backgroundColor = UIColor(DSColor.card)
+            appearance.backgroundColor = UIColor(DS.Color.bgBot)
 
-            appearance.stackedLayoutAppearance.normal.iconColor = UIColor(DSColor.lightBrown)
+            appearance.stackedLayoutAppearance.normal.iconColor = UIColor(DS.Color.lightBrown)
             appearance.stackedLayoutAppearance.normal.titleTextAttributes = [
-                .foregroundColor: UIColor(DSColor.lightBrown)
+                .foregroundColor: UIColor(DS.Color.lightBrown)
             ]
 
-            appearance.stackedLayoutAppearance.selected.iconColor = UIColor(DSColor.mocha)
+            appearance.stackedLayoutAppearance.selected.iconColor = UIColor(DS.Color.mocha)
             appearance.stackedLayoutAppearance.selected.titleTextAttributes = [
-                .foregroundColor: UIColor(DSColor.mocha)
+                .foregroundColor: UIColor(DS.Color.mocha)
             ]
 
             UITabBar.appearance().standardAppearance = appearance

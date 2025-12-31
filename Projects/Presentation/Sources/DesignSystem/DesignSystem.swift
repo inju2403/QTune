@@ -12,21 +12,46 @@ public enum DS {
 
     // MARK: - Color Tokens
     public enum Color {
+        // Background
         public static let background    = SwiftUI.Color(hex: "#FAF6F1")   // 밝은 오트밀 베이지 (개선)
+        public static let bgTop         = SwiftUI.Color(hex: "#FAF6F1")   // 밝은 오트밀 베이지
+        public static let bgMid         = SwiftUI.Color(hex: "#F5EEE6")   // 연한 샌드
+        public static let bgBot         = SwiftUI.Color(hex: "#EFE5D8")   // 연한 베이지
+
+        // Card & Canvas
         public static let canvas        = SwiftUI.Color(hex: "#FFFFFF")   // 순백 카드 (개선)
+        public static let card          = SwiftUI.Color.white.opacity(0.98)  // 더 밝게
+
+        // Basic Colors
         public static let sand          = SwiftUI.Color(hex: "#E8D8C8")
-        public static let cocoa         = SwiftUI.Color(hex: "#6B4F4F")
-        public static let deepCocoa     = SwiftUI.Color(hex: "#3E2C1C")
-        public static let gold          = SwiftUI.Color(hex: "#D7B46A")   // 포인트
+        public static let cocoa         = SwiftUI.Color(hex: "#6A4A3C")   // Text/icons
+        public static let deepCocoa     = SwiftUI.Color(hex: "#3E2C1C")   // Deep brown
+        public static let cocoaDeep     = SwiftUI.Color(hex: "#3E2C1C")   // Deep brown (alias)
+
+        // Accents
+        public static let gold          = SwiftUI.Color(hex: "#D8B46A")   // Gold accent
+        public static let accent        = SwiftUI.Color(hex: "#2E8B6C")   // CTA green
+        public static let accent2       = SwiftUI.Color(hex: "#1F6D56")   // CTA green dark
         public static let olive         = SwiftUI.Color(hex: "#9DC183")   // 보조 포인트 (SOAP)
-        public static let mocha         = SwiftUI.Color(hex: "#8B6F47")   // 탭 선택 (신규)
-        public static let lightBrown    = SwiftUI.Color(hex: "#B8A598")   // 탭 비선택 (신규)
+
+        // Tab Colors
+        public static let mocha         = SwiftUI.Color(hex: "#8B6F47")   // 탭 선택
+        public static let lightBrown    = SwiftUI.Color(hex: "#B8A598")   // 탭 비선택
+
+        // Status
         public static let success       = SwiftUI.Color(hex: "#2FAF66")
         public static let danger        = SwiftUI.Color(hex: "#B06B6B")
-        public static let textPrimary   = SwiftUI.Color(hex: "#1A1412")   // 더 짙게 (개선)
+
+        // Text
+        public static let textPrimary   = SwiftUI.Color(hex: "#1A1412")   // 더 짙게 (대비 개선)
+        public static let textPri       = SwiftUI.Color(hex: "#1A1412")   // alias
         public static let textSecondary = SwiftUI.Color.black.opacity(0.50)
-        public static let placeholder   = SwiftUI.Color.black.opacity(0.25)  // placeholder 전용 (신규)
-        public static let divider       = SwiftUI.Color.black.opacity(0.07)
+        public static let textSec       = SwiftUI.Color.black.opacity(0.50)  // alias
+        public static let placeholder   = SwiftUI.Color.black.opacity(0.25)  // placeholder 전용
+
+        // Borders
+        public static let stroke        = SwiftUI.Color.black.opacity(0.06)  // 더 연하게
+        public static let divider       = SwiftUI.Color.black.opacity(0.06)
     }
 
     // MARK: - Border Radius

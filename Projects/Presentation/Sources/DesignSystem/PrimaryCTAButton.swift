@@ -54,9 +54,9 @@ public struct PrimaryCTAButton: View {
                         Color(hex: "#77C593"),
                         Color(hex: "#4AAE7B")
                     ] : [
-                        DSColor.accent.opacity(0.95),
-                        DSColor.accent,
-                        DSColor.accent2
+                        DS.Color.accent.opacity(0.95),
+                        DS.Color.accent,
+                        DS.Color.accent2
                     ],
                     startPoint: .topLeading,
                     endPoint: .bottomTrailing
@@ -73,14 +73,14 @@ public struct PrimaryCTAButton: View {
             .overlay(
                 // 립플 하이라이트
                 Circle()
-                    .stroke((style == .success ? Color(hex: "#77C593") : DSColor.gold).opacity(ripple ? 0 : 0.5), lineWidth: 2)
+                    .stroke((style == .success ? Color(hex: "#77C593") : DS.Color.gold).opacity(ripple ? 0 : 0.5), lineWidth: 2)
                     .scaleEffect(ripple ? 3.2 : 0.1)
                     .opacity(ripple ? 0 : 1)
                     .blendMode(.screen)
                     .animation(reduceMotion ? .none : .easeOut(duration: 0.7), value: ripple)
             )
             .shadow(color: .black.opacity(style == .success ? 0.15 : 0.1), radius: 8, y: 4)
-            .glow(style == .success ? Color(hex: "#77C593") : DSColor.gold)
+            .glow(style == .success ? Color(hex: "#77C593") : DS.Color.gold)
             .scaleEffect(press ? 0.98 : 1)
         }
         .accessibilityHint("추천 결과가 아래에 펼쳐집니다")

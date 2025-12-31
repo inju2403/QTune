@@ -49,13 +49,13 @@ public struct SplashView: View {
                     // 한줄 카피
                     Text("주의 말씀은 내 발에 등이요")
                         .font(.system(size: 20, weight: .semibold, design: .default))
-                        .foregroundStyle(DSColor.cocoa.opacity(0.9))
+                        .foregroundStyle(DS.Color.cocoa.opacity(0.9))
                         .multilineTextAlignment(.center)
 
                     // 보조 카피
                     Text("Your word is a lamp to my feet. (Ps 119:105)")
                         .font(.system(size: 14, weight: .regular, design: .default))
-                        .foregroundStyle(DSColor.cocoa.opacity(0.7))
+                        .foregroundStyle(DS.Color.cocoa.opacity(0.7))
                         .multilineTextAlignment(.center)
                         .lineLimit(2)
                 }

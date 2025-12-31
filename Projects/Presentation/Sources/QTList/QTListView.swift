@@ -73,6 +73,7 @@ public struct QTListView: View {
             }
             .navigationTitle("기록")
             .navigationBarTitleDisplayMode(.inline)
+            .toolbarBackground(.hidden, for: .navigationBar)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     ProfileHeaderView(profile: userProfile) {

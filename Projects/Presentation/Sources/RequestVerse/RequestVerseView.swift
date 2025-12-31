@@ -104,6 +104,7 @@ public struct RequestVerseView: View {
             }
             .navigationTitle("")
             .navigationBarTitleDisplayMode(.inline)
+            .toolbarBackground(.hidden, for: .navigationBar)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     ProfileHeaderView(profile: userProfile) {
@@ -200,7 +201,7 @@ private extension RequestVerseView {
             VStack(alignment: .leading, spacing: 12) {
                 HStack(spacing: 12) {
                     Image(systemName: "doc.text")
-                        .foregroundStyle(DSColor.gold)
+                        .foregroundStyle(DS.Color.gold)
                         .font(.system(size: 20))
 
                     VStack(alignment: .leading, spacing: 4) {
@@ -209,7 +210,7 @@ private extension RequestVerseView {
                             .foregroundStyle(.white.opacity(0.95))
                         Text("이어 쓰거나 삭제할 수 있어요")
                             .font(.system(size: 14))
-                            .foregroundStyle(DSColor.textSec)
+                            .foregroundStyle(DS.Color.textSec)
                     }
                     Spacer()
                 }
@@ -220,20 +221,20 @@ private extension RequestVerseView {
                         viewModel.send(.tapResumeDraft)
                     }
                     .font(.system(size: 15, weight: .semibold))
-                    .foregroundStyle(DSColor.accent)
+                    .foregroundStyle(DS.Color.accent)
 
                     Button("삭제") {
                         Haptics.tap()
                         viewModel.send(.tapDiscardDraft)
                     }
                     .font(.system(size: 15, weight: .semibold))
-                    .foregroundStyle(DSColor.textSec)
+                    .foregroundStyle(DS.Color.textSec)
                 }
             }
             .padding(16)
             .background(
                 RoundedRectangle(cornerRadius: 18)
-                    .fill(DSColor.card.opacity(0.9))
+                    .fill(DS.Color.card.opacity(0.9))
             )
             .overlay(
                 RoundedRectangle(cornerRadius: 18)
@@ -362,7 +363,7 @@ private extension RequestVerseView {
                     viewModel.send(.dismissError)
                 } label: {
                     Image(systemName: "xmark.circle.fill")
-                        .foregroundStyle(DSColor.textSec)
+                        .foregroundStyle(DS.Color.textSec)
                 }
             }
             .padding(12)
@@ -379,7 +380,7 @@ private extension RequestVerseView {
         VStack(spacing: 14) {
             ForEach(0..<3, id: \.self) { _ in
                 RoundedRectangle(cornerRadius: 22)
-                    .fill(DSColor.card.opacity(0.7))
+                    .fill(DS.Color.card.opacity(0.7))
                     .frame(height: 140)
                     .redacted(reason: .placeholder)
                     .shimmer()
@@ -404,7 +405,7 @@ private extension RequestVerseView {
                         VStack(alignment: .leading, spacing: 8) {
                             Text(String(lines[0]))
                                 .font(.system(size: 17, weight: .semibold))
-                                .foregroundStyle(DSColor.gold)
+                                .foregroundStyle(DS.Color.gold)
 
                             Text(String(lines[1]))
                                 .lineSpacing(4)
@@ -434,7 +435,7 @@ private extension RequestVerseView {
     func sectionHeader(icon: String, title: String) -> some View {
         HStack(spacing: 8) {
             Image(systemName: icon)
-                .foregroundStyle(DSColor.gold)
+                .foregroundStyle(DS.Color.gold)
             Text(title)
                 .font(.system(size: 20, weight: .semibold))
                 .foregroundStyle(.white.opacity(0.95))

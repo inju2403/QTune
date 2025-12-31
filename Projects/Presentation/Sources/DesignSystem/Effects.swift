@@ -43,7 +43,7 @@ extension View {
 
 // MARK: - Glow Effect
 public struct Glow: ViewModifier {
-    var color: Color = DSColor.gold
+    var color: Color = DS.Color.gold
 
     public func body(content: Content) -> some View {
         content
@@ -53,7 +53,7 @@ public struct Glow: ViewModifier {
 }
 
 extension View {
-    public func glow(_ color: Color = DSColor.gold) -> some View {
+    public func glow(_ color: Color = DS.Color.gold) -> some View {
         modifier(Glow(color: color))
     }
 }

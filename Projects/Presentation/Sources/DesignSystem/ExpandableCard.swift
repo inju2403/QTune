@@ -30,16 +30,16 @@ public struct ExpandableCard<Content: View>: View {
 
             content
                 .font(.system(size: 17))
-                .foregroundStyle(DSColor.textPri)
+                .foregroundStyle(DS.Color.textPri)
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(16)
                 .background(
                     RoundedRectangle(cornerRadius: 22)
-                        .fill(DSColor.card.opacity(0.95))
+                        .fill(DS.Color.card.opacity(0.95))
                 )
                 .overlay(
                     RoundedRectangle(cornerRadius: 22)
-                        .stroke(DSColor.stroke, lineWidth: 1)
+                        .stroke(DS.Color.stroke, lineWidth: 1)
                 )
                 .shadow(color: .black.opacity(0.18), radius: 24, x: 0, y: 14)
                 .opacity(reveal ? 1 : 0)

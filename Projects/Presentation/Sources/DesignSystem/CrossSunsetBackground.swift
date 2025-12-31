@@ -15,14 +15,14 @@ public struct CrossSunsetBackground: View {
         ZStack {
             // 노을 그라데이션 3층
             LinearGradient(
-                colors: [DSColor.bgTop, DSColor.bgMid],
+                colors: [DS.Color.bgTop, DS.Color.bgMid],
                 startPoint: .top,
                 endPoint: .center
             )
             .ignoresSafeArea()
 
             LinearGradient(
-                colors: [DSColor.bgMid, DSColor.bgBot],
+                colors: [DS.Color.bgMid, DS.Color.bgBot],
                 startPoint: .center,
                 endPoint: .bottom
             )
@@ -31,8 +31,8 @@ public struct CrossSunsetBackground: View {
             // 햇살(라디얼) – 하단 은은한 광량
             RadialGradient(
                 colors: [
-                    DSColor.gold.opacity(0.35),
-                    DSColor.gold.opacity(0.08),
+                    DS.Color.gold.opacity(0.35),
+                    DS.Color.gold.opacity(0.08),
                     .clear
                 ],
                 center: .bottom,
