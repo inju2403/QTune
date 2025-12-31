@@ -16,6 +16,7 @@ public struct RequestVerseView: View {
     @State private var userProfile: UserProfile?
     @State private var showProfileEdit = false
     @Binding var path: NavigationPath
+    @Binding var isLoading: Bool
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     // MARK: - Dependencies
@@ -33,10 +34,12 @@ public struct RequestVerseView: View {
         session: UserSession,
         getUserProfileUseCase: GetUserProfileUseCase,
         saveUserProfileUseCase: SaveUserProfileUseCase,
-        onNavigateToRecordTab: @escaping () -> Void
+        onNavigateToRecordTab: @escaping () -> Void,
+        isLoading: Binding<Bool>
     ) {
         _viewModel = State(wrappedValue: viewModel)
         _path = path
+        _isLoading = isLoading
         self.commitQTUseCase = commitQTUseCase
         self.session = session
         self.getUserProfileUseCase = getUserProfileUseCase
@@ -72,6 +75,7 @@ public struct RequestVerseView: View {
                         Haptics.tap()
                         Task {
                             resultPhase = .loading
+                            isLoading = true
                             viewModel.send(.tapRequest)
                         }
                     } label: {
@@ -86,10 +90,12 @@ public struct RequestVerseView: View {
                         .padding(.vertical, 16)
                         .background(
                             RoundedRectangle(cornerRadius: 14)
-                                .fill(Color(hex: "#8B7355"))
+                                .fill(viewModel.state.isValidInput ? Color(hex: "#8B7355") : Color.gray.opacity(0.4))
                         )
-                        .shadow(color: Color.black.opacity(0.08), radius: 8, y: 3)
+                        .shadow(color: viewModel.state.isValidInput ? Color.black.opacity(0.08) : Color.clear, radius: 8, y: 3)
                     }
+                    .disabled(!viewModel.state.isValidInput)
+                    .animation(.easeInOut(duration: 0.2), value: viewModel.state.isValidInput)
                     .padding(.top, 16)
                     .padding(.bottom, 60)
                     }
@@ -123,6 +129,7 @@ public struct RequestVerseView: View {
             switch eff {
             case .showError:
                 resultPhase = .idle
+                isLoading = false
             case .presentDraftConflict:
                 showConflict = true
             case .navigateToEditor(let draft):
@@ -139,6 +146,7 @@ public struct RequestVerseView: View {
                 // 로딩 UI 닫기
                 withAnimation(.easeInOut(duration: 0.25)) {
                     resultPhase = .idle
+                    isLoading = false
                 }
 
                 // ResultView로 네비게이션
@@ -147,6 +155,7 @@ public struct RequestVerseView: View {
                 }
             } else if resultPhase != .loading {
                 resultPhase = .idle
+                isLoading = false
             }
         }
         .navigationDestination(for: QTRoute.self) { route in

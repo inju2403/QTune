@@ -22,6 +22,7 @@ public struct MainTabViewWrapper: View {
 
     @State private var selectedTab = 0
     @State private var userProfile: UserProfile?
+    @State private var isRequestVerseLoading = false
 
     public init(
         qtListViewModel: QTListViewModel,
@@ -63,7 +64,8 @@ public struct MainTabViewWrapper: View {
                     session: session,
                     getUserProfileUseCase: getUserProfileUseCase,
                     saveUserProfileUseCase: saveUserProfileUseCase,
-                    onNavigateToRecordTab: onNavigateToRecordTab
+                    onNavigateToRecordTab: onNavigateToRecordTab,
+                    isLoading: $isRequestVerseLoading
                 )
             }
             .tabItem {
@@ -94,6 +96,7 @@ public struct MainTabViewWrapper: View {
                 await loadUserProfile()
             }
         }
+        .allowsHitTesting(!isRequestVerseLoading)
         .accentColor(DSColor.mocha)
         .animation(.easeInOut(duration: 0.35), value: selectedTab)
         .onAppear {
