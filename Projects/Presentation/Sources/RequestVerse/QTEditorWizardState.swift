@@ -74,4 +74,30 @@ public struct QTEditorWizardState: Equatable {
         self.showSaveSuccessToast = showSaveSuccessToast
         self.showSaveErrorAlert = showSaveErrorAlert
     }
+
+    /// 현재 스텝의 입력값이 유효한지 확인
+    public var isCurrentStepValid: Bool {
+        switch template {
+        case .soap:
+            switch soapStep {
+            case .observation:
+                return !observation.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+            case .application:
+                return !application.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+            case .prayer:
+                return !prayer.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+            }
+        case .acts:
+            switch actsStep {
+            case .adoration:
+                return !adoration.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+            case .confession:
+                return !confession.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+            case .thanksgiving:
+                return !thanksgiving.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+            case .supplication:
+                return !supplication.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+            }
+        }
+    }
 }

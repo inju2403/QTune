@@ -182,15 +182,27 @@ public struct QTEditorWizardView: View {
                         .background(
                             RoundedRectangle(cornerRadius: 14)
                                 .fill(
+                                    viewModel.state.isCurrentStepValid ?
                                     LinearGradient(
                                         colors: [DS.Color.mocha, DS.Color.deepCocoa],
                                         startPoint: .topLeading,
                                         endPoint: .bottomTrailing
+                                    ) :
+                                    LinearGradient(
+                                        colors: [Color.gray.opacity(0.4), Color.gray.opacity(0.4)],
+                                        startPoint: .topLeading,
+                                        endPoint: .bottomTrailing
                                     )
                                 )
-                                .shadow(color: DS.Color.mocha.opacity(0.3), radius: 8, y: 4)
+                                .shadow(
+                                    color: viewModel.state.isCurrentStepValid ? DS.Color.mocha.opacity(0.3) : Color.clear,
+                                    radius: 8,
+                                    y: 4
+                                )
                         )
                     }
+                    .disabled(!viewModel.state.isCurrentStepValid)
+                    .animation(.easeInOut(duration: 0.2), value: viewModel.state.isCurrentStepValid)
                     .buttonStyle(.plain)
                 }
                 .padding(.horizontal, 20)
