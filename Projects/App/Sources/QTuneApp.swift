@@ -57,9 +57,13 @@ struct QTuneApp: App {
 
     @MainActor
     private func checkAuthStatus() async {
+        // 스플래시 시작 시간 기록
+        let startTime = Date()
+
         // 이미 로그인되어 있는지 체크
         if let currentUser = Auth.auth().currentUser {
             print("✅ [QTuneApp] Already authenticated, UID: \(currentUser.uid)")
+            await ensureMinimumSplashDuration(startTime: startTime)
             isAuthReady = true
             return
         }
@@ -69,6 +73,7 @@ struct QTuneApp: App {
         for _ in 0..<50 {
             if Auth.auth().currentUser != nil {
                 print("✅ [QTuneApp] Auth ready, UID: \(Auth.auth().currentUser!.uid)")
+                await ensureMinimumSplashDuration(startTime: startTime)
                 isAuthReady = true
                 return
             }
@@ -77,8 +82,21 @@ struct QTuneApp: App {
 
         // 5초 후에도 로그인 안 되면 에러
         print("🔴 [QTuneApp] Auth timeout - Anonymous sign-in failed")
+        await ensureMinimumSplashDuration(startTime: startTime)
         // 그래도 일단 진행 (에러는 나중에 처리)
         isAuthReady = true
+    }
+
+    /// 최소 1.5초 스플래시 화면 보장
+    @MainActor
+    private func ensureMinimumSplashDuration(startTime: Date) async {
+        let minimumDuration: TimeInterval = 1.5
+        let elapsed = Date().timeIntervalSince(startTime)
+        let remaining = minimumDuration - elapsed
+
+        if remaining > 0 {
+            try? await Task.sleep(nanoseconds: UInt64(remaining * 1_000_000_000))
+        }
     }
 
     @ViewBuilder
