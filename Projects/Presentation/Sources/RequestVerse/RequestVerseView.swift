@@ -53,17 +53,17 @@ public struct RequestVerseView: View {
             CrossSunsetBackground()
 
             VStack(spacing: 0) {
-                // 앱 아이콘 영역
-                Image("QTune_Icon")
-                    .resizable()
-                    .scaledToFit()
-                    .frame(width: 70, height: 70)
-                    .clipShape(RoundedRectangle(cornerRadius: 16))
-                    .shadow(color: .black.opacity(0.15), radius: 10, y: 5)
-                    .padding(.top, 8)
-                    .padding(.bottom, 24)
-
                 ScrollView {
+                    // 앱 아이콘 영역
+                    Image("QTune_Icon")
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 70, height: 70)
+                        .clipShape(RoundedRectangle(cornerRadius: 16))
+                        .shadow(color: .black.opacity(0.15), radius: 10, y: 5)
+                        .padding(.top, 8)
+                        .padding(.bottom, 24)
+                    
                     VStack(alignment: .leading, spacing: 28) {
                         draftBanner()
                         descriptionSection()
