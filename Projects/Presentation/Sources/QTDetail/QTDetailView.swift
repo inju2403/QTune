@@ -161,7 +161,7 @@ private extension QTDetailView {
 
     @ViewBuilder
     func verseCardSection() -> some View {
-        VStack(alignment: .leading, spacing: DS.Spacing.l) {
+        VStack(alignment: .leading, spacing: DS.Spacing.m) {
             // 영문 본문
             VerseCardView(title: "본문") {
                 VStack(alignment: .leading, spacing: DS.Spacing.s) {
@@ -206,7 +206,7 @@ private extension QTDetailView {
 
     @ViewBuilder
     func soapContentSection() -> some View {
-        VStack(alignment: .leading, spacing: DS.Spacing.xl) {
+        VStack(alignment: .leading, spacing: DS.Spacing.m) {
             SectionHeader(icon: "square.and.pencil", title: "나의 묵상")
 
             if let observation = viewModel.state.qt.soapObservation, !observation.isEmpty {
@@ -234,7 +234,7 @@ private extension QTDetailView {
 
     @ViewBuilder
     func actsContentSection() -> some View {
-        VStack(alignment: .leading, spacing: DS.Spacing.xl) {
+        VStack(alignment: .leading, spacing: DS.Spacing.m) {
             SectionHeader(icon: "hands.sparkles", title: "나의 기도")
 
             if let adoration = viewModel.state.qt.actsAdoration, !adoration.isEmpty {
