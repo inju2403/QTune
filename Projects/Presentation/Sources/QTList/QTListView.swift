@@ -270,7 +270,7 @@ private extension QTListView {
                 // 1행: 말씀 제목 (크고 두껍게) + 날짜
                 HStack(alignment: .top) {
                     Text(qt.verse.id)
-                        .font(.system(size: 24, weight: .bold, design: .serif))
+                        .font(.system(size: 21, weight: .bold, design: .serif))
                         .foregroundStyle(DS.Color.deepCocoa)
                         .lineLimit(2)
 
@@ -284,10 +284,10 @@ private extension QTListView {
                 // 2행: 사용자 작성 내용 (크게, 3~4줄)
                 if let summary = summaryText(qt), !summary.isEmpty {
                     Text(summary)
-                        .font(.system(size: 17, weight: .regular, design: .default))
+                        .font(.system(size: 15, weight: .regular, design: .default))
                         .foregroundStyle(DS.Color.textPrimary)
                         .lineLimit(4)
-                        .lineSpacing(6)
+                        .lineSpacing(5)
                 }
 
                 // 3행: 뱃지 + 즐겨찾기
@@ -339,7 +339,7 @@ private extension QTListView {
 
             VStack(spacing: DS.Spacing.s) {
                 Text("아직 기록이 없어요")
-                    .font(DS.Font.titleL(.semibold))
+                    .font(DS.Font.titleM(.semibold))
                     .foregroundStyle(DS.Color.textPrimary)
 
                 Text("오늘의 말씀에서 시작해 보세요")

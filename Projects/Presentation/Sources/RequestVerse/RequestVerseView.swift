@@ -214,10 +214,10 @@ private extension RequestVerseView {
 
                     VStack(alignment: .leading, spacing: 4) {
                         Text("오늘 작성 중인 QT가 있어요")
-                            .font(.system(size: 16, weight: .semibold))
+                            .font(.system(size: 15, weight: .semibold))
                             .foregroundStyle(.white.opacity(0.95))
                         Text("이어 쓰거나 삭제할 수 있어요")
-                            .font(.system(size: 14))
+                            .font(.system(size: 13))
                             .foregroundStyle(DS.Color.textSec)
                     }
                     Spacer()
@@ -259,21 +259,21 @@ private extension RequestVerseView {
 
             VStack(spacing: 12) {
                 Text("\(nickname) \(gender)님")
-                    .font(.system(size: 36, weight: .bold, design: .serif))
+                    .font(.system(size: 32, weight: .bold, design: .serif))
                     .foregroundStyle(DS.Color.deepCocoa)
 
                 // 부제 (SF Rounded Light)
                 Text("오늘 어떤 일이 있으셨나요?")
-                    .font(.system(size: 18, weight: .light, design: .rounded))
+                    .font(.system(size: 16, weight: .light, design: .rounded))
                     .foregroundStyle(DS.Color.textSecondary)
                     .multilineTextAlignment(.center)
-                    .lineSpacing(6)
+                    .lineSpacing(5)
 
                 Text("글로 알려주시면 \(nickname) \(gender)님에게\n오늘의 말씀을 추천해드릴게요")
-                    .font(.system(size: 15, weight: .regular, design: .rounded))
+                    .font(.system(size: 14, weight: .regular, design: .rounded))
                     .foregroundStyle(DS.Color.textSecondary.opacity(0.8))
                     .multilineTextAlignment(.center)
-                    .lineSpacing(6)
+                    .lineSpacing(5)
             }
         }
         .frame(maxWidth: .infinity)
@@ -285,7 +285,7 @@ private extension RequestVerseView {
         VStack(alignment: .leading, spacing: 18) {
             // 제목
             Text("어떤 내용이든 좋아요.\n오늘 느낀 감정, 생각 등을 공유해주세요.")
-                .font(.system(size: 16, weight: .medium, design: .rounded))
+                .font(.system(size: 15, weight: .medium, design: .rounded))
                 .foregroundStyle(Color(hex: "#6B6B6B"))
                 .multilineTextAlignment(.leading)
                 .lineSpacing(4)

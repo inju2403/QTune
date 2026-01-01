@@ -305,7 +305,7 @@ public struct QTEditorWizardView: View {
                 }
 
                 Text("기록이 저장되었습니다")
-                    .font(DS.Font.bodyL(.semibold))
+                    .font(DS.Font.bodyM(.semibold))
                     .foregroundStyle(DS.Color.textPrimary)
             }
         }
@@ -331,9 +331,9 @@ public struct QTEditorWizardView: View {
                 }
 
                 Text(viewModel.state.verseEN.trimmingCharacters(in: .whitespacesAndNewlines))
-                    .font(DS.Font.verse(18, .regular))
+                    .font(DS.Font.verse(16, .regular))
                     .foregroundStyle(DS.Color.textPrimary)
-                    .lineSpacing(6)
+                    .lineSpacing(5)
                     .fixedSize(horizontal: false, vertical: true)
                     .frame(maxWidth: .infinity, alignment: .leading)
             }

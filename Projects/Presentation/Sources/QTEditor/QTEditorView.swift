@@ -227,7 +227,7 @@ private extension QTEditorView {
                     .foregroundStyle(DS.Color.gold)
 
                 Text("묵상 템플릿 선택")
-                    .font(DS.Font.titleL(.bold))
+                    .font(DS.Font.titleM(.bold))
                     .foregroundStyle(DS.Color.deepCocoa)
 
                 Text("어떤 방식으로 묵상하시겠어요?")
@@ -335,12 +335,12 @@ private extension QTEditorView {
                             .font(.system(size: 28))
 
                         Text(title)
-                            .font(DS.Font.titleL(.bold))
+                            .font(DS.Font.titleM(.bold))
                             .foregroundStyle(DS.Color.deepCocoa)
                     }
 
                     Text(subtitle)
-                        .font(DS.Font.bodyL())
+                        .font(DS.Font.bodyM())
                         .foregroundStyle(DS.Color.textSecondary)
                 }
                 .padding(.bottom, DS.Spacing.m)
@@ -499,7 +499,7 @@ private extension QTEditorView {
                     if lines.count == 2 {
                         VStack(alignment: .leading, spacing: DS.Spacing.s) {
                             Text(String(lines[0]))
-                                .font(DS.Font.bodyL(.semibold))
+                                .font(DS.Font.bodyM(.semibold))
                                 .foregroundStyle(DS.Color.gold)
 
                             Text(String(lines[1]))
@@ -539,7 +539,7 @@ private extension QTEditorView {
                 }
 
                 Text("기록이 저장되었습니다")
-                    .font(DS.Font.bodyL(.semibold))
+                    .font(DS.Font.bodyM(.semibold))
                     .foregroundStyle(DS.Color.textPrimary)
             }
         }

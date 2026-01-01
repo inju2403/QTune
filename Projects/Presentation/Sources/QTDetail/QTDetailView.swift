@@ -133,7 +133,7 @@ private extension QTDetailView {
 
                 VStack(alignment: .leading, spacing: DS.Spacing.xs) {
                     Text(viewModel.state.qt.verse.id)
-                        .font(DS.Font.titleL(.bold))
+                        .font(DS.Font.titleM(.bold))
                         .foregroundStyle(DS.Color.deepCocoa)
 
                     Text(formattedDate(viewModel.state.qt.date))
@@ -181,7 +181,7 @@ private extension QTDetailView {
                     if lines.count == 2 {
                         VStack(alignment: .leading, spacing: DS.Spacing.s) {
                             Text(String(lines[0]))
-                                .font(DS.Font.bodyL(.semibold))
+                                .font(DS.Font.bodyM(.semibold))
                                 .foregroundStyle(DS.Color.gold)
 
                             Text(String(lines[1]))
