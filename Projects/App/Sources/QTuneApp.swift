@@ -124,6 +124,19 @@ struct QTuneApp: App {
             saveUserProfileUseCase: container.makeSaveUserProfileUseCase(),
             onComplete: {
                 hasCompletedOnboarding = true
+                // 온보딩 완료 후 프로필 로드
+                Task {
+                    do {
+                        if let profile = try await container.makeGetUserProfileUseCase().execute() {
+                            await MainActor.run {
+                                userProfile = profile
+                                print("✅ [QTuneApp] Profile loaded after onboarding: \(profile.nickname)")
+                            }
+                        }
+                    } catch {
+                        print("⚠️ [QTuneApp] Failed to load profile after onboarding: \(error)")
+                    }
+                }
             }
         )
     }
