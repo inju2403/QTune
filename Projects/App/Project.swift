@@ -35,6 +35,26 @@ let project = Project(
           """,
           name: "SwiftLint",
           basedOnDependencyAnalysis: false
+        ),
+        .post(
+          script: """
+          # Firebase Crashlytics dSYM 업로드
+          CRASHLYTICS_SCRIPT="${BUILD_DIR%Build/*}SourcePackages/checkouts/firebase-ios-sdk/Crashlytics/run"
+
+          if [ -f "$CRASHLYTICS_SCRIPT" ]; then
+            echo "🔥 Uploading dSYM to Firebase Crashlytics..."
+            "$CRASHLYTICS_SCRIPT"
+          else
+            echo "⚠️  Crashlytics script not found. Skipping dSYM upload."
+            echo "Path checked: $CRASHLYTICS_SCRIPT"
+          fi
+          """,
+          name: "Firebase Crashlytics",
+          inputPaths: [
+            "${DWARF_DSYM_FOLDER_PATH}/${DWARF_DSYM_FILE_NAME}/Contents/Resources/DWARF/${TARGET_NAME}",
+            "$(SRCROOT)/$(BUILT_PRODUCTS_DIR)/$(INFOPLIST_PATH)"
+          ],
+          basedOnDependencyAnalysis: false
         )
       ],
       dependencies: [

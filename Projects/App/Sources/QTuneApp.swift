@@ -11,6 +11,8 @@ import Domain
 import Data
 import FirebaseCore
 import FirebaseAuth
+import FirebaseCrashlytics
+import FirebaseAnalytics
 
 @main
 struct QTuneApp: App {
@@ -29,6 +31,20 @@ struct QTuneApp: App {
         if FirebaseApp.app() == nil {
             FirebaseApp.configure()
             print("🔥 [QTuneApp.init] Firebase configured")
+
+            // Crashlytics 초기화 (자동 크래시 리포팅 활성화)
+            #if DEBUG
+            print("🐛 [QTuneApp.init] Crashlytics enabled (DEBUG mode)")
+            #else
+            print("📊 [QTuneApp.init] Crashlytics enabled (RELEASE mode)")
+            #endif
+
+            // Analytics 초기화 (자동 이벤트 수집 활성화)
+            #if DEBUG
+            print("📈 [QTuneApp.init] Analytics enabled (DEBUG mode)")
+            #else
+            print("📊 [QTuneApp.init] Analytics enabled (RELEASE mode)")
+            #endif
         }
 
         // 전역 appearance 설정
