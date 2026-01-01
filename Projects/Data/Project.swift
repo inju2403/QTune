@@ -18,7 +18,9 @@ let project = Project(
       dependencies: [
         .project(target: "Domain", path: "../Domain"),
         .package(product: "FirebaseFunctions", type: .runtime),
-        .package(product: "FirebaseAuth", type: .runtime)
+        .package(product: "FirebaseAuth", type: .runtime),
+        .package(product: "FirebaseCrashlytics", type: .runtime),
+        .package(product: "FirebaseAnalytics", type: .runtime)
       ]
     )
   ]
