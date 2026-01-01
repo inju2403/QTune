@@ -71,6 +71,9 @@ public struct QTListView: View {
                     )
                 }
             }
+            .onTapGesture {
+                self.endTextEditing()
+            }
             .navigationTitle("기록")
             .navigationBarTitleDisplayMode(.inline)
             .toolbarBackground(.hidden, for: .navigationBar)

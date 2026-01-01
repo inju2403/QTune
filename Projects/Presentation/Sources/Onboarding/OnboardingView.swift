@@ -178,6 +178,9 @@ public struct OnboardingView: View {
                 .padding(.bottom, 40)
             }
         }
+        .onTapGesture {
+            self.endTextEditing()
+        }
         .onChange(of: viewModel.state.isSaving) { _, isSaving in
             if !isSaving && !viewModel.state.showError {
                 Haptics.success()
