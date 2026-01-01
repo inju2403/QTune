@@ -1,5 +1,7 @@
 # QTune (큐튠)
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
+
 **QT(Quiet Time) + Tune**
 말씀 앞에서 내 마음을 조율하는 묵상 앱
 
