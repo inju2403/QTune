@@ -124,6 +124,9 @@ public struct RequestVerseView: View {
                     .zIndex(10)
             }
         }
+        .onTapGesture {
+            self.endTextEditing()
+        }
         .onAppear {
             viewModel.send(.onAppear(userId: "me"))
             // 프로필이 아직 없으면 로드 (fallback)

@@ -56,18 +56,3 @@ QTune은 사용자의 개인정보를 제3자에게 판매하거나 공유하지
 ## 8. 정책 변경
 
 본 개인정보 처리방침은 앱 업데이트 또는 법령 변경에 따라 수정될 수 있습니다.
-
----
-
-### App Store Connect 제출용 URL
-
-본 문서를 App Store Connect에 제출하려면 다음 형식의 URL을 사용하세요:
-
-```
-https://github.com/<OWNER>/<REPO>/blob/main/privacy-policy.md
-```
-
-예시:
-```
-https://github.com/inju2403/QTune/blob/main/privacy-policy.md
-```

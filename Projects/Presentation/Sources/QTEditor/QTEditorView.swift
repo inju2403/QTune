@@ -71,6 +71,9 @@ public struct QTEditorView: View {
         }
         .navigationTitle("QT 작성")
         .navigationBarTitleDisplayMode(.inline)
+        .onTapGesture {
+            self.endTextEditing()
+        }
         .onAppear {
             viewModel.send(.loadQT(draft))
             // 기존에 템플릿이 선택되어 있으면 해당 템플릿의 첫 단계로 이동

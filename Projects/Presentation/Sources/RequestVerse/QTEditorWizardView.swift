@@ -250,6 +250,9 @@ public struct QTEditorWizardView: View {
         .navigationBarTitleDisplayMode(.inline)
         .navigationTitle("QT 작성")
         .toolbar(.hidden, for: .tabBar)
+        .onTapGesture {
+            self.endTextEditing()
+        }
         .alert("저장 실패", isPresented: Binding(
             get: { viewModel.state.showSaveErrorAlert },
             set: { _ in }

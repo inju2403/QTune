@@ -1,5 +1,7 @@
 # QTune (큐튠)
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
+
 **QT(Quiet Time) + Tune**
 말씀 앞에서 내 마음을 조율하는 묵상 앱
 
@@ -82,7 +84,7 @@ QTune은
 ### 설계 포인트
 
 - **Domain이 중심**
-  - Presentation ↔ Domain
+  - Presentation -> Domain
   - Data → Domain
   - 의존성 역전 원칙(DIP) 철저히 준수
 
