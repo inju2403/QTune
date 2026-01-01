@@ -1,54 +1,56 @@
 /**
- * QTune Firebase Functions - OpenAI Proxy (v1 스타일)
+ * QTune Firebase Functions - OpenAI Proxy (v2 + Secret Manager)
  *
  * iOS 앱은 Firebase Functions를 통해서만 OpenAI를 호출한다.
- * OPENAI_API_KEY는 .env / 환경변수에서만 관리한다.
+ * OPENAI_API_KEY는 Firebase Secret Manager에서 안전하게 관리한다.
+ *
+ * 배포 전 필수 작업:
+ * firebase functions:secrets:set OPENAI_API_KEY
  */
 
 import * as functions from "firebase-functions";
+import { onCall } from "firebase-functions/v2/https";
+import { defineSecret } from "firebase-functions/params";
 import * as logger from "firebase-functions/logger";
 import * as admin from "firebase-admin";
 
 // Firebase Admin 초기화
 admin.initializeApp();
 
+// Secret Manager에서 OpenAI API 키 정의
+const OPENAI_API_KEY = defineSecret("OPENAI_API_KEY");
+
 // 하루 최대 호출 횟수
 const DAILY_LIMIT = 10;
 
 // =========================================
-// OpenAI 클라이언트를 lazy하게 생성하는 헬퍼
+// OpenAI 클라이언트 생성 헬퍼 (Secret Manager 키 사용)
 // =========================================
-async function getOpenAIClient() {
-  const apiKey = process.env.OPENAI_API_KEY;
-
+async function getOpenAIClient(apiKey: string) {
   if (!apiKey) {
-    logger.error("OPENAI_API_KEY environment variable is not set");
+    logger.error("OPENAI_API_KEY is not set");
     throw new functions.https.HttpsError(
       "internal",
       "OPENAI_API_KEY is not set"
     );
   }
 
-  // ESM 전용 패키지는 dynamic import로 불러오기 (CJS에서도 안전)
+  // ESM 전용 패키지는 dynamic import로 불러오기
   const { default: OpenAI } = await import("openai");
-  // 타입 굳이 안 맞춰도 되니 any 느낌으로 사용
   return new OpenAI({ apiKey });
 }
 
 // =========================================
 // 호출자 식별 (Firebase Auth UID 필수)
 // =========================================
-function getCallerId(
-  context: functions.https.CallableContext
-): string {
+function getCallerId(request: any): string {
   // Firebase Auth UID 사용 (Anonymous Auth 포함)
   // iOS 앱은 반드시 signInAnonymously()를 먼저 호출해야 함
-  if (context.auth?.uid) {
-    return context.auth.uid;
+  if (request.auth?.uid) {
+    return request.auth.uid;
   }
 
   // Auth가 없으면 에러
-  // 이제 installId나 IP로 폴백하지 않음
   throw new functions.https.HttpsError(
     "unauthenticated",
     "Firebase Authentication required. Please sign in anonymously first."
@@ -124,9 +126,11 @@ type GenerateKoreanExplanationRequest = {
 // =========================================
 // 말씀 추천 함수 (recommendVerse)
 // =========================================
-export const recommendVerse = functions.https.onCall(
-  async (data: RecommendVerseRequest, context) => {
+export const recommendVerse = onCall(
+  { secrets: [OPENAI_API_KEY] },
+  async (request) => {
     try {
+      const data = request.data as RecommendVerseRequest;
       const { locale, mood, note } = data;
 
       if (!mood || typeof mood !== "string") {
@@ -137,7 +141,7 @@ export const recommendVerse = functions.https.onCall(
       }
 
       // 호출자 식별 및 하루 10회 제한 체크
-      const callerId = getCallerId(context);
+      const callerId = getCallerId(request);
       await checkDailyQuota(callerId);
 
       logger.info("recommendVerse called", { locale, mood, note, callerId });
@@ -183,7 +187,7 @@ export const recommendVerse = functions.https.onCall(
         },
       };
 
-      const openai = await getOpenAIClient();
+      const openai = await getOpenAIClient(OPENAI_API_KEY.value());
 
       const completion = await openai.chat.completions.create({
         model: "gpt-4o-mini",
@@ -235,9 +239,11 @@ export const recommendVerse = functions.https.onCall(
 // =========================================
 // 한글 해설 생성 함수 (generateKoreanExplanation)
 // =========================================
-export const generateKoreanExplanation = functions.https.onCall(
-  async (data: GenerateKoreanExplanationRequest, context) => {
+export const generateKoreanExplanation = onCall(
+  { secrets: [OPENAI_API_KEY] },
+  async (request) => {
     try {
+      const data = request.data as GenerateKoreanExplanationRequest;
       const { englishText, verseRef, mood, note } = data;
 
       if (!englishText || typeof englishText !== "string") {
@@ -261,7 +267,7 @@ export const generateKoreanExplanation = functions.https.onCall(
 
       // 한글 해설 생성은 recommendVerse의 후속 작업이므로 별도 카운트 안 함
       // recommendVerse에서 이미 checkDailyQuota()를 호출했음
-      const callerId = getCallerId(context);
+      const callerId = getCallerId(request);
 
       logger.info("generateKoreanExplanation called", {
         verseRef,
@@ -335,7 +341,7 @@ ${englishText}
         },
       };
 
-      const openai = await getOpenAIClient();
+      const openai = await getOpenAIClient(OPENAI_API_KEY.value());
 
       const completion = await openai.chat.completions.create({
         model: "gpt-4o-mini",
