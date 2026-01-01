@@ -12,7 +12,7 @@ let project = Project(
       infoPlist: .extendingDefault(with: [
         "CFBundleDisplayName": "QTune",
         "CFBundleShortVersionString": "1.0.0",
-        "CFBundleVersion": "100",
+        "CFBundleVersion": "101",
         "UILaunchStoryboardName": "LaunchScreen",
         "UIViewControllerBasedStatusBarAppearance": true
       ]),
