@@ -84,7 +84,7 @@ QTune은
 ### 설계 포인트
 
 - **Domain이 중심**
-  - Presentation ↔ Domain
+  - Presentation -> Domain
   - Data → Domain
   - 의존성 역전 원칙(DIP) 철저히 준수
 
