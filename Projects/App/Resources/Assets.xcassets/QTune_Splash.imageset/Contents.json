@@ -1,0 +1,12 @@
+{
+  "images" : [
+    {
+      "filename" : "QTune_Splash_1242x2688.png",
+      "idiom" : "universal"
+    }
+  ],
+  "info" : {
+    "author" : "xcode",
+    "version" : 1
+  }
+}

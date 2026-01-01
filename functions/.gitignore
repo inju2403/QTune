@@ -1,0 +1,24 @@
+# Node modules
+node_modules/
+
+# Environment variables (IMPORTANT!)
+.env
+.env.*
+
+# Build output
+lib/
+
+# Firebase
+.firebase/
+
+# Logs
+*.log
+npm-debug.log*
+firebase-debug.log
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~

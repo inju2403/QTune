@@ -1,0 +1,53 @@
+# macOS
+.DS_Store
+
+# Xcode user-specific + build
+build/
+Derived/
+DerivedData/
+*.pbxuser
+!default.pbxuser
+*.mode1v3
+!default.mode1v3
+*.mode2v3
+!default.mode2v3
+*.perspectivev3
+!default.perspectivev3
+xcuserdata/
+*.xcuserstate
+*.xcuserdata/
+*.xccheckout
+*.xcscmblueprint
+
+# Xcode generated
+*.xcodeproj/
+*.xcworkspace/
+
+# SwiftPM
+.build/
+.swiftpm/
+Package.resolved
+Packages/
+
+# CocoaPods
+Pods/
+Podfile.lock
+
+# Carthage
+Carthage/
+
+# Firebase
+GoogleService-Info.plist
+
+# Env / Secret
+.env
+*.secrets
+
+# Tuist
+Tuist/Cache/
+**/Derived/
+
+# Claude settings
+.claude/
+CLAUDE.md
+

@@ -1,0 +1,30 @@
+# SwiftLint Configuration
+# Clean Architecture 강제: App/Presentation/Domain에서 CoreData/SwiftData import 금지
+
+only_rules:
+  - custom_rules
+
+custom_rules:
+  no_persistence_imports_in_app:
+    included:
+      - Projects/App/Sources
+    name: "No Persistence Imports in App"
+    message: "App 계층에서는 CoreData/SwiftData import 금지"
+    regex: '^\s*import\s+(CoreData|SwiftData)\b'
+    severity: error
+
+  no_persistence_imports_in_presentation:
+    included:
+      - Projects/Presentation/Sources
+    name: "No Persistence Imports in Presentation"
+    message: "Presentation 계층에서는 CoreData/SwiftData import 금지"
+    regex: '^\s*import\s+(CoreData|SwiftData)\b'
+    severity: error
+
+  no_persistence_imports_in_domain:
+    included:
+      - Projects/Domain/Sources
+    name: "No Persistence Imports in Domain"
+    message: "Domain 계층에서는 CoreData/SwiftData import 금지"
+    regex: '^\s*import\s+(CoreData|SwiftData)\b'
+    severity: error
