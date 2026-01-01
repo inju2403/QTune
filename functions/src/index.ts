@@ -63,8 +63,12 @@ function getCallerId(request: any): string {
 async function checkDailyQuota(callerId: string): Promise<void> {
   const db = admin.firestore();
 
-  // 오늘 날짜 (UTC 기준, YYYY-MM-DD)
-  const today = new Date().toISOString().split("T")[0];
+  // 오늘 날짜 (한국시간 기준, YYYY-MM-DD)
+  // UTC+9 (KST) 기준으로 날짜를 계산하여 한국시간 00:00에 초기화
+  const now = new Date();
+  const kstOffset = 9 * 60 * 60 * 1000; // 9시간을 밀리초로
+  const kstDate = new Date(now.getTime() + kstOffset);
+  const today = kstDate.toISOString().split("T")[0];
   const docId = `${callerId}_${today}`;
   const docRef = db.collection("usage").doc(docId);
 
