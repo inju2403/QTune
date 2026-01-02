@@ -66,7 +66,7 @@ public struct RequestVerseView: View {
                         .padding(.top, 8)
                         .padding(.bottom, 24)
                     
-                    VStack(alignment: .leading, spacing: 28) {
+                    VStack(alignment: .leading, spacing: 20) {
                         draftBanner()
                         descriptionSection()
                         inputSection()
@@ -98,7 +98,7 @@ public struct RequestVerseView: View {
                     }
                     .disabled(!viewModel.state.isValidInput)
                     .animation(.easeInOut(duration: 0.2), value: viewModel.state.isValidInput)
-                    .padding(.top, 16)
+                    .padding(.top, 4)
                     .padding(.bottom, 60)
                     }
                     .padding(.horizontal, 22)
@@ -282,14 +282,14 @@ private extension RequestVerseView {
 
     func inputSection() -> some View {
         // 단일 통합 입력 필드
-        VStack(alignment: .leading, spacing: 18) {
+        VStack(alignment: .leading, spacing: 12) {
             // 제목
             Text("어떤 내용이든 좋아요.\n오늘 느낀 감정, 생각 등을 공유해주세요.")
                 .font(.system(size: 15, weight: .medium, design: .rounded))
                 .foregroundStyle(Color(hex: "#6B6B6B"))
                 .multilineTextAlignment(.leading)
                 .lineSpacing(4)
-                .padding(.bottom, 4)
+                .padding(.bottom, 2)
 
             // 입력 영역
             unifiedInputArea()
@@ -302,7 +302,7 @@ private extension RequestVerseView {
                     .foregroundStyle(viewModel.state.moodText.count > 700 ? Color.red.opacity(0.7) : Color(hex: "#AFAFAF"))
             }
         }
-        .padding(28)
+        .padding(24)
         .background(
             RoundedRectangle(cornerRadius: 24)
                 .fill(DS.Color.canvas.opacity(0.9))
@@ -331,7 +331,7 @@ private extension RequestVerseView {
             TextEditor(text: binding)
                 .font(.system(size: 16, design: .rounded))
                 .foregroundStyle(Color(hex: "#3A3A3A"))
-                .frame(minHeight: 160)
+                .frame(minHeight: 128)
                 .scrollContentBackground(.hidden)
                 .textInputAutocapitalization(.sentences)
                 .disableAutocorrection(false)
