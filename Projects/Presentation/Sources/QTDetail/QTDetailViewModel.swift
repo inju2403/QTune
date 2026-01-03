@@ -17,6 +17,7 @@ public final class QTDetailViewModel {
     // MARK: - Dependencies
     private let toggleFavoriteUseCase: ToggleFavoriteUseCase
     private let deleteQTUseCase: DeleteQTUseCase
+    private let getQTDetailUseCase: GetQTDetailUseCase
     private let session: UserSession
 
     // MARK: - Properties
@@ -27,11 +28,13 @@ public final class QTDetailViewModel {
         qt: QuietTime,
         toggleFavoriteUseCase: ToggleFavoriteUseCase,
         deleteQTUseCase: DeleteQTUseCase,
+        getQTDetailUseCase: GetQTDetailUseCase,
         session: UserSession
     ) {
         self.state = QTDetailState(qt: qt)
         self.toggleFavoriteUseCase = toggleFavoriteUseCase
         self.deleteQTUseCase = deleteQTUseCase
+        self.getQTDetailUseCase = getQTDetailUseCase
         self.session = session
     }
 
@@ -53,6 +56,9 @@ public final class QTDetailViewModel {
 
         case .showEditSheet(let show):
             state.showEditSheet = show
+
+        case .reloadQT:
+            Task { await reloadQT() }
         }
     }
 
@@ -73,6 +79,17 @@ public final class QTDetailViewModel {
             }
         } catch {
             print("❌ Failed to delete QT: \(error)")
+        }
+    }
+
+    private func reloadQT() async {
+        do {
+            let updatedQT = try await getQTDetailUseCase.execute(id: state.qt.id, session: session)
+            await MainActor.run {
+                state.qt = updatedQT
+            }
+        } catch {
+            print("❌ Failed to reload QT: \(error)")
         }
     }
 

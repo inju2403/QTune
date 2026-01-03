@@ -14,4 +14,5 @@ public enum QTDetailAction: Equatable {
     case deleteQT
     case prepareShare
     case showEditSheet(Bool)
+    case reloadQT
 }
