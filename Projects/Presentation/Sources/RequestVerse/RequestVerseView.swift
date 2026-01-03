@@ -386,7 +386,7 @@ private extension RequestVerseView {
 
     @ViewBuilder
     func resultContent(result: GeneratedVerseResult) -> some View {
-        VStack(alignment: .leading, spacing: 16) {
+        VStack(alignment: .leading, spacing: 12) {
             sectionHeader(icon: "checkmark.circle.fill", title: "추천 말씀")
 
             ExpandableCard(title: result.verse.id, delay: 0.00) {
