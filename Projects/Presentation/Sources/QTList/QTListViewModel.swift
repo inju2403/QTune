@@ -67,26 +67,56 @@ public final class QTListViewModel {
 
     // MARK: - Actions
     private func load() async {
+        // 이미 로딩 중이면 리턴 (race condition 방지)
+        guard !state.isLoading else {
+            print("⚠️ [QTListViewModel] Already loading, skipping duplicate load request")
+            return
+        }
+
         state.isLoading = true
 
         do {
             let query = QTQuery(limit: 100, offset: 0)
             let list = try await fetchQTListUseCase.execute(query: query, session: session)
 
-            state.qtList = list
-            state.isLoading = false
+            await MainActor.run {
+                state.qtList = list
+                state.isLoading = false
+            }
         } catch {
-            state.qtList = []
-            state.isLoading = false
+            await MainActor.run {
+                state.qtList = []
+                state.isLoading = false
+            }
+            print("❌ [QTListViewModel] Failed to load QT list: \(error)")
         }
     }
 
     private func toggleFavorite(_ qt: QuietTime) async {
+        // Optimistic update: 로컬 state 먼저 업데이트
+        if let index = state.qtList.firstIndex(where: { $0.id == qt.id }) {
+            var updatedQT = state.qtList[index]
+            updatedQT.isFavorite.toggle()
+
+            await MainActor.run {
+                state.qtList[index] = updatedQT
+            }
+        }
+
+        // 백그라운드에서 서버 업데이트
         do {
             _ = try await toggleFavoriteUseCase.execute(id: qt.id, session: session)
-            await load()  // 리로드
         } catch {
-            // 실패 처리 (선택)
+            // 실패 시 롤백
+            if let index = state.qtList.firstIndex(where: { $0.id == qt.id }) {
+                var revertedQT = state.qtList[index]
+                revertedQT.isFavorite.toggle()
+
+                await MainActor.run {
+                    state.qtList[index] = revertedQT
+                }
+            }
+            print("❌ [QTListViewModel] Failed to toggle favorite: \(error)")
         }
     }
 
@@ -95,11 +125,18 @@ public final class QTListViewModel {
 
         do {
             try await deleteQTUseCase.execute(id: qt.id, session: session)
-            await load()  // 리로드
-            state.qtToDelete = nil
-            state.showDeleteAlert = false
+
+            // 로컬 state에서 삭제
+            await MainActor.run {
+                state.qtList.removeAll { $0.id == qt.id }
+                state.qtToDelete = nil
+                state.showDeleteAlert = false
+            }
         } catch {
-            state.showDeleteAlert = false
+            await MainActor.run {
+                state.showDeleteAlert = false
+            }
+            print("❌ [QTListViewModel] Failed to delete QT: \(error)")
         }
     }
 

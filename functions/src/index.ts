@@ -23,6 +23,9 @@ const OPENAI_API_KEY = defineSecret("OPENAI_API_KEY");
 // 하루 최대 호출 횟수
 const DAILY_LIMIT = 10;
 
+// 추천 이력 최대 보관 개수 (최근 N개, 전부 프롬프트에 포함)
+const MAX_HISTORY_SIZE = 100;
+
 // =========================================
 // OpenAI 클라이언트 생성 헬퍼 (Secret Manager 키 사용)
 // =========================================
@@ -63,8 +66,12 @@ function getCallerId(request: any): string {
 async function checkDailyQuota(callerId: string): Promise<void> {
   const db = admin.firestore();
 
-  // 오늘 날짜 (UTC 기준, YYYY-MM-DD)
-  const today = new Date().toISOString().split("T")[0];
+  // 오늘 날짜 (한국시간 기준, YYYY-MM-DD)
+  // UTC+9 (KST) 기준으로 날짜를 계산하여 한국시간 00:00에 초기화
+  const now = new Date();
+  const kstOffset = 9 * 60 * 60 * 1000; // 9시간을 밀리초로
+  const kstDate = new Date(now.getTime() + kstOffset);
+  const today = kstDate.toISOString().split("T")[0];
   const docId = `${callerId}_${today}`;
   const docRef = db.collection("usage").doc(docId);
 
@@ -106,6 +113,83 @@ async function checkDailyQuota(callerId: string): Promise<void> {
 }
 
 // =========================================
+// 추천 이력 조회 (Firestore 기반)
+// =========================================
+async function getRecommendedVerses(callerId: string): Promise<string[]> {
+  const db = admin.firestore();
+  const docRef = db.collection("verse_history").doc(callerId);
+
+  try {
+    const doc = await docRef.get();
+    if (!doc.exists) {
+      return [];
+    }
+
+    const data = doc.data();
+    return (data?.verses ?? []) as string[];
+  } catch (error) {
+    logger.error("[getRecommendedVerses] Error fetching history", {
+      callerId,
+      error,
+    });
+    return [];
+  }
+}
+
+// =========================================
+// 추천 이력 저장 (Firestore 기반)
+// =========================================
+async function saveRecommendedVerse(
+  callerId: string,
+  verseRef: string
+): Promise<void> {
+  const db = admin.firestore();
+  const docRef = db.collection("verse_history").doc(callerId);
+
+  try {
+    await db.runTransaction(async (transaction) => {
+      const doc = await transaction.get(docRef);
+
+      let verses: string[] = [];
+      if (doc.exists) {
+        verses = (doc.data()?.verses ?? []) as string[];
+      }
+
+      // 중복 제거하고 최신 항목을 앞에 추가
+      verses = verses.filter((v) => v !== verseRef);
+      verses.unshift(verseRef);
+
+      // 최대 개수 제한
+      if (verses.length > MAX_HISTORY_SIZE) {
+        verses = verses.slice(0, MAX_HISTORY_SIZE);
+      }
+
+      transaction.set(
+        docRef,
+        {
+          verses,
+          updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+        },
+        { merge: true }
+      );
+
+      logger.info("[saveRecommendedVerse] History updated", {
+        callerId,
+        verseRef,
+        totalCount: verses.length,
+      });
+    });
+  } catch (error) {
+    logger.error("[saveRecommendedVerse] Error saving history", {
+      callerId,
+      verseRef,
+      error,
+    });
+    // 이력 저장 실패는 치명적이지 않으므로 에러를 throw하지 않음
+  }
+}
+
+// =========================================
 // 타입 정의 (콜러블 함수 입력 형태)
 // =========================================
 type RecommendVerseRequest = {
@@ -144,14 +228,32 @@ export const recommendVerse = onCall(
       const callerId = getCallerId(request);
       await checkDailyQuota(callerId);
 
-      logger.info("recommendVerse called", { locale, mood, note, callerId });
+      // 이미 추천한 구절 목록 조회
+      const recommendedVerses = await getRecommendedVerses(callerId);
+
+      logger.info("recommendVerse called", {
+        locale,
+        mood,
+        note,
+        callerId,
+        historyCount: recommendedVerses.length,
+      });
 
       const noteSection = note ? ` (${note})` : "";
+
+      // 제외할 구절 목록 섹션 생성
+      let excludeSection = "";
+      if (recommendedVerses.length > 0) {
+        const verseList = recommendedVerses
+          .map((v) => `- ${v}`)
+          .join("\n");
+        excludeSection = `\n[이미 추천한 구절들 - 절대 추천하지 말 것]\n${verseList}\n`;
+      }
 
       const prompt = `큐튠(QTune) 사용자가 "${mood}${noteSection}"라고 말했어.
 
 이 사용자에게 딱 맞는 성경 구절 1곳을 추천하고, 왜 이 구절을 추천했는지 1-2문장으로 설명해줘.
-
+${excludeSection}
 [출력 형식 - 모든 필드 필수]
 - verseRef: "책명 장:절" 형식 (예: "John 3:16", "Psalms 23:1", "Romans 8:28")
   * 영어 책명 사용 (예: John, Psalms, Romans, Matthew, Genesis 등)
@@ -160,6 +262,7 @@ export const recommendVerse = onCall(
 [규칙]
 - 너무 긴 본문은 피하고 구절 하나만 추천
 - verseRef는 반드시 영어 책명으로 (예: "요한복음" ❌ "John" ✅)
+- 위에 나열된 "이미 추천한 구절들"은 절대 추천하지 말 것 (다른 구절을 찾아줘)
 - 반드시 JSON Schema에 맞춰 모든 필드를 포함하여 응답
 
 반드시 JSON Schema에 맞춰 응답해줘.`;
@@ -210,6 +313,9 @@ export const recommendVerse = onCall(
 
       const result = JSON.parse(content);
       logger.info("recommendVerse success", { verseRef: result.verseRef });
+
+      // 추천 결과를 이력에 저장 (비동기, 실패해도 응답에 영향 없음)
+      saveRecommendedVerse(callerId, result.verseRef);
 
       return result;
     } catch (error: any) {

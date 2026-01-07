@@ -164,7 +164,8 @@ struct QTuneApp: App {
            let updateQTUseCase = container.makeUpdateQTUseCase(),
            let deleteQTUseCase = container.makeDeleteQTUseCase(),
            let fetchQTListUseCase = container.makeFetchQTListUseCase(),
-           let toggleFavoriteUseCase = container.makeToggleFavoriteUseCase() {
+           let toggleFavoriteUseCase = container.makeToggleFavoriteUseCase(),
+           let getQTDetailUseCase = container.makeGetQTDetailUseCase() {
 
             let generateVerseUseCase = container.makeGenerateVerseUseCase()
 
@@ -182,6 +183,7 @@ struct QTuneApp: App {
                         qt: qt,
                         toggleFavoriteUseCase: toggleFavoriteUseCase,
                         deleteQTUseCase: deleteQTUseCase,
+                        getQTDetailUseCase: getQTDetailUseCase,
                         session: container.dummySession
                     )
                 },

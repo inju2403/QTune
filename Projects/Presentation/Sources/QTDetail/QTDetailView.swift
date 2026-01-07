@@ -106,16 +106,23 @@ public struct QTDetailView: View {
         }
         .sheet(isPresented: Binding(
             get: { viewModel.state.showEditSheet },
-            set: { if !$0 { viewModel.send(.showEditSheet(false)) } }
+            set: { if !$0 {
+                viewModel.send(.showEditSheet(false))
+                viewModel.send(.reloadQT)
+            } }
         )) {
             NavigationStack {
                 QTEditorView(
                     draft: viewModel.state.qt,
                     viewModel: editorViewModelFactory()
                 )
-                .navigationBarItems(leading: Button("취소") {
-                    viewModel.send(.showEditSheet(false))
-                })
+                .toolbar {
+                    ToolbarItem(placement: .navigationBarLeading) {
+                        Button("취소") {
+                            viewModel.send(.showEditSheet(false))
+                        }
+                    }
+                }
             }
         }
     }
@@ -133,7 +140,7 @@ private extension QTDetailView {
 
                 VStack(alignment: .leading, spacing: DS.Spacing.xs) {
                     Text(viewModel.state.qt.verse.id)
-                        .font(DS.Font.titleL(.bold))
+                        .font(DS.Font.titleM(.bold))
                         .foregroundStyle(DS.Color.deepCocoa)
 
                     Text(formattedDate(viewModel.state.qt.date))
@@ -161,7 +168,7 @@ private extension QTDetailView {
 
     @ViewBuilder
     func verseCardSection() -> some View {
-        VStack(alignment: .leading, spacing: DS.Spacing.l) {
+        VStack(alignment: .leading, spacing: 11) {
             // 영문 본문
             VerseCardView(title: "본문") {
                 VStack(alignment: .leading, spacing: DS.Spacing.s) {
@@ -181,7 +188,7 @@ private extension QTDetailView {
                     if lines.count == 2 {
                         VStack(alignment: .leading, spacing: DS.Spacing.s) {
                             Text(String(lines[0]))
-                                .font(DS.Font.bodyL(.semibold))
+                                .font(DS.Font.bodyM(.semibold))
                                 .foregroundStyle(DS.Color.gold)
 
                             Text(String(lines[1]))
@@ -206,7 +213,7 @@ private extension QTDetailView {
 
     @ViewBuilder
     func soapContentSection() -> some View {
-        VStack(alignment: .leading, spacing: DS.Spacing.xl) {
+        VStack(alignment: .leading, spacing: 11) {
             SectionHeader(icon: "square.and.pencil", title: "나의 묵상")
 
             if let observation = viewModel.state.qt.soapObservation, !observation.isEmpty {
@@ -234,7 +241,7 @@ private extension QTDetailView {
 
     @ViewBuilder
     func actsContentSection() -> some View {
-        VStack(alignment: .leading, spacing: DS.Spacing.xl) {
+        VStack(alignment: .leading, spacing: 11) {
             SectionHeader(icon: "hands.sparkles", title: "나의 기도")
 
             if let adoration = viewModel.state.qt.actsAdoration, !adoration.isEmpty {
