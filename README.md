@@ -9,7 +9,7 @@
 
 ## 📱 App Store
 
-👉 App Store Link (추가 예정)
+👉 [App Store에서 다운로드](https://apps.apple.com/kr/app/%ED%81%90%ED%8A%A0-qtune/id6757230938)
 
 ---
 

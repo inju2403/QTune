@@ -160,6 +160,16 @@ final class AppDependencyContainer {
         return ToggleFavoriteInteractor(qtRepository: qtRepository)
     }
 
+    /// GetQTDetailUseCase 생성
+    @available(iOS 17, *)
+    func makeGetQTDetailUseCase() -> GetQTDetailUseCase? {
+        guard let qtRepository = makeQTRepository() else {
+            return nil
+        }
+
+        return GetQTDetailInteractor(qtRepository: qtRepository)
+    }
+
     /// SaveUserProfileUseCase 생성
     func makeSaveUserProfileUseCase() -> SaveUserProfileUseCase {
         return DefaultSaveUserProfileUseCase(repository: makeUserProfileRepository())

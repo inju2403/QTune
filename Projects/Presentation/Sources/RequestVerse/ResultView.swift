@@ -24,7 +24,7 @@ public struct ResultView: View {
             CrossSunsetBackground()
 
             ScrollView {
-                VStack(alignment: .leading, spacing: 22) {
+                VStack(alignment: .leading, spacing: 16) {
                     // Title
                     Text("오늘의 말씀")
                         .font(.system(size: 32, weight: .semibold, design: .rounded))
