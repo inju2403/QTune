@@ -13,7 +13,7 @@ public struct RequestVerseView: View {
     @State private var viewModel: RequestVerseViewModel
     @State private var showConflict = false
     @State private var resultPhase: ResultPhase = .idle
-    @State private var userProfile: UserProfile?
+    @Binding var userProfile: UserProfile?
     @State private var showProfileEdit = false
     @Binding var path: NavigationPath
     @Binding var isLoading: Bool
@@ -37,12 +37,12 @@ public struct RequestVerseView: View {
         saveUserProfileUseCase: SaveUserProfileUseCase,
         onNavigateToRecordTab: @escaping () -> Void,
         isLoading: Binding<Bool>,
-        initialUserProfile: UserProfile? = nil
+        userProfile: Binding<UserProfile?>
     ) {
         _viewModel = State(wrappedValue: viewModel)
         _path = path
         _isLoading = isLoading
-        _userProfile = State(initialValue: initialUserProfile)
+        _userProfile = userProfile
         self.commitQTUseCase = commitQTUseCase
         self.session = session
         self.getUserProfileUseCase = getUserProfileUseCase

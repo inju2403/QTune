@@ -73,7 +73,7 @@ public struct MainTabViewWrapper: View {
                     saveUserProfileUseCase: saveUserProfileUseCase,
                     onNavigateToRecordTab: onNavigateToRecordTab,
                     isLoading: $isRequestVerseLoading,
-                    initialUserProfile: $userProfile.wrappedValue
+                    userProfile: $userProfile
                 )
             }
             .tabItem {
