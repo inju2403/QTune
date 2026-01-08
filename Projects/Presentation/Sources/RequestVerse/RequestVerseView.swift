@@ -75,37 +75,7 @@ public struct RequestVerseView: View {
                             errorSection()
 
                         // CTA 버튼
-                        Button {
-                            Haptics.tap()
-                            Task {
-                                resultPhase = .loading
-                                isLoading = true
-                                viewModel.send(.tapRequest(
-                                    nickname: userProfile?.nickname,
-                                    gender: userProfile?.gender.rawValue
-                                ))
-                            }
-                        } label: {
-                            HStack(spacing: 8) {
-                                Image(systemName: "sparkles")
-                                    .font(.system(size: 16))
-                                Text("오늘의 말씀 추천받기")
-                                    .font(.system(size: 17, weight: .semibold, design: .rounded))
-                            }
-                            .foregroundStyle(.white)
-                            .frame(maxWidth: .infinity)
-                            .padding(.vertical, 16)
-                            .background(
-                                RoundedRectangle(cornerRadius: 14)
-                                    .fill(viewModel.state.isValidInput ? Color(hex: "#8B7355") : Color.gray.opacity(0.4))
-                            )
-                            .shadow(color: viewModel.state.isValidInput ? Color.black.opacity(0.08) : Color.clear, radius: 8, y: 3)
-                        }
-                        .disabled(!viewModel.state.isValidInput)
-                        .animation(.easeInOut(duration: 0.2), value: viewModel.state.isValidInput)
-                        .padding(.top, 4)
-                        .padding(.bottom, 60)
-                        .id("ctaButton")
+                        ctaButton
                         }
                         .padding(.horizontal, 22)
                     }
@@ -205,7 +175,10 @@ public struct RequestVerseView: View {
             Button("이어쓰기") { viewModel.send(.tapResumeDraft) }
             Button("새로 시작", role: .destructive) {
                 viewModel.send(.tapDiscardDraft)
-                viewModel.send(.tapRequest)
+                viewModel.send(.tapRequest(
+                    nickname: userProfile?.nickname,
+                    gender: userProfile?.gender.rawValue
+                ))
             }
             Button("취소", role: .cancel) {}
         } message: {
@@ -455,6 +428,54 @@ private extension RequestVerseView {
             Spacer()
         }
         .padding(.top, 6)
+    }
+
+    @ViewBuilder
+    private var ctaButton: some View {
+        Button {
+            handleRequestButtonTap()
+        } label: {
+            ctaButtonLabel
+        }
+        .disabled(!viewModel.state.isValidInput)
+        .animation(.easeInOut(duration: 0.2), value: viewModel.state.isValidInput)
+        .padding(.top, 4)
+        .padding(.bottom, 60)
+        .id("ctaButton")
+    }
+
+    @ViewBuilder
+    private var ctaButtonLabel: some View {
+        let isValid = viewModel.state.isValidInput
+        let bgColor = isValid ? Color(hex: "#8B7355") : Color.gray.opacity(0.4)
+        let shadowColor = isValid ? Color.black.opacity(0.08) : Color.clear
+
+        HStack(spacing: 8) {
+            Image(systemName: "sparkles")
+                .font(.system(size: 16))
+            Text("오늘의 말씀 추천받기")
+                .font(.system(size: 17, weight: .semibold, design: .rounded))
+        }
+        .foregroundStyle(.white)
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, 16)
+        .background(
+            RoundedRectangle(cornerRadius: 14)
+                .fill(bgColor)
+        )
+        .shadow(color: shadowColor, radius: 8, y: 3)
+    }
+
+    private func handleRequestButtonTap() {
+        Haptics.tap()
+        Task {
+            resultPhase = .loading
+            isLoading = true
+            viewModel.send(.tapRequest(
+                nickname: userProfile?.nickname,
+                gender: userProfile?.gender.rawValue
+            ))
+        }
     }
 
     private func loadUserProfile() {
