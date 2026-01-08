@@ -247,10 +247,10 @@ export const recommendVerse = onCall(
 
       const noteSection = note ? ` (${note})` : "";
 
-      // 프로필 정보가 있으면 사용, 없으면 기본값
-      const displayName = nickname || "형제";
-      const displayGender = gender || "형제";
-      const userLabel = `${displayName} ${displayGender}님`;
+      // 프로필 정보로 userLabel 생성
+      const userLabel = (nickname && gender)
+        ? `${nickname} ${gender}님`
+        : `${gender || "형제"}님`;
 
       // 제외할 구절 목록 섹션 생성
       let excludeSection = "";
@@ -398,10 +398,10 @@ export const generateKoreanExplanation = onCall(
 
       const noteSection = note ? ` (${note})` : "";
 
-      // 프로필 정보가 있으면 사용, 없으면 기본값
-      const displayName = nickname || "형제";
-      const displayGender = gender || "형제";
-      const userLabel = `${displayName} ${displayGender}님`;
+      // 프로필 정보로 userLabel 생성
+      const userLabel = (nickname && gender)
+        ? `${nickname} ${gender}님`
+        : `${gender || "형제"}님`;
 
       const prompt = `${userLabel}: "${mood}${noteSection}"
 
