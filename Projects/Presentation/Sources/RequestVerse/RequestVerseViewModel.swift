@@ -32,8 +32,8 @@ public final class RequestVerseViewModel {
         case .updateNote(let text):
             state.noteText = String(text.prefix(200))
 
-        case .tapRequest:
-            Task { await requestVerse() }
+        case .tapRequest(let nickname, let gender):
+            Task { await requestVerse(nickname: nickname, gender: gender) }
 
         case .tapGoToQT:
             guard let result = state.generatedResult else { return }
@@ -67,7 +67,7 @@ public final class RequestVerseViewModel {
         }
     }
 
-    private func requestVerse() async {
+    private func requestVerse(nickname: String?, gender: String?) async {
         // 1. 입력 검증
         guard state.isValidInput else {
             await MainActor.run {
@@ -97,7 +97,9 @@ public final class RequestVerseViewModel {
             let generated = try await generateVerseUseCase.execute(
                 normalizedText: state.moodText,
                 userId: "me", // TODO: 실제 userId로 교체 필요
-                timeZone: .current
+                timeZone: .current,
+                nickname: nickname,
+                gender: gender
             )
 
             // 4. 결과를 State에 저장

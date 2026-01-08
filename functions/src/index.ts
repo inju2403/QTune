@@ -196,6 +196,8 @@ type RecommendVerseRequest = {
   locale?: string;
   mood: string;
   note?: string;
+  nickname?: string;
+  gender?: string;
   // installId는 더 이상 사용하지 않음 (Firebase Auth UID 사용)
 };
 
@@ -204,6 +206,8 @@ type GenerateKoreanExplanationRequest = {
   verseRef: string;
   mood: string;
   note?: string;
+  nickname?: string;
+  gender?: string;
   // installId는 더 이상 사용하지 않음 (Firebase Auth UID 사용)
 };
 
@@ -215,7 +219,7 @@ export const recommendVerse = onCall(
   async (request) => {
     try {
       const data = request.data as RecommendVerseRequest;
-      const { locale, mood, note } = data;
+      const { locale, mood, note, nickname, gender } = data;
 
       if (!mood || typeof mood !== "string") {
         throw new functions.https.HttpsError(
@@ -235,11 +239,18 @@ export const recommendVerse = onCall(
         locale,
         mood,
         note,
+        nickname,
+        gender,
         callerId,
         historyCount: recommendedVerses.length,
       });
 
       const noteSection = note ? ` (${note})` : "";
+
+      // 프로필 정보가 있으면 사용, 없으면 기본값
+      const displayName = nickname || "형제";
+      const displayGender = gender || "님";
+      const userLabel = `${displayName} ${displayGender}`;
 
       // 제외할 구절 목록 섹션 생성
       let excludeSection = "";
@@ -250,19 +261,21 @@ export const recommendVerse = onCall(
         excludeSection = `\n[이미 추천한 구절들 - 절대 추천하지 말 것]\n${verseList}\n`;
       }
 
-      const prompt = `큐튠(QTune) 사용자가 "${mood}${noteSection}"라고 말했어.
+      const prompt = `${userLabel}님이 "${mood}${noteSection}"라고 말했어.
 
-이 사용자에게 딱 맞는 성경 구절 1곳을 추천하고, 왜 이 구절을 추천했는지 1-2문장으로 설명해줘.
+${userLabel}님에게 딱 맞는 성경 구절 1곳을 추천하고, 왜 이 구절을 추천했는지 1-2문장으로 설명해줘.
 ${excludeSection}
 [출력 형식 - 모든 필드 필수]
 - verseRef: "책명 장:절" 형식 (예: "John 3:16", "Psalms 23:1", "Romans 8:28")
   * 영어 책명 사용 (예: John, Psalms, Romans, Matthew, Genesis 등)
 - rationale: 추천 이유 (1-2문장)
+  * "${userLabel}님이" 형식으로 시작 (예: "${userLabel}님이 힘든 하루를 보내셔서...")
 
 [규칙]
 - 너무 긴 본문은 피하고 구절 하나만 추천
 - verseRef는 반드시 영어 책명으로 (예: "요한복음" ❌ "John" ✅)
 - 위에 나열된 "이미 추천한 구절들"은 절대 추천하지 말 것 (다른 구절을 찾아줘)
+- rationale은 반드시 "${userLabel}님이"로 시작
 - 반드시 JSON Schema에 맞춰 모든 필드를 포함하여 응답
 
 반드시 JSON Schema에 맞춰 응답해줘.`;
@@ -350,7 +363,7 @@ export const generateKoreanExplanation = onCall(
   async (request) => {
     try {
       const data = request.data as GenerateKoreanExplanationRequest;
-      const { englishText, verseRef, mood, note } = data;
+      const { englishText, verseRef, mood, note, nickname, gender } = data;
 
       if (!englishText || typeof englishText !== "string") {
         throw new functions.https.HttpsError(
@@ -378,12 +391,19 @@ export const generateKoreanExplanation = onCall(
       logger.info("generateKoreanExplanation called", {
         verseRef,
         mood,
+        nickname,
+        gender,
         callerId,
       });
 
       const noteSection = note ? ` (${note})` : "";
 
-      const prompt = `사용자: "${mood}${noteSection}"
+      // 프로필 정보가 있으면 사용, 없으면 기본값
+      const displayName = nickname || "형제";
+      const displayGender = gender || "님";
+      const userLabel = `${displayName} ${displayGender}`;
+
+      const prompt = `${userLabel}님: "${mood}${noteSection}"
 
 성경 구절: ${verseRef}
 영어 본문:
@@ -392,6 +412,7 @@ ${englishText}
 [출력 형식]
 - korean: "{한글 성경 구절명}\\n{자연스럽고 은혜로운 의역문}"
 - rationale: 추천 이유 (1-2문장, 한국어)
+  * "${userLabel}님이" 형식으로 시작 (예: "${userLabel}님이 힘든 하루를 보내셔서...")
 
 [규칙 - 매우 중요]
 1. **korean 형식**: 한글 구절명 + 개행(\\n) + 의역문

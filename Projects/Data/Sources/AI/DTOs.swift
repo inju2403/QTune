@@ -264,10 +264,14 @@ public struct GenerateVerseRequest {
     public let locale: String       // 예: "ko_KR", "en_US"
     public let mood: String         // 사용자의 감정/상황
     public let note: String?        // 추가 메모
+    public let nickname: String?    // 사용자 닉네임
+    public let gender: String?      // 사용자 성별
 
-    public init(locale: String, mood: String, note: String?) {
+    public init(locale: String, mood: String, note: String?, nickname: String? = nil, gender: String? = nil) {
         self.locale = locale
         self.mood = mood
         self.note = note
+        self.nickname = nickname
+        self.gender = gender
     }
 }

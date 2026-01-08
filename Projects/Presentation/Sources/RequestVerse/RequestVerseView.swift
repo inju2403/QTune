@@ -80,7 +80,10 @@ public struct RequestVerseView: View {
                             Task {
                                 resultPhase = .loading
                                 isLoading = true
-                                viewModel.send(.tapRequest)
+                                viewModel.send(.tapRequest(
+                                    nickname: userProfile?.nickname,
+                                    gender: userProfile?.gender.rawValue
+                                ))
                             }
                         } label: {
                             HStack(spacing: 8) {
