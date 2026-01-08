@@ -18,6 +18,7 @@ public struct RequestVerseView: View {
     @Binding var path: NavigationPath
     @Binding var isLoading: Bool
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @FocusState private var isTextEditorFocused: Bool
 
     // MARK: - Dependencies
     let commitQTUseCase: CommitQTUseCase
@@ -55,53 +56,65 @@ public struct RequestVerseView: View {
             CrossSunsetBackground()
 
             VStack(spacing: 0) {
-                ScrollView {
-                    // 앱 아이콘 영역
-                    Image("QTune_Icon")
-                        .resizable()
-                        .scaledToFit()
-                        .frame(width: 70, height: 70)
-                        .clipShape(RoundedRectangle(cornerRadius: 16))
-                        .shadow(color: .black.opacity(0.15), radius: 10, y: 5)
-                        .padding(.top, 8)
-                        .padding(.bottom, 24)
-                    
-                    VStack(alignment: .leading, spacing: 20) {
-                        draftBanner()
-                        descriptionSection()
-                        inputSection()
-                        errorSection()
+                ScrollViewReader { proxy in
+                    ScrollView {
+                        // 앱 아이콘 영역
+                        Image("QTune_Icon")
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: 70, height: 70)
+                            .clipShape(RoundedRectangle(cornerRadius: 16))
+                            .shadow(color: .black.opacity(0.15), radius: 10, y: 5)
+                            .padding(.top, 8)
+                            .padding(.bottom, 24)
 
-                    // CTA 버튼
-                    Button {
-                        Haptics.tap()
-                        Task {
-                            resultPhase = .loading
-                            isLoading = true
-                            viewModel.send(.tapRequest)
+                        VStack(alignment: .leading, spacing: 20) {
+                            draftBanner()
+                            descriptionSection()
+                            inputSection()
+                            errorSection()
+
+                        // CTA 버튼
+                        Button {
+                            Haptics.tap()
+                            Task {
+                                resultPhase = .loading
+                                isLoading = true
+                                viewModel.send(.tapRequest)
+                            }
+                        } label: {
+                            HStack(spacing: 8) {
+                                Image(systemName: "sparkles")
+                                    .font(.system(size: 16))
+                                Text("오늘의 말씀 추천받기")
+                                    .font(.system(size: 17, weight: .semibold, design: .rounded))
+                            }
+                            .foregroundStyle(.white)
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 16)
+                            .background(
+                                RoundedRectangle(cornerRadius: 14)
+                                    .fill(viewModel.state.isValidInput ? Color(hex: "#8B7355") : Color.gray.opacity(0.4))
+                            )
+                            .shadow(color: viewModel.state.isValidInput ? Color.black.opacity(0.08) : Color.clear, radius: 8, y: 3)
                         }
-                    } label: {
-                        HStack(spacing: 8) {
-                            Image(systemName: "sparkles")
-                                .font(.system(size: 16))
-                            Text("오늘의 말씀 추천받기")
-                                .font(.system(size: 17, weight: .semibold, design: .rounded))
+                        .disabled(!viewModel.state.isValidInput)
+                        .animation(.easeInOut(duration: 0.2), value: viewModel.state.isValidInput)
+                        .padding(.top, 4)
+                        .padding(.bottom, 60)
+                        .id("ctaButton")
                         }
-                        .foregroundStyle(.white)
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 16)
-                        .background(
-                            RoundedRectangle(cornerRadius: 14)
-                                .fill(viewModel.state.isValidInput ? Color(hex: "#8B7355") : Color.gray.opacity(0.4))
-                        )
-                        .shadow(color: viewModel.state.isValidInput ? Color.black.opacity(0.08) : Color.clear, radius: 8, y: 3)
+                        .padding(.horizontal, 22)
                     }
-                    .disabled(!viewModel.state.isValidInput)
-                    .animation(.easeInOut(duration: 0.2), value: viewModel.state.isValidInput)
-                    .padding(.top, 4)
-                    .padding(.bottom, 60)
+                    .onChange(of: isTextEditorFocused) { _, isFocused in
+                        if isFocused {
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                                withAnimation(.easeInOut(duration: 0.3)) {
+                                    proxy.scrollTo("ctaButton", anchor: .bottom)
+                                }
+                            }
+                        }
                     }
-                    .padding(.horizontal, 22)
                 }
             }
             .navigationTitle("")
@@ -335,6 +348,7 @@ private extension RequestVerseView {
                 .scrollContentBackground(.hidden)
                 .textInputAutocapitalization(.sentences)
                 .disableAutocorrection(false)
+                .focused($isTextEditorFocused)
         }
         .padding(12)
         .background(Color(hex: "#F8F8F8"))
