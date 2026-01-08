@@ -25,7 +25,18 @@ public struct TemplatePickerSheet: View {
                 .padding(.top, 20)
                 .padding(.bottom, 8)
 
-            // Title
+            // Header
+            VStack(spacing: 4) {
+                Text("두 가지 묵상 방식")
+                    .font(.system(size: 20, weight: .bold, design: .rounded))
+                    .foregroundStyle(DS.Color.deepCocoa)
+                Text("SOAP · ACTS 중 선택하세요")
+                    .font(.system(size: 14, weight: .regular))
+                    .foregroundStyle(DS.Color.textSecondary)
+            }
+            .padding(.bottom, 8)
+
+            // Main question
             VStack(spacing: 8) {
                 Text("오늘 어떤 방식으로")
                     .font(DS.Font.titleM(.semibold))
@@ -35,19 +46,26 @@ public struct TemplatePickerSheet: View {
                     .foregroundStyle(DS.Color.deepCocoa)
             }
             .multilineTextAlignment(.center)
-            .padding(.horizontal, 20)
+
+            // Info message
+            HStack(spacing: 6) {
+                Image(systemName: "lightbulb.fill")
+                    .font(.system(size: 14))
+                    .foregroundStyle(DS.Color.gold)
+                Text("이번 말씀 추천에서 선택할 수 있습니다.")
+                    .font(.system(size: 13, weight: .regular))
+                    .foregroundStyle(DS.Color.textSecondary)
+            }
+            .padding(.bottom, 8)
 
             // Template cards
-            VStack(spacing: 12) {
+            VStack(spacing: 16) {
                 TemplateCard(
+                    icon: "book.closed.fill",
                     title: "SOAP",
-                    description: "말씀을 차분히 이해하고, 오늘의 삶에 연결하는 묵상",
-                    bullets: [
-                        "말씀에서 눈에 들어온 표현을 살펴봐요",
-                        "이 말씀이 삶과 어떻게 이어지는지 생각해요",
-                        "느낀 점과 바람을 정리해요"
-                    ],
-                    footerGuide: "📘 생각을 정리하며 묵상하고 싶을 때"
+                    subtitle: "말씀의 본질에 집중",
+                    description: "말씀을 차분히 이해하고, 오늘의 삶에 연결하는 묵상. 생각을 정리하며 묵상하고 싶을 때 추천해요.",
+                    buttonTitle: "SOAP방식 '오늘 성경읽기' 선택하기"
                 ) {
                     Haptics.tap()
                     onSelect(.soap)
@@ -55,15 +73,11 @@ public struct TemplatePickerSheet: View {
                 }
 
                 TemplateCard(
+                    icon: "hands.and.sparkles.fill",
                     title: "ACTS",
-                    description: "마음을 돌아보며 기도로 이어가는 묵상",
-                    bullets: [
-                        "말씀 속 메시지와 가치를 느껴봐요",
-                        "나의 모습과 마음을 돌아봐요",
-                        "감사와 바람을 솔직하게 적어요",
-                        "앞으로의 도움을 정리해요"
-                    ],
-                    footerGuide: "💭 마음을 풀어놓고 묵상하고 싶을 때"
+                    subtitle: "기도로 대화하는 묵상",
+                    description: "마음을 돌아보며 기도로 이어가는 묵상. 마음을 풀어놓고 묵상하고 싶을 때 추천해요.",
+                    buttonTitle: "ACTS방식 '기도하며 성경읽기' 선택하기"
                 ) {
                     Haptics.tap()
                     onSelect(.acts)
@@ -72,13 +86,7 @@ public struct TemplatePickerSheet: View {
             }
             .padding(.horizontal, 20)
 
-            // Note
-            Text("선택 후에도 언제든 다른 방식으로 다시 묵상할 수 있어요.")
-                .font(DS.Font.caption())
-                .foregroundStyle(DS.Color.textSecondary)
-                .multilineTextAlignment(.center)
-                .padding(.horizontal, 20)
-                .padding(.bottom, 12)
+            Spacer()
         }
         .padding(.bottom, 12)
         .background(DS.Color.canvas)
@@ -88,59 +96,66 @@ public struct TemplatePickerSheet: View {
 // MARK: - Template Card
 
 private struct TemplateCard: View {
+    let icon: String
     let title: String
+    let subtitle: String
     let description: String
-    let bullets: [String]
-    let footerGuide: String
+    let buttonTitle: String
     let action: () -> Void
 
     var body: some View {
-        Button(action: action) {
-            VStack(alignment: .leading, spacing: 12) {
-                // Title
-                Text(title)
-                    .font(DS.Font.titleM(.bold))
-                    .foregroundStyle(DS.Color.deepCocoa)
+        VStack(alignment: .leading, spacing: 12) {
+            // Icon + Title + Subtitle
+            HStack(spacing: 12) {
+                Image(systemName: icon)
+                    .font(.system(size: 28))
+                    .foregroundStyle(DS.Color.gold)
+                    .frame(width: 44, height: 44)
 
-                // Description
-                Text(description)
-                    .font(DS.Font.bodyM())
-                    .foregroundStyle(DS.Color.textPrimary)
-                    .lineSpacing(4)
-
-                // Bullets
-                VStack(alignment: .leading, spacing: 6) {
-                    ForEach(bullets, id: \.self) { bullet in
-                        HStack(alignment: .top, spacing: 6) {
-                            Text("•")
-                                .font(DS.Font.caption())
-                                .foregroundStyle(DS.Color.gold)
-                            Text(bullet)
-                                .font(DS.Font.caption())
-                                .foregroundStyle(DS.Color.textSecondary)
-                                .lineSpacing(2)
-                        }
-                    }
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(title)
+                        .font(.system(size: 18, weight: .bold, design: .rounded))
+                        .foregroundStyle(DS.Color.deepCocoa)
+                    Text(subtitle)
+                        .font(.system(size: 13, weight: .medium))
+                        .foregroundStyle(DS.Color.textSecondary)
                 }
-                .padding(.top, 4)
-
-                // Footer Guide
-                Text(footerGuide)
-                    .font(DS.Font.caption(.medium))
-                    .foregroundStyle(DS.Color.gold.opacity(0.9))
-                    .padding(.top, 4)
             }
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(18)
-            .background(
-                RoundedRectangle(cornerRadius: DS.Radius.m)
-                    .fill(DS.Color.background)
-                    .overlay(
-                        RoundedRectangle(cornerRadius: DS.Radius.m)
-                            .stroke(DS.Color.gold.opacity(0.2), lineWidth: 1)
-                    )
-            )
+
+            // Description
+            Text(description)
+                .font(.system(size: 13, weight: .regular))
+                .foregroundStyle(DS.Color.textSecondary)
+                .lineSpacing(4)
+                .fixedSize(horizontal: false, vertical: true)
+
+            // Button
+            Button(action: action) {
+                HStack(spacing: 6) {
+                    Text(buttonTitle)
+                        .font(.system(size: 14, weight: .semibold, design: .rounded))
+                    Image(systemName: "arrow.right")
+                        .font(.system(size: 12, weight: .semibold))
+                }
+                .foregroundStyle(.white)
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 14)
+                .background(
+                    RoundedRectangle(cornerRadius: 12)
+                        .fill(DS.Color.gold)
+                )
+            }
+            .buttonStyle(.plain)
         }
-        .buttonStyle(.plain)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(16)
+        .background(
+            RoundedRectangle(cornerRadius: DS.Radius.m)
+                .fill(DS.Color.background)
+                .overlay(
+                    RoundedRectangle(cornerRadius: DS.Radius.m)
+                        .stroke(DS.Color.gold.opacity(0.2), lineWidth: 1)
+                )
+        )
     }
 }
