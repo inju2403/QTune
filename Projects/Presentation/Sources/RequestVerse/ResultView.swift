@@ -46,7 +46,7 @@ public struct ResultView: View {
                         rationaleBlock()
                     }
 
-                    Spacer(minLength: 20)
+                    Spacer()
 
                     // QT 하러가기 버튼 (중앙 정렬)
                     HStack {
