@@ -19,6 +19,7 @@ public struct RequestVerseView: View {
     @Binding var isLoading: Bool
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @FocusState private var isTextEditorFocused: Bool
+    @State private var pendingScrollToCTA = false
 
     // MARK: - Dependencies
     let commitQTUseCase: CommitQTUseCase
@@ -81,10 +82,17 @@ public struct RequestVerseView: View {
                     }
                     .onChange(of: isTextEditorFocused) { _, isFocused in
                         if isFocused {
-                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-                                withAnimation(.easeInOut(duration: 0.3)) {
-                                    proxy.scrollTo("ctaButton", anchor: .bottom)
-                                }
+                            pendingScrollToCTA = true
+                        }
+                    }
+                    .onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardWillShowNotification)) { _ in
+                        guard pendingScrollToCTA else { return }
+                        pendingScrollToCTA = false
+
+                        // 키보드 애니메이션 프레임 변화가 반영된 다음 스크롤
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                            withAnimation(.easeInOut(duration: 0.3)) {
+                                proxy.scrollTo("ctaButton", anchor: .bottom)
                             }
                         }
                     }
@@ -440,7 +448,7 @@ private extension RequestVerseView {
         .disabled(!viewModel.state.isValidInput)
         .animation(.easeInOut(duration: 0.2), value: viewModel.state.isValidInput)
         .padding(.top, 4)
-        .padding(.bottom, 60)
+        .padding(.bottom, 20)
         .id("ctaButton")
     }
 
