@@ -51,7 +51,7 @@ public struct ResultView: View {
                     // QT 하러가기 버튼 (중앙 정렬)
                     HStack {
                         Spacer()
-                        PrimaryCTAButton(title: "QT 하러가기", icon: "hand.raised.fill") {
+                        PrimaryCTAButton(title: "QT 하러가기", icon: "square.and.pencil") {
                             Haptics.tap()
                             viewModel.send(.tapGoToQT)
                         }
