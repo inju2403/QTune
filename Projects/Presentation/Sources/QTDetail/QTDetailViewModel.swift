@@ -112,13 +112,7 @@ public final class QTDetailViewModel {
 
     // MARK: - Share Text Generation
     private func generateShareText() -> String {
-        // 헤더: 프로필 정보
-        var header = ""
-        if let profile = userProfile {
-            header = "\(profile.nickname) \(profile.gender.rawValue)님의 묵상\n\n"
-        }
-
-        var text = header + """
+        var text = """
         📖 \(state.qt.verse.id)
 
         \(state.qt.verse.text)
@@ -154,15 +148,7 @@ public final class QTDetailViewModel {
             }
         }
 
-        // 푸터: Deep Link
-        let deepLink = "qtune://qt/\(state.qt.id)"
-        let appStoreLink = "https://apps.apple.com/kr/app/큐튠-qtune/id6757230938"
-        text += "\n━━━━━━━━━━━━━━━━━"
-        text += "\n\n📱 큐튠(QTune)에서 보기"
-        text += "\n\(deepLink)"
-        text += "\n\n앱이 없다면 다운로드:"
-        text += "\n\(appStoreLink)"
-
+        text += "\n- QTune에서 작성"
         return text
     }
 }
