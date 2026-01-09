@@ -105,19 +105,19 @@ public struct QTListView: View {
             } message: {
                 Text("이 기록을 삭제할까요? 이 작업은 되돌릴 수 없습니다.")
             }
-            .sheet(isPresented: $showProfileEdit) {
-                NavigationStack {
-                    ProfileEditView(
-                        viewModel: profileEditViewModelFactory(userProfile)
-                    )
-                }
-            } onDismiss: {
+            .sheet(isPresented: $showProfileEdit, onDismiss: {
                 Task {
                     if let profile = try? await getUserProfileUseCase.execute() {
                         await MainActor.run {
                             userProfile = profile
                         }
                     }
+                }
+            }) {
+                NavigationStack {
+                    ProfileEditView(
+                        viewModel: profileEditViewModelFactory(userProfile)
+                    )
                 }
             }
         }
