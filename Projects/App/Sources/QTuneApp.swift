@@ -184,7 +184,8 @@ struct QTuneApp: App {
                         toggleFavoriteUseCase: toggleFavoriteUseCase,
                         deleteQTUseCase: deleteQTUseCase,
                         getQTDetailUseCase: getQTDetailUseCase,
-                        session: container.dummySession
+                        session: container.dummySession,
+                        userProfile: userProfile
                     )
                 },
                 editorViewModelFactory: {

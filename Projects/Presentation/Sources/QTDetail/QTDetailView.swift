@@ -100,7 +100,7 @@ public struct QTDetailView: View {
         }
         .sheet(isPresented: Binding(
             get: { viewModel.state.showShareSheet },
-            set: { _ in }
+            set: { if !$0 { viewModel.send(.closeShareSheet) } }
         )) {
             ShareSheet(text: viewModel.state.shareText)
         }

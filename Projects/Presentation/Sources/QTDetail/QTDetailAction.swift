@@ -13,6 +13,7 @@ public enum QTDetailAction: Equatable {
     case confirmDelete
     case deleteQT
     case prepareShare
+    case closeShareSheet
     case showEditSheet(Bool)
     case reloadQT
 }

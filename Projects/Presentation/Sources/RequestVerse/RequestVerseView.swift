@@ -107,6 +107,7 @@ public struct RequestVerseView: View {
                         Haptics.tap()
                         showProfileEdit = true
                     }
+                    .id(userProfile?.nickname ?? "default")
                 }
             }
             .scrollDismissesKeyboard(.interactively)

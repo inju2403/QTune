@@ -90,7 +90,8 @@ public struct MainTabViewWrapper: View {
                 userProfile: $userProfile,
                 detailViewModelFactory: detailViewModelFactory,
                 editorViewModelFactory: editorViewModelFactory,
-                profileEditViewModelFactory: profileEditViewModelFactory
+                profileEditViewModelFactory: profileEditViewModelFactory,
+                getUserProfileUseCase: getUserProfileUseCase
             )
             .tabItem {
                 Label("기록", systemImage: "book.closed")

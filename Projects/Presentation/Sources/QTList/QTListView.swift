@@ -16,19 +16,22 @@ public struct QTListView: View {
     let detailViewModelFactory: (QuietTime) -> QTDetailViewModel
     let editorViewModelFactory: () -> QTEditorViewModel
     let profileEditViewModelFactory: (UserProfile?) -> ProfileEditViewModel
+    let getUserProfileUseCase: GetUserProfileUseCase
 
     public init(
         viewModel: QTListViewModel,
         userProfile: Binding<UserProfile?>,
         detailViewModelFactory: @escaping (QuietTime) -> QTDetailViewModel,
         editorViewModelFactory: @escaping () -> QTEditorViewModel,
-        profileEditViewModelFactory: @escaping (UserProfile?) -> ProfileEditViewModel
+        profileEditViewModelFactory: @escaping (UserProfile?) -> ProfileEditViewModel,
+        getUserProfileUseCase: GetUserProfileUseCase
     ) {
         _viewModel = State(wrappedValue: viewModel)
         _userProfile = userProfile
         self.detailViewModelFactory = detailViewModelFactory
         self.editorViewModelFactory = editorViewModelFactory
         self.profileEditViewModelFactory = profileEditViewModelFactory
+        self.getUserProfileUseCase = getUserProfileUseCase
     }
 
     public var body: some View {
@@ -83,6 +86,7 @@ public struct QTListView: View {
                         Haptics.tap()
                         showProfileEdit = true
                     }
+                    .id(userProfile?.nickname ?? "default")
                 }
             }
             .task {
@@ -106,6 +110,14 @@ public struct QTListView: View {
                     ProfileEditView(
                         viewModel: profileEditViewModelFactory(userProfile)
                     )
+                }
+            } onDismiss: {
+                Task {
+                    if let profile = try? await getUserProfileUseCase.execute() {
+                        await MainActor.run {
+                            userProfile = profile
+                        }
+                    }
                 }
             }
         }

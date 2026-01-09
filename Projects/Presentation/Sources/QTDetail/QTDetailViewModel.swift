@@ -19,6 +19,7 @@ public final class QTDetailViewModel {
     private let deleteQTUseCase: DeleteQTUseCase
     private let getQTDetailUseCase: GetQTDetailUseCase
     private let session: UserSession
+    private let userProfile: UserProfile?
 
     // MARK: - Properties
     public var onDeleted: (() -> Void)?
@@ -29,13 +30,15 @@ public final class QTDetailViewModel {
         toggleFavoriteUseCase: ToggleFavoriteUseCase,
         deleteQTUseCase: DeleteQTUseCase,
         getQTDetailUseCase: GetQTDetailUseCase,
-        session: UserSession
+        session: UserSession,
+        userProfile: UserProfile?
     ) {
         self.state = QTDetailState(qt: qt)
         self.toggleFavoriteUseCase = toggleFavoriteUseCase
         self.deleteQTUseCase = deleteQTUseCase
         self.getQTDetailUseCase = getQTDetailUseCase
         self.session = session
+        self.userProfile = userProfile
     }
 
     // MARK: - Send Action
@@ -54,6 +57,9 @@ public final class QTDetailViewModel {
             state.shareText = generateShareText()
             state.showShareSheet = true
 
+        case .closeShareSheet:
+            state.showShareSheet = false
+
         case .showEditSheet(let show):
             state.showEditSheet = show
 
@@ -65,7 +71,10 @@ public final class QTDetailViewModel {
     // MARK: - Actions
     private func toggleFavorite() async {
         do {
-            _ = try await toggleFavoriteUseCase.execute(id: state.qt.id, session: session)
+            let newFavoriteState = try await toggleFavoriteUseCase.execute(id: state.qt.id, session: session)
+            await MainActor.run {
+                state.qt.isFavorite = newFavoriteState
+            }
         } catch {
             print("❌ Failed to toggle favorite: \(error)")
         }
@@ -95,7 +104,13 @@ public final class QTDetailViewModel {
 
     // MARK: - Share Text Generation
     private func generateShareText() -> String {
-        var text = """
+        // 헤더: 프로필 정보
+        var header = ""
+        if let profile = userProfile {
+            header = "\(profile.nickname) \(profile.gender.rawValue)님의 묵상\n\n"
+        }
+
+        var text = header + """
         📖 \(state.qt.verse.id)
 
         \(state.qt.verse.text)
@@ -131,7 +146,15 @@ public final class QTDetailViewModel {
             }
         }
 
-        text += "\n- QTune에서 작성"
+        // 푸터: Deep Link
+        let deepLink = "qtune://qt/\(state.qt.id)"
+        let appStoreLink = "https://apps.apple.com/kr/app/큐튠-qtune/id6757230938"
+        text += "\n━━━━━━━━━━━━━━━━━"
+        text += "\n\n📱 큐튠(QTune)에서 보기"
+        text += "\n\(deepLink)"
+        text += "\n\n앱이 없다면 다운로드:"
+        text += "\n\(appStoreLink)"
+
         return text
     }
 }
