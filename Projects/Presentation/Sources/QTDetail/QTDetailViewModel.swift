@@ -69,14 +69,22 @@ public final class QTDetailViewModel {
     }
 
     // MARK: - Actions
+    @MainActor
     private func toggleFavorite() async {
-        do {
-            let newFavoriteState = try await toggleFavoriteUseCase.execute(id: state.qt.id, session: session)
-            await MainActor.run {
-                state.qt.isFavorite = newFavoriteState
+        // Optimistic update
+        state.qt.isFavorite.toggle()
+
+        // 백그라운드 동기화
+        Task.detached { [weak self, qtId = state.qt.id, session] in
+            guard let self = self else { return }
+            do {
+                _ = try await self.toggleFavoriteUseCase.execute(id: qtId, session: session)
+            } catch {
+                await MainActor.run {
+                    self.state.qt.isFavorite.toggle() // 롤백
+                }
+                print("❌ Failed to toggle favorite: \(error)")
             }
-        } catch {
-            print("❌ Failed to toggle favorite: \(error)")
         }
     }
 
