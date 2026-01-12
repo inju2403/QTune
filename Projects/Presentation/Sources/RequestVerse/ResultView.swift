@@ -46,12 +46,12 @@ public struct ResultView: View {
                         rationaleBlock()
                     }
 
-                    Spacer(minLength: 20)
+                    Spacer()
 
                     // QT 하러가기 버튼 (중앙 정렬)
                     HStack {
                         Spacer()
-                        PrimaryCTAButton(title: "QT 하러가기", icon: "hand.raised.fill") {
+                        PrimaryCTAButton(title: "QT 하러가기", icon: "square.and.pencil") {
                             Haptics.tap()
                             viewModel.send(.tapGoToQT)
                         }
@@ -72,7 +72,7 @@ public struct ResultView: View {
                 Haptics.tap()
                 viewModel.send(.selectTemplate(template))
             }
-            .presentationDetents([.height(620)])
+            .presentationDetents([.height(605)])
         }
     }
 }

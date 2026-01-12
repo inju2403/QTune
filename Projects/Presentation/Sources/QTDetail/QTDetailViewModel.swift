@@ -19,6 +19,7 @@ public final class QTDetailViewModel {
     private let deleteQTUseCase: DeleteQTUseCase
     private let getQTDetailUseCase: GetQTDetailUseCase
     private let session: UserSession
+    private let userProfile: UserProfile?
 
     // MARK: - Properties
     public var onDeleted: (() -> Void)?
@@ -29,13 +30,15 @@ public final class QTDetailViewModel {
         toggleFavoriteUseCase: ToggleFavoriteUseCase,
         deleteQTUseCase: DeleteQTUseCase,
         getQTDetailUseCase: GetQTDetailUseCase,
-        session: UserSession
+        session: UserSession,
+        userProfile: UserProfile?
     ) {
         self.state = QTDetailState(qt: qt)
         self.toggleFavoriteUseCase = toggleFavoriteUseCase
         self.deleteQTUseCase = deleteQTUseCase
         self.getQTDetailUseCase = getQTDetailUseCase
         self.session = session
+        self.userProfile = userProfile
     }
 
     // MARK: - Send Action
@@ -54,6 +57,9 @@ public final class QTDetailViewModel {
             state.shareText = generateShareText()
             state.showShareSheet = true
 
+        case .closeShareSheet:
+            state.showShareSheet = false
+
         case .showEditSheet(let show):
             state.showEditSheet = show
 
@@ -63,11 +69,22 @@ public final class QTDetailViewModel {
     }
 
     // MARK: - Actions
+    @MainActor
     private func toggleFavorite() async {
-        do {
-            _ = try await toggleFavoriteUseCase.execute(id: state.qt.id, session: session)
-        } catch {
-            print("❌ Failed to toggle favorite: \(error)")
+        // Optimistic update
+        state.qt.isFavorite.toggle()
+
+        // 백그라운드 동기화
+        Task.detached { [weak self, qtId = state.qt.id, session] in
+            guard let self = self else { return }
+            do {
+                _ = try await self.toggleFavoriteUseCase.execute(id: qtId, session: session)
+            } catch {
+                await MainActor.run {
+                    self.state.qt.isFavorite.toggle() // 롤백
+                }
+                print("❌ Failed to toggle favorite: \(error)")
+            }
         }
     }
 

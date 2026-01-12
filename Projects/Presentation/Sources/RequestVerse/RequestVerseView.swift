@@ -13,11 +13,13 @@ public struct RequestVerseView: View {
     @State private var viewModel: RequestVerseViewModel
     @State private var showConflict = false
     @State private var resultPhase: ResultPhase = .idle
-    @State private var userProfile: UserProfile?
+    @Binding var userProfile: UserProfile?
     @State private var showProfileEdit = false
     @Binding var path: NavigationPath
     @Binding var isLoading: Bool
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @FocusState private var isTextEditorFocused: Bool
+    @State private var pendingScrollToCTA = false
 
     // MARK: - Dependencies
     let commitQTUseCase: CommitQTUseCase
@@ -36,12 +38,12 @@ public struct RequestVerseView: View {
         saveUserProfileUseCase: SaveUserProfileUseCase,
         onNavigateToRecordTab: @escaping () -> Void,
         isLoading: Binding<Bool>,
-        initialUserProfile: UserProfile? = nil
+        userProfile: Binding<UserProfile?>
     ) {
         _viewModel = State(wrappedValue: viewModel)
         _path = path
         _isLoading = isLoading
-        _userProfile = State(initialValue: initialUserProfile)
+        _userProfile = userProfile
         self.commitQTUseCase = commitQTUseCase
         self.session = session
         self.getUserProfileUseCase = getUserProfileUseCase
@@ -55,53 +57,45 @@ public struct RequestVerseView: View {
             CrossSunsetBackground()
 
             VStack(spacing: 0) {
-                ScrollView {
-                    // 앱 아이콘 영역
-                    Image("QTune_Icon")
-                        .resizable()
-                        .scaledToFit()
-                        .frame(width: 70, height: 70)
-                        .clipShape(RoundedRectangle(cornerRadius: 16))
-                        .shadow(color: .black.opacity(0.15), radius: 10, y: 5)
-                        .padding(.top, 8)
-                        .padding(.bottom, 24)
-                    
-                    VStack(alignment: .leading, spacing: 20) {
-                        draftBanner()
-                        descriptionSection()
-                        inputSection()
-                        errorSection()
+                ScrollViewReader { proxy in
+                    ScrollView {
+                        // 앱 아이콘 영역
+                        Image("QTune_Icon")
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: 70, height: 70)
+                            .clipShape(RoundedRectangle(cornerRadius: 16))
+                            .shadow(color: .black.opacity(0.15), radius: 10, y: 5)
+                            .padding(.top, 8)
+                            .padding(.bottom, 24)
 
-                    // CTA 버튼
-                    Button {
-                        Haptics.tap()
-                        Task {
-                            resultPhase = .loading
-                            isLoading = true
-                            viewModel.send(.tapRequest)
+                        VStack(alignment: .leading, spacing: 20) {
+                            draftBanner()
+                            descriptionSection()
+                            inputSection()
+                            errorSection()
+
+                        // CTA 버튼
+                        ctaButton
                         }
-                    } label: {
-                        HStack(spacing: 8) {
-                            Image(systemName: "sparkles")
-                                .font(.system(size: 16))
-                            Text("오늘의 말씀 추천받기")
-                                .font(.system(size: 17, weight: .semibold, design: .rounded))
+                        .padding(.horizontal, 22)
+                    }
+                    .onChange(of: isTextEditorFocused) { _, isFocused in
+                        if isFocused {
+                            pendingScrollToCTA = true
                         }
-                        .foregroundStyle(.white)
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 16)
-                        .background(
-                            RoundedRectangle(cornerRadius: 14)
-                                .fill(viewModel.state.isValidInput ? Color(hex: "#8B7355") : Color.gray.opacity(0.4))
-                        )
-                        .shadow(color: viewModel.state.isValidInput ? Color.black.opacity(0.08) : Color.clear, radius: 8, y: 3)
                     }
-                    .disabled(!viewModel.state.isValidInput)
-                    .animation(.easeInOut(duration: 0.2), value: viewModel.state.isValidInput)
-                    .padding(.top, 4)
-                    .padding(.bottom, 60)
+                    .onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardWillShowNotification)) { _ in
+                        guard pendingScrollToCTA else { return }
+                        pendingScrollToCTA = false
+
+                        // 키보드 애니메이션 프레임 변화가 반영된 다음 스크롤
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                            withAnimation(.easeInOut(duration: 0.3)) {
+                                proxy.scrollTo("ctaButton", anchor: .bottom)
+                            }
+                        }
                     }
-                    .padding(.horizontal, 22)
                 }
             }
             .navigationTitle("")
@@ -113,6 +107,7 @@ public struct RequestVerseView: View {
                         Haptics.tap()
                         showProfileEdit = true
                     }
+                    .id(userProfile?.nickname ?? "default")
                 }
             }
             .scrollDismissesKeyboard(.interactively)
@@ -189,7 +184,10 @@ public struct RequestVerseView: View {
             Button("이어쓰기") { viewModel.send(.tapResumeDraft) }
             Button("새로 시작", role: .destructive) {
                 viewModel.send(.tapDiscardDraft)
-                viewModel.send(.tapRequest)
+                viewModel.send(.tapRequest(
+                    nickname: userProfile?.nickname,
+                    gender: userProfile?.gender.rawValue
+                ))
             }
             Button("취소", role: .cancel) {}
         } message: {
@@ -335,6 +333,7 @@ private extension RequestVerseView {
                 .scrollContentBackground(.hidden)
                 .textInputAutocapitalization(.sentences)
                 .disableAutocorrection(false)
+                .focused($isTextEditorFocused)
         }
         .padding(12)
         .background(Color(hex: "#F8F8F8"))
@@ -438,6 +437,54 @@ private extension RequestVerseView {
             Spacer()
         }
         .padding(.top, 6)
+    }
+
+    @ViewBuilder
+    private var ctaButton: some View {
+        Button {
+            handleRequestButtonTap()
+        } label: {
+            ctaButtonLabel
+        }
+        .disabled(!viewModel.state.isValidInput)
+        .animation(.easeInOut(duration: 0.2), value: viewModel.state.isValidInput)
+        .padding(.top, 4)
+        .padding(.bottom, 20)
+        .id("ctaButton")
+    }
+
+    @ViewBuilder
+    private var ctaButtonLabel: some View {
+        let isValid = viewModel.state.isValidInput
+        let bgColor = isValid ? Color(hex: "#8B7355") : Color.gray.opacity(0.4)
+        let shadowColor = isValid ? Color.black.opacity(0.08) : Color.clear
+
+        HStack(spacing: 8) {
+            Image(systemName: "sparkles")
+                .font(.system(size: 16))
+            Text("오늘의 말씀 추천받기")
+                .font(.system(size: 17, weight: .semibold, design: .rounded))
+        }
+        .foregroundStyle(.white)
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, 16)
+        .background(
+            RoundedRectangle(cornerRadius: 14)
+                .fill(bgColor)
+        )
+        .shadow(color: shadowColor, radius: 8, y: 3)
+    }
+
+    private func handleRequestButtonTap() {
+        Haptics.tap()
+        Task {
+            resultPhase = .loading
+            isLoading = true
+            viewModel.send(.tapRequest(
+                nickname: userProfile?.nickname,
+                gender: userProfile?.gender.rawValue
+            ))
+        }
     }
 
     private func loadUserProfile() {

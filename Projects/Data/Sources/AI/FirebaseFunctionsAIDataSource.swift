@@ -36,11 +36,19 @@ public final class FirebaseFunctionsAIDataSource: OpenAIRemoteDataSource {
 
         // Firebase Functions 호출 데이터 준비
         // Firebase Auth로 인증된 상태이므로 installId는 불필요
-        let data: [String: Any] = [
+        var data: [String: Any] = [
             "locale": request.locale,
             "mood": request.mood,
             "note": request.note ?? ""
         ]
+
+        // 프로필 정보 추가
+        if let nickname = request.nickname {
+            data["nickname"] = nickname
+        }
+        if let gender = request.gender {
+            data["gender"] = gender
+        }
 
         do {
             // Firebase Functions 호출
@@ -110,7 +118,9 @@ public final class FirebaseFunctionsAIDataSource: OpenAIRemoteDataSource {
         englishText: String,
         verseRef: String,
         mood: String,
-        note: String?
+        note: String?,
+        nickname: String?,
+        gender: String?
     ) async throws -> KoreanExplanationDTO {
         guard let currentUser = Auth.auth().currentUser else {
             print("🔴 [FirebaseFunctionsAIDataSource] User not authenticated")
@@ -133,6 +143,14 @@ public final class FirebaseFunctionsAIDataSource: OpenAIRemoteDataSource {
 
         if let note = note {
             data["note"] = note
+        }
+
+        // 프로필 정보 추가
+        if let nickname = nickname {
+            data["nickname"] = nickname
+        }
+        if let gender = gender {
+            data["gender"] = gender
         }
 
         do {

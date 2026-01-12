@@ -19,5 +19,5 @@ public enum OpenAIDataSourceError: Error {
 /// OpenAI Remote Data Source 프로토콜
 public protocol OpenAIRemoteDataSource {
     func recommendVerse(_ request: GenerateVerseRequest) async throws -> VerseRecommendationDTO
-    func generateKoreanExplanation(englishText: String, verseRef: String, mood: String, note: String?) async throws -> KoreanExplanationDTO
+    func generateKoreanExplanation(englishText: String, verseRef: String, mood: String, note: String?, nickname: String?, gender: String?) async throws -> KoreanExplanationDTO
 }

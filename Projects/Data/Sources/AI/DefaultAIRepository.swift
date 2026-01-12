@@ -28,7 +28,9 @@ public final class DefaultAIRepository: AIRepository {
         let dataRequest = GenerateVerseRequest(
             locale: request.locale,
             mood: request.mood,
-            note: request.note
+            note: request.note,
+            nickname: request.nickname,
+            gender: request.gender
         )
 
         // 1. OpenAI에서 구절 추천받기
@@ -71,7 +73,9 @@ public final class DefaultAIRepository: AIRepository {
                 englishText: bibleDTO.text,
                 verseRef: recommendation.verseRef,
                 mood: request.mood,
-                note: request.note
+                note: request.note,
+                nickname: request.nickname,
+                gender: request.gender
             )
             print("✅ [DefaultAIRepository] Korean explanation generated")
         } catch let error as OpenAIDataSourceError {

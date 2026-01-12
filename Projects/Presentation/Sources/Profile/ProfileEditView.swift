@@ -13,6 +13,7 @@ public struct ProfileEditView: View {
     @Environment(\.dismiss) private var dismiss
     @State private var viewModel: ProfileEditViewModel
     @State private var selectedPhotoItem: PhotosPickerItem?
+    @State private var showImageSizeAlert = false
 
     public init(
         viewModel: ProfileEditViewModel
@@ -67,7 +68,16 @@ public struct ProfileEditView: View {
         .onChange(of: selectedPhotoItem) { _, newItem in
             Task {
                 if let data = try? await newItem?.loadTransferable(type: Data.self) {
-                    viewModel.send(.updateProfileImage(data))
+                    // 10MB = 10 * 1024 * 1024 bytes
+                    let maxSizeInBytes = 10 * 1024 * 1024
+                    if data.count > maxSizeInBytes {
+                        await MainActor.run {
+                            showImageSizeAlert = true
+                            selectedPhotoItem = nil
+                        }
+                    } else {
+                        viewModel.send(.updateProfileImage(data))
+                    }
                 }
             }
         }
@@ -84,6 +94,11 @@ public struct ProfileEditView: View {
             Button("확인", role: .cancel) {}
         } message: {
             Text("프로필 저장에 실패했습니다. 다시 시도해주세요.")
+        }
+        .alert("이미지 크기 초과", isPresented: $showImageSizeAlert) {
+            Button("확인", role: .cancel) {}
+        } message: {
+            Text("프로필 이미지는 10MB까지만 업로드할 수 있습니다.")
         }
     }
 }
