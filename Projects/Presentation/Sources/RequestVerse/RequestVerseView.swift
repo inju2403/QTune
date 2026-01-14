@@ -477,6 +477,7 @@ private extension RequestVerseView {
 
     private func handleRequestButtonTap() {
         Haptics.tap()
+        endTextEditing()
         Task {
             resultPhase = .loading
             isLoading = true
