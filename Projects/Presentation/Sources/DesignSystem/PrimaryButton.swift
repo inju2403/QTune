@@ -28,13 +28,13 @@ public struct PrimaryButton: View {
             action()
         } label: {
             HStack(spacing: DS.Spacing.m) {
-                if let icon {
+                if let icon, !icon.isEmpty {
                     Image(systemName: icon)
                 }
                 Text(title)
                     .font(DS.Font.titleM())
             }
-            .padding(.vertical, DS.Spacing.l)
+            .padding(.vertical, DS.Spacing.m)
             .padding(.horizontal, DS.Spacing.xl)
             .background(
                 RoundedRectangle(cornerRadius: DS.Radius.pill)

@@ -218,7 +218,7 @@ public struct QTEditorWizardView: View {
                                 .fill(
                                     viewModel.state.isCurrentStepValid ?
                                     LinearGradient(
-                                        colors: [DS.Color.mocha, DS.Color.deepCocoa],
+                                        colors: [DS.Color.gold.opacity(0.95), DS.Color.gold],
                                         startPoint: .topLeading,
                                         endPoint: .bottomTrailing
                                     ) :
@@ -229,7 +229,7 @@ public struct QTEditorWizardView: View {
                                     )
                                 )
                                 .shadow(
-                                    color: viewModel.state.isCurrentStepValid ? DS.Color.mocha.opacity(0.3) : Color.clear,
+                                    color: viewModel.state.isCurrentStepValid ? DS.Color.gold.opacity(0.3) : Color.clear,
                                     radius: 8,
                                     y: 4
                                 )

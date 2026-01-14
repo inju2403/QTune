@@ -446,6 +446,7 @@ private extension RequestVerseView {
         } label: {
             ctaButtonLabel
         }
+        .buttonStyle(.plain)
         .disabled(!viewModel.state.isValidInput)
         .animation(.easeInOut(duration: 0.2), value: viewModel.state.isValidInput)
         .padding(.top, 4)
@@ -456,8 +457,6 @@ private extension RequestVerseView {
     @ViewBuilder
     private var ctaButtonLabel: some View {
         let isValid = viewModel.state.isValidInput
-        let bgColor = isValid ? Color(hex: "#8B7355") : Color.gray.opacity(0.4)
-        let shadowColor = isValid ? Color.black.opacity(0.08) : Color.clear
 
         HStack(spacing: 8) {
             Image(systemName: "sparkles")
@@ -470,9 +469,25 @@ private extension RequestVerseView {
         .padding(.vertical, 16)
         .background(
             RoundedRectangle(cornerRadius: 14)
-                .fill(bgColor)
+                .fill(
+                    isValid ?
+                    LinearGradient(
+                        colors: [Color(hex: "#9B8265"), Color(hex: "#8B7355")],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    ) :
+                    LinearGradient(
+                        colors: [Color.gray.opacity(0.4), Color.gray.opacity(0.4)],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    )
+                )
         )
-        .shadow(color: shadowColor, radius: 8, y: 3)
+        .shadow(
+            color: isValid ? Color(hex: "#8B7355").opacity(0.3) : Color.clear,
+            radius: 8,
+            y: 3
+        )
     }
 
     private func handleRequestButtonTap() {

@@ -273,12 +273,13 @@ private extension QTEditorView {
     func saveButton() -> some View {
         PrimaryButton(
             title: "저장",
-            icon: "checkmark.circle.fill"
+            icon: ""
         ) {
             Haptics.tap()
             viewModel.send(.saveQT(draft))
         }
-        .padding(DS.Spacing.l)
+        .padding(.horizontal, DS.Spacing.l)
+        .padding(.vertical, DS.Spacing.s)
     }
 }
 
