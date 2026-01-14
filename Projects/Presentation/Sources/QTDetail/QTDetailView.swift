@@ -48,41 +48,45 @@ public struct QTDetailView: View {
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItemGroup(placement: .navigationBarTrailing) {
-                // 즐겨찾기
-                Button {
-                    Haptics.tap()
-                    viewModel.send(.toggleFavorite)
-                } label: {
-                    Image(systemName: viewModel.state.qt.isFavorite ? "star.fill" : "star")
-                        .foregroundStyle(viewModel.state.qt.isFavorite ? DS.Color.gold : DS.Color.textSecondary)
-                }
-                .animation(Motion.press, value: viewModel.state.qt.isFavorite)
-
-                // 메뉴
-                Menu {
+                HStack(spacing: 12) {
+                    // 즐겨찾기
                     Button {
                         Haptics.tap()
-                        viewModel.send(.showEditSheet(true))
+                        viewModel.send(.toggleFavorite)
                     } label: {
-                        Label("편집", systemImage: "pencil")
+                        Image(systemName: viewModel.state.qt.isFavorite ? "star.fill" : "star")
+                            .foregroundStyle(viewModel.state.qt.isFavorite ? DS.Color.gold : DS.Color.textSecondary)
                     }
+                    .animation(Motion.press, value: viewModel.state.qt.isFavorite)
 
+                    // 공유
                     Button {
                         Haptics.tap()
                         viewModel.send(.prepareShare)
                     } label: {
-                        Label("공유", systemImage: "square.and.arrow.up")
+                        Image(systemName: "square.and.arrow.up")
+                            .foregroundStyle(DS.Color.textSecondary)
                     }
 
-                    Button(role: .destructive) {
-                        Haptics.tap()
-                        viewModel.send(.confirmDelete)
+                    // 메뉴
+                    Menu {
+                        Button {
+                            Haptics.tap()
+                            viewModel.send(.showEditSheet(true))
+                        } label: {
+                            Label("편집", systemImage: "pencil")
+                        }
+
+                        Button(role: .destructive) {
+                            Haptics.tap()
+                            viewModel.send(.confirmDelete)
+                        } label: {
+                            Label("삭제", systemImage: "trash")
+                        }
                     } label: {
-                        Label("삭제", systemImage: "trash")
+                        Image(systemName: "ellipsis.circle")
+                            .foregroundStyle(DS.Color.textSecondary)
                     }
-                } label: {
-                    Image(systemName: "ellipsis.circle")
-                        .foregroundStyle(DS.Color.textSecondary)
                 }
             }
         }
