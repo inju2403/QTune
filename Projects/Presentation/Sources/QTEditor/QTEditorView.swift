@@ -184,7 +184,7 @@ private extension QTEditorView {
                     get: { viewModel.state.actsTemplate.adoration },
                     set: { viewModel.send(.updateACTSAdoration($0)) }
                 ),
-                placeholder: "이 말씀에서 느껴지는 메시지나 가치를 적어보세요."
+                placeholder: "하나님의 어떤 모습이 드러나나요? 그분께 찬양과 경배를 표현해보세요."
             )
 
             EditableVerseCard(
@@ -193,7 +193,7 @@ private extension QTEditorView {
                     get: { viewModel.state.actsTemplate.confession },
                     set: { viewModel.send(.updateACTSConfession($0)) }
                 ),
-                placeholder: "말씀을 통해 돌아보고 싶은 나의 모습을 적어보세요."
+                placeholder: "말씀 앞에서 돌아봐야 할 죄나 부족함이 있나요? 솔직히 고백해보세요."
             )
 
             EditableVerseCard(
@@ -202,7 +202,7 @@ private extension QTEditorView {
                     get: { viewModel.state.actsTemplate.thanksgiving },
                     set: { viewModel.send(.updateACTSThanksgiving($0)) }
                 ),
-                placeholder: "이 말씀이 떠올리게 한 감사한 일을 적어보세요."
+                placeholder: "하나님이 베푸신 구체적인 은혜와 축복에 감사를 표현해보세요."
             )
 
             EditableVerseCard(
@@ -211,7 +211,7 @@ private extension QTEditorView {
                     get: { viewModel.state.actsTemplate.supplication },
                     set: { viewModel.send(.updateACTSSupplication($0)) }
                 ),
-                placeholder: "이 말씀처럼 살아가기 위해 필요한 도움을 적어보세요."
+                placeholder: "자신과 다른 사람들을 위해 하나님께 무엇을 간구하고 싶나요?"
             )
         }
     }
