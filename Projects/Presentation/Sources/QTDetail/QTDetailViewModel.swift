@@ -112,6 +112,15 @@ public final class QTDetailViewModel {
 
     // MARK: - Share Text Generation
     private func generateShareText() -> String {
+        // 사용자 호칭 생성
+        let userTitle: String
+        if let profile = userProfile {
+            let genderSuffix = profile.gender == .brother ? "형제" : "자매"
+            userTitle = "\(profile.nickname) \(genderSuffix) 님의 묵상"
+        } else {
+            userTitle = "나의 묵상"
+        }
+
         var text = """
         📖 \(state.qt.verse.id)
 
@@ -120,35 +129,42 @@ public final class QTDetailViewModel {
         """
 
         if let korean = state.qt.korean, !korean.isEmpty {
-            text += "\n\(korean)\n"
+            text += "\n💬 해설\n\(korean)\n"
         }
+
+        if let rationale = state.qt.rationale, !rationale.isEmpty {
+            text += "\n✨ 추천 이유\n\(rationale)\n"
+        }
+
+        text += "\n━━━━━━━━━━━━━━━━\n"
+        text += "📝 \(userTitle)\n\n"
 
         if state.qt.template == "SOAP" {
             if let observation = state.qt.soapObservation, !observation.isEmpty {
-                text += "\n🔎 관찰\n\(observation)\n"
+                text += "🔎 관찰\n\(observation)\n\n"
             }
             if let application = state.qt.soapApplication, !application.isEmpty {
-                text += "\n📝 적용\n\(application)\n"
+                text += "📝 적용\n\(application)\n\n"
             }
             if let prayer = state.qt.soapPrayer, !prayer.isEmpty {
-                text += "\n🙏 기도\n\(prayer)\n"
+                text += "🙏 기도\n\(prayer)\n\n"
             }
         } else {
             if let adoration = state.qt.actsAdoration, !adoration.isEmpty {
-                text += "\n✨ 찬양\n\(adoration)\n"
+                text += "✨ 경배\n\(adoration)\n\n"
             }
             if let confession = state.qt.actsConfession, !confession.isEmpty {
-                text += "\n💧 회개\n\(confession)\n"
+                text += "🧎‍♂️ 회개\n\(confession)\n\n"
             }
             if let thanksgiving = state.qt.actsThanksgiving, !thanksgiving.isEmpty {
-                text += "\n💚 감사\n\(thanksgiving)\n"
+                text += "🙏 감사\n\(thanksgiving)\n\n"
             }
             if let supplication = state.qt.actsSupplication, !supplication.isEmpty {
-                text += "\n🤲 간구\n\(supplication)\n"
+                text += "🤲 간구\n\(supplication)\n\n"
             }
         }
 
-        text += "\n- QTune에서 작성"
+        text += "- QTune에서 작성"
         return text
     }
 }
