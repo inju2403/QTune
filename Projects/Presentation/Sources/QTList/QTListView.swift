@@ -8,6 +8,12 @@
 import SwiftUI
 import Domain
 
+// MARK: - Notification Names
+
+extension Notification.Name {
+    static let qtDidChange = Notification.Name("qtDidChange")
+}
+
 public struct QTListView: View {
     @State private var viewModel: QTListViewModel
     @Binding var userProfile: UserProfile?
@@ -15,7 +21,7 @@ public struct QTListView: View {
     @State private var navigationPath = NavigationPath()
     @State private var scrollPosition: UUID?
     @SceneStorage("qt.list.scrollPosition") private var persistedScrollId: String?
-    @State private var hasLoaded = false  // 최초 1회 로드용 플래그
+    @State private var hasLoaded = false
 
     let detailViewModelFactory: (QuietTime) -> QTDetailViewModel
     let editorViewModelFactory: () -> QTEditorViewModel
@@ -148,15 +154,25 @@ public struct QTListView: View {
                 }
             }
             .onAppear {
-                // 최초 1회만 로드 (뒤로 돌아올 때는 재로드하지 않음)
+                // 최초 1회만 로드
                 if !hasLoaded {
                     hasLoaded = true
                     viewModel.send(.load)
                 }
 
-                // SceneStorage에서 복원
+                // SceneStorage에서 스크롤 위치 복원
                 if let persisted = persistedScrollId, let uuid = UUID(uuidString: persisted) {
                     scrollPosition = uuid
+                }
+            }
+            .onReceive(NotificationCenter.default.publisher(for: .qtDidChange)) { _ in
+                // QT 작성/수정/삭제 시 리스트 갱신
+                viewModel.send(.load)
+            }
+            .onChange(of: navigationPath.count) { oldCount, newCount in
+                // 상세/편집에서 돌아올 때 (navigationPath가 줄어들 때) 리스트 갱신
+                if newCount < oldCount {
+                    viewModel.send(.load)
                 }
             }
             .alert("기록 삭제", isPresented: Binding(

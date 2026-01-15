@@ -175,6 +175,9 @@ public final class QTEditorViewModel {
                 print("   ✅ Commit succeeded")
             }
 
+            // QT 변경 알림
+            NotificationCenter.default.post(name: .qtDidChange, object: nil)
+
             state.showSaveSuccessToast = true
         } catch {
             print("🔴 [QTEditorViewModel] Save failed: \(error)")
