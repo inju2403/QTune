@@ -103,8 +103,8 @@ public struct QTEditorWizardView: View {
                                     case .adoration:
                                         SingleFieldCard(
                                             title: "Adoration · 경배",
-                                            description: "하나님의 어떤 모습이 드러나나요? 그분께 찬양과 경배를 표현해보세요.",
-                                            placeholder: "이 말씀에서 드러난 하나님의 모습은?",
+                                            description: "말씀을 통해 드러난 하나님의 성품을 묵상하며 경배를 드려보세요.",
+                                            placeholder: "이 말씀에서 경배하고 싶은 하나님의 성품을 적어보세요.",
                                             text: Binding(
                                                 get: { viewModel.state.adoration },
                                                 set: { viewModel.send(.updateAdoration($0)) }
@@ -114,9 +114,9 @@ public struct QTEditorWizardView: View {
                                         )
                                     case .confession:
                                         SingleFieldCard(
-                                            title: "Confession · 고백",
-                                            description: "말씀 앞에서 돌아봐야 할 죄나 부족함이 있나요? 솔직히 고백해보세요.",
-                                            placeholder: "고백하고 싶은 것이 있나요?",
+                                            title: "Confession · 회개",
+                                            description: "말씀 앞에서 회개하고 싶은 마음이 있나요?",
+                                            placeholder: "회개하고 싶은 것을 적어보세요.",
                                             text: Binding(
                                                 get: { viewModel.state.confession },
                                                 set: { viewModel.send(.updateConfession($0)) }

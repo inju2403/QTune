@@ -93,6 +93,10 @@ public enum DS {
             .system(size: 22, weight: weight, design: .serif)  // 세리프로 변경
         }
 
+        public static func titleS(_ weight: SwiftUI.Font.Weight = .semibold) -> SwiftUI.Font {
+            .system(size: 19, weight: weight, design: .serif)  // 세리프로 변경
+        }
+
         public static func bodyL(_ weight: SwiftUI.Font.Weight = .regular) -> SwiftUI.Font {
             .system(size: 17, weight: weight, design: .default)  // 본문은 기본 산세리프
         }
