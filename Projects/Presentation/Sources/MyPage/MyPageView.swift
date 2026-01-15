@@ -141,15 +141,9 @@ private extension MyPageView {
 
             // 이름 + 성별
             if let profile = userProfile {
-                VStack(spacing: 4) {
-                    Text(profile.nickname)
-                        .font(DS.Font.titleL(.bold))
-                        .foregroundStyle(DS.Color.deepCocoa)
-
-                    Text(profile.gender.rawValue)
-                        .font(DS.Font.bodyM())
-                        .foregroundStyle(DS.Color.textSecondary)
-                }
+                Text("\(profile.nickname) \(profile.gender.rawValue)님")
+                    .font(DS.Font.titleL(.bold))
+                    .foregroundStyle(DS.Color.deepCocoa)
             }
         }
         .frame(maxWidth: .infinity)
