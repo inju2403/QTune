@@ -68,10 +68,10 @@ public struct RequestVerseView: View {
                             .frame(width: 70, height: 70)
                             .clipShape(RoundedRectangle(cornerRadius: 16))
                             .shadow(color: .black.opacity(0.15), radius: 10, y: 5)
-                            .padding(.top, 8)
-                            .padding(.bottom, 24)
+                            .padding(.top, 4)
+                            .padding(.bottom, 16)
 
-                        VStack(alignment: .leading, spacing: 20) {
+                        VStack(alignment: .leading, spacing: 16) {
                             draftBanner()
                             descriptionSection()
                             inputSection()
@@ -246,12 +246,12 @@ private extension RequestVerseView {
     }
 
     func descriptionSection() -> some View {
-        VStack(alignment: .center, spacing: 16) {
+        VStack(alignment: .center, spacing: 12) {
             // 프로필이 있으면 실제 값, 없으면 기본값 표시 (깜빡임 방지)
             let nickname = userProfile?.nickname ?? "형제"
             let gender = userProfile?.gender.rawValue ?? "님"
 
-            VStack(spacing: 12) {
+            VStack(spacing: 8) {
                 Text("\(nickname) \(gender)님")
                     .font(.system(size: 32, weight: .bold, design: .serif))
                     .foregroundStyle(DS.Color.deepCocoa)
@@ -261,29 +261,28 @@ private extension RequestVerseView {
                     .font(.system(size: 16, weight: .light, design: .rounded))
                     .foregroundStyle(DS.Color.textSecondary)
                     .multilineTextAlignment(.center)
-                    .lineSpacing(5)
+                    .lineSpacing(4)
 
                 Text("글로 알려주시면 \(nickname) \(gender)님에게\n오늘의 말씀을 추천해드릴게요")
                     .font(.system(size: 14, weight: .regular, design: .rounded))
                     .foregroundStyle(DS.Color.textSecondary.opacity(0.8))
                     .multilineTextAlignment(.center)
-                    .lineSpacing(5)
+                    .lineSpacing(4)
             }
         }
         .frame(maxWidth: .infinity)
-        .padding(.vertical, 8)
+        .padding(.vertical, 4)
     }
 
     func inputSection() -> some View {
         // 단일 통합 입력 필드
-        VStack(alignment: .leading, spacing: 12) {
+        VStack(alignment: .leading, spacing: 8) {
             // 제목
             Text("어떤 내용이든 좋아요.\n오늘 느낀 감정, 생각 등을 공유해주세요.")
                 .font(.system(size: 15, weight: .medium, design: .rounded))
                 .foregroundStyle(Color(hex: "#6B6B6B"))
                 .multilineTextAlignment(.leading)
                 .lineSpacing(4)
-                .padding(.bottom, 2)
 
             // 입력 영역
             unifiedInputArea()
@@ -296,7 +295,7 @@ private extension RequestVerseView {
                     .foregroundStyle(viewModel.state.moodText.count > 700 ? Color.red.opacity(0.7) : Color(hex: "#AFAFAF"))
             }
         }
-        .padding(24)
+        .padding(20)
         .background(
             RoundedRectangle(cornerRadius: 24)
                 .fill(DS.Color.canvas.opacity(0.9))
@@ -445,8 +444,8 @@ private extension RequestVerseView {
         .buttonStyle(.plain)
         .disabled(!viewModel.state.isValidInput)
         .animation(.easeInOut(duration: 0.2), value: viewModel.state.isValidInput)
-        .padding(.top, 4)
-        .padding(.bottom, 20)
+        .padding(.top, 2)
+        .padding(.bottom, 16)
         .id("ctaButton")
     }
 

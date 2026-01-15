@@ -24,13 +24,13 @@ public struct ResultView: View {
             CrossSunsetBackground()
 
             ScrollView {
-                VStack(alignment: .leading, spacing: 16) {
+                VStack(alignment: .leading, spacing: 12) {
                     // Title
                     Text("오늘의 말씀")
                         .font(.system(size: 32, weight: .semibold, design: .rounded))
                         .foregroundStyle(DS.Color.deepCocoa)
                         .shimmer()
-                        .padding(.top, 28)
+                        .padding(.top, 16)
                         .padding(.horizontal, 20)
 
                     // 영어 말씀
@@ -57,7 +57,7 @@ public struct ResultView: View {
                         }
                         Spacer()
                     }
-                    .padding(.bottom, 20)
+                    .padding(.bottom, 16)
                 }
             }
         }
@@ -96,7 +96,7 @@ private extension ResultView {
                 .font(DS.Font.verse(17, .regular))
                 .foregroundStyle(DS.Color.textPrimary)
                 .lineSpacing(6)
-                .padding(.bottom, 12)
+                .padding(.bottom, 8)
 
             // 번역본 표시 (좌측 정렬)
             HStack(spacing: 6) {
@@ -117,7 +117,7 @@ private extension ResultView {
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(24)
+        .padding(20)
         .background(
             RoundedRectangle(cornerRadius: DS.Radius.m)
                 .fill(DS.Color.canvas.opacity(0.9))
@@ -157,7 +157,7 @@ private extension ResultView {
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(24)
+        .padding(20)
         .background(
             RoundedRectangle(cornerRadius: DS.Radius.m)
                 .fill(DS.Color.canvas.opacity(0.9))
@@ -182,7 +182,7 @@ private extension ResultView {
                 .lineSpacing(6)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(24)
+        .padding(20)
         .background(
             RoundedRectangle(cornerRadius: DS.Radius.m)
                 .fill(DS.Color.canvas.opacity(0.9))
