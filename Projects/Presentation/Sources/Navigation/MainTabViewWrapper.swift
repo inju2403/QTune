@@ -72,6 +72,11 @@ public struct MainTabViewWrapper: View {
                     getUserProfileUseCase: getUserProfileUseCase,
                     saveUserProfileUseCase: saveUserProfileUseCase,
                     onNavigateToRecordTab: onNavigateToRecordTab,
+                    onNavigateToMyPage: {
+                        withAnimation(.easeInOut(duration: 0.35)) {
+                            selectedTab = 2
+                        }
+                    },
                     isLoading: $isRequestVerseLoading,
                     userProfile: $userProfile
                 )
@@ -91,7 +96,12 @@ public struct MainTabViewWrapper: View {
                 detailViewModelFactory: detailViewModelFactory,
                 editorViewModelFactory: editorViewModelFactory,
                 profileEditViewModelFactory: profileEditViewModelFactory,
-                getUserProfileUseCase: getUserProfileUseCase
+                getUserProfileUseCase: getUserProfileUseCase,
+                onNavigateToMyPage: {
+                    withAnimation(.easeInOut(duration: 0.35)) {
+                        selectedTab = 2
+                    }
+                }
             )
             .tabItem {
                 Label("기록", systemImage: "book.closed")
@@ -101,10 +111,25 @@ public struct MainTabViewWrapper: View {
                 insertion: .move(edge: .trailing).combined(with: .opacity),
                 removal: .move(edge: .leading).combined(with: .opacity)
             ))
+
+            MyPageView(
+                viewModel: MyPageViewModel(),
+                userProfile: $userProfile,
+                profileEditViewModelFactory: profileEditViewModelFactory,
+                getUserProfileUseCase: getUserProfileUseCase
+            )
+            .tabItem {
+                Label("마이페이지", systemImage: "person.circle")
+            }
+            .tag(2)
+            .transition(.asymmetric(
+                insertion: .move(edge: .trailing).combined(with: .opacity),
+                removal: .move(edge: .leading).combined(with: .opacity)
+            ))
         }
         .allowsHitTesting(!isRequestVerseLoading)
         .accentColor(DS.Color.mocha)
-        .animation(.easeInOut(duration: 0.35), value: selectedTab)
+        .animation(.spring(response: 0.4, dampingFraction: 0.85), value: selectedTab)
         .onAppear {
             let appearance = UITabBarAppearance()
             appearance.configureWithOpaqueBackground()

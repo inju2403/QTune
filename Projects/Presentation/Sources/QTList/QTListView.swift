@@ -17,7 +17,6 @@ extension Notification.Name {
 public struct QTListView: View {
     @State private var viewModel: QTListViewModel
     @Binding var userProfile: UserProfile?
-    @State private var showProfileEdit = false
     @State private var navigationPath = NavigationPath()
     @State private var scrollPosition: UUID?
     @SceneStorage("qt.list.scrollPosition") private var persistedScrollId: String?
@@ -27,6 +26,7 @@ public struct QTListView: View {
     let editorViewModelFactory: () -> QTEditorViewModel
     let profileEditViewModelFactory: (UserProfile?) -> ProfileEditViewModel
     let getUserProfileUseCase: GetUserProfileUseCase
+    let onNavigateToMyPage: () -> Void
 
     public init(
         viewModel: QTListViewModel,
@@ -34,7 +34,8 @@ public struct QTListView: View {
         detailViewModelFactory: @escaping (QuietTime) -> QTDetailViewModel,
         editorViewModelFactory: @escaping () -> QTEditorViewModel,
         profileEditViewModelFactory: @escaping (UserProfile?) -> ProfileEditViewModel,
-        getUserProfileUseCase: GetUserProfileUseCase
+        getUserProfileUseCase: GetUserProfileUseCase,
+        onNavigateToMyPage: @escaping () -> Void
     ) {
         _viewModel = State(wrappedValue: viewModel)
         _userProfile = userProfile
@@ -42,6 +43,7 @@ public struct QTListView: View {
         self.editorViewModelFactory = editorViewModelFactory
         self.profileEditViewModelFactory = profileEditViewModelFactory
         self.getUserProfileUseCase = getUserProfileUseCase
+        self.onNavigateToMyPage = onNavigateToMyPage
     }
 
     public var body: some View {
@@ -148,7 +150,7 @@ public struct QTListView: View {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     ProfileHeaderView(profile: userProfile) {
                         Haptics.tap()
-                        showProfileEdit = true
+                        onNavigateToMyPage()
                     }
                     .id(userProfile?.nickname ?? "default")
                 }
@@ -181,21 +183,6 @@ public struct QTListView: View {
                 }
             } message: {
                 Text("이 기록을 삭제할까요? 이 작업은 되돌릴 수 없습니다.")
-            }
-            .sheet(isPresented: $showProfileEdit, onDismiss: {
-                Task {
-                    if let profile = try? await getUserProfileUseCase.execute() {
-                        await MainActor.run {
-                            userProfile = profile
-                        }
-                    }
-                }
-            }) {
-                NavigationStack {
-                    ProfileEditView(
-                        viewModel: profileEditViewModelFactory(userProfile)
-                    )
-                }
             }
         }
     }

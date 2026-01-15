@@ -14,7 +14,6 @@ public struct RequestVerseView: View {
     @State private var showConflict = false
     @State private var resultPhase: ResultPhase = .idle
     @Binding var userProfile: UserProfile?
-    @State private var showProfileEdit = false
     @Binding var path: NavigationPath
     @Binding var isLoading: Bool
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
@@ -27,6 +26,7 @@ public struct RequestVerseView: View {
     let getUserProfileUseCase: GetUserProfileUseCase
     let saveUserProfileUseCase: SaveUserProfileUseCase
     let onNavigateToRecordTab: () -> Void
+    let onNavigateToMyPage: () -> Void
 
     // MARK: - Init
     public init(
@@ -37,6 +37,7 @@ public struct RequestVerseView: View {
         getUserProfileUseCase: GetUserProfileUseCase,
         saveUserProfileUseCase: SaveUserProfileUseCase,
         onNavigateToRecordTab: @escaping () -> Void,
+        onNavigateToMyPage: @escaping () -> Void,
         isLoading: Binding<Bool>,
         userProfile: Binding<UserProfile?>
     ) {
@@ -49,6 +50,7 @@ public struct RequestVerseView: View {
         self.getUserProfileUseCase = getUserProfileUseCase
         self.saveUserProfileUseCase = saveUserProfileUseCase
         self.onNavigateToRecordTab = onNavigateToRecordTab
+        self.onNavigateToMyPage = onNavigateToMyPage
     }
 
     // MARK: - Body
@@ -105,7 +107,7 @@ public struct RequestVerseView: View {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     ProfileHeaderView(profile: userProfile) {
                         Haptics.tap()
-                        showProfileEdit = true
+                        onNavigateToMyPage()
                     }
                     .id(userProfile?.nickname ?? "default")
                 }
@@ -124,10 +126,6 @@ public struct RequestVerseView: View {
         }
         .onAppear {
             viewModel.send(.onAppear(userId: "me"))
-            // 프로필이 아직 없으면 로드 (fallback)
-            if userProfile == nil {
-                loadUserProfile()
-            }
         }
         .onReceive(viewModel.effect) { eff in
             switch eff {
@@ -193,9 +191,6 @@ public struct RequestVerseView: View {
             Button("취소", role: .cancel) {}
         } message: {
             Text("새로 시작하면 기존 초안은 삭제돼요. 어떻게 할까요?")
-        }
-        .sheet(isPresented: $showProfileEdit) {
-            profileEditSheet()
         }
     }
 }
@@ -501,33 +496,6 @@ private extension RequestVerseView {
                 nickname: userProfile?.nickname,
                 gender: userProfile?.gender.rawValue
             ))
-        }
-    }
-
-    private func loadUserProfile() {
-        Task {
-            do {
-                let profile = try await getUserProfileUseCase.execute()
-                await MainActor.run {
-                    userProfile = profile
-                }
-            } catch {
-                print("Failed to load user profile: \(error)")
-            }
-        }
-    }
-
-    @ViewBuilder
-    private func profileEditSheet() -> some View {
-        NavigationStack {
-            ProfileEditViewWrapper(
-                userProfile: userProfile,
-                saveUserProfileUseCase: saveUserProfileUseCase,
-                onSaveComplete: {
-                    loadUserProfile()
-                    showProfileEdit = false
-                }
-            )
         }
     }
 
