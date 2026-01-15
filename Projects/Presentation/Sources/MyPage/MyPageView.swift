@@ -100,7 +100,7 @@ public struct MyPageView: View {
             )) {
                 Button("확인", role: .cancel) {}
             } message: {
-                Text("현재 버전: 1.1.0")
+                Text("현재 버전: 1.2.0")
             }
         }
     }
