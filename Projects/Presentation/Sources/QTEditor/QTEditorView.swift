@@ -121,9 +121,9 @@ private extension QTEditorView {
                 }
             }
 
-            // 추천 이유
+            // 이 말씀이 주어진 이유
             if let rationale = draft.rationale, !rationale.isEmpty {
-                VerseCardView(title: "추천 이유") {
+                VerseCardView(title: "이 말씀이 주어진 이유") {
                     Text(rationale)
                         .lineSpacing(4)
                 }
@@ -184,7 +184,7 @@ private extension QTEditorView {
                     get: { viewModel.state.actsTemplate.adoration },
                     set: { viewModel.send(.updateACTSAdoration($0)) }
                 ),
-                placeholder: "하나님의 어떤 모습이 드러나나요? 그분께 찬양과 경배를 표현해보세요."
+                placeholder: "말씀을 통해 드러난 하나님의 성품을 묵상하며 경배를 드려보세요."
             )
 
             EditableVerseCard(
@@ -193,7 +193,7 @@ private extension QTEditorView {
                     get: { viewModel.state.actsTemplate.confession },
                     set: { viewModel.send(.updateACTSConfession($0)) }
                 ),
-                placeholder: "말씀 앞에서 돌아봐야 할 죄나 부족함이 있나요? 솔직히 고백해보세요."
+                placeholder: "말씀 앞에서 회개하고 싶은 마음이 있나요?"
             )
 
             EditableVerseCard(

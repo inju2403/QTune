@@ -205,9 +205,9 @@ private extension QTDetailView {
                 }
             }
 
-            // 추천 이유
+            // 이 말씀이 주어진 이유
             if let rationale = viewModel.state.qt.rationale, !rationale.isEmpty {
-                VerseCardView(title: "추천 이유") {
+                VerseCardView(title: "이 말씀이 주어진 이유") {
                     Text(rationale)
                         .lineSpacing(4)
                 }

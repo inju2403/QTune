@@ -121,7 +121,9 @@ public final class QTDetailViewModel {
             userTitle = "나의 묵상"
         }
 
-        var text = """
+        var text = "📝 \(userTitle)\n\n"
+
+        text += """
         📖 \(state.qt.verse.id)
 
         \(state.qt.verse.text)
@@ -133,11 +135,10 @@ public final class QTDetailViewModel {
         }
 
         if let rationale = state.qt.rationale, !rationale.isEmpty {
-            text += "\n✨ 추천 이유\n\(rationale)\n"
+            text += "\n✨ 이 말씀이 주어진 이유\n\(rationale)\n"
         }
 
-        text += "\n━━━━━━━━━━━━━━━━\n"
-        text += "📝 \(userTitle)\n\n"
+        text += "\n━━━━━━━━━━━━━━━━\n\n"
 
         if state.qt.template == "SOAP" {
             if let observation = state.qt.soapObservation, !observation.isEmpty {
