@@ -93,9 +93,22 @@ public struct OnboardingView: View {
                                         RoundedRectangle(cornerRadius: DS.Radius.s)
                                             .fill(
                                                 viewModel.state.selectedGender == .brother
-                                                    ? DS.Color.mocha
-                                                    : DS.Color.canvas
+                                                    ? LinearGradient(
+                                                        colors: [DS.Color.gold.opacity(0.95), DS.Color.gold],
+                                                        startPoint: .topLeading,
+                                                        endPoint: .bottomTrailing
+                                                    )
+                                                    : LinearGradient(
+                                                        colors: [DS.Color.canvas, DS.Color.canvas],
+                                                        startPoint: .topLeading,
+                                                        endPoint: .bottomTrailing
+                                                    )
                                             )
+                                    )
+                                    .shadow(
+                                        color: viewModel.state.selectedGender == .brother ? DS.Color.gold.opacity(0.3) : .clear,
+                                        radius: 8,
+                                        y: 4
                                     )
                             }
                             .buttonStyle(.plain)
@@ -118,9 +131,22 @@ public struct OnboardingView: View {
                                         RoundedRectangle(cornerRadius: DS.Radius.s)
                                             .fill(
                                                 viewModel.state.selectedGender == .sister
-                                                    ? DS.Color.mocha
-                                                    : DS.Color.canvas
+                                                    ? LinearGradient(
+                                                        colors: [DS.Color.gold.opacity(0.95), DS.Color.gold],
+                                                        startPoint: .topLeading,
+                                                        endPoint: .bottomTrailing
+                                                    )
+                                                    : LinearGradient(
+                                                        colors: [DS.Color.canvas, DS.Color.canvas],
+                                                        startPoint: .topLeading,
+                                                        endPoint: .bottomTrailing
+                                                    )
                                             )
+                                    )
+                                    .shadow(
+                                        color: viewModel.state.selectedGender == .sister ? DS.Color.gold.opacity(0.3) : .clear,
+                                        radius: 8,
+                                        y: 4
                                     )
                             }
                             .buttonStyle(.plain)
@@ -160,13 +186,13 @@ public struct OnboardingView: View {
                                 LinearGradient(
                                     colors: viewModel.state.nickname.isEmpty
                                         ? [DS.Color.textSecondary, DS.Color.textSecondary]
-                                        : [DS.Color.mocha, DS.Color.deepCocoa],
+                                        : [DS.Color.gold.opacity(0.95), DS.Color.gold],
                                     startPoint: .topLeading,
                                     endPoint: .bottomTrailing
                                 )
                             )
                             .shadow(
-                                color: viewModel.state.nickname.isEmpty ? .clear : DS.Color.mocha.opacity(0.3),
+                                color: viewModel.state.nickname.isEmpty ? .clear : DS.Color.gold.opacity(0.3),
                                 radius: 8,
                                 y: 4
                             )
