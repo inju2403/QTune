@@ -100,7 +100,7 @@ public struct MyPageView: View {
             )) {
                 Button("확인", role: .cancel) {}
             } message: {
-                Text("현재 버전: 1.2.0")
+                Text("현재 버전: \(appVersion)")
             }
         }
     }
@@ -196,5 +196,15 @@ private extension MyPageView {
             return
         }
         openURL(url)
+    }
+
+    var appVersion: String {
+        // App Bundle에서 버전 정보 읽기
+        guard let appBundle = Bundle.allBundles.first(where: { $0.bundleIdentifier == "com.inju.qtune" }),
+              let version = appBundle.infoDictionary?["CFBundleShortVersionString"] as? String,
+              let build = appBundle.infoDictionary?["CFBundleVersion"] as? String else {
+            return "1.2.0 (120)"
+        }
+        return "\(version) (\(build))"
     }
 }
