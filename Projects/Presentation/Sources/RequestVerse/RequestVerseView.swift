@@ -167,12 +167,13 @@ public struct RequestVerseView: View {
                 switch route {
                 case .result(let result):
                     buildResultView(result: result)
-                case .editor(let template, let verseEN, let verseRef, let explKR, let verse):
+                case .editor(let template, let verseEN, let verseRef, let explKR, let rationale, let verse):
                     buildEditorWizardView(
                         template: template,
                         verseEN: verseEN,
                         verseRef: verseRef,
                         explKR: explKR,
+                        rationale: rationale,
                         verse: verse
                     )
                 }
@@ -544,6 +545,7 @@ private extension RequestVerseView {
         verseEN: String,
         verseRef: String,
         explKR: String,
+        rationale: String,
         verse: Verse
     ) -> some View {
         QTEditorWizardViewWrapper(
@@ -551,6 +553,7 @@ private extension RequestVerseView {
             verseEN: verseEN,
             verseRef: verseRef,
             explKR: explKR,
+            rationale: rationale,
             verse: verse,
             commitQTUseCase: commitQTUseCase,
             session: session,
@@ -594,6 +597,7 @@ struct ResultViewWrapper: View {
                 verseEN: result.verse.text,
                 verseRef: result.verseRef,
                 explKR: result.korean,
+                rationale: result.rationale,
                 verse: result.verse
             )
             path.append(editorRoute)
@@ -607,6 +611,7 @@ struct QTEditorWizardViewWrapper: View {
     let verseEN: String
     let verseRef: String
     let explKR: String
+    let rationale: String
     let verse: Verse
     let commitQTUseCase: CommitQTUseCase
     let session: UserSession
@@ -618,6 +623,7 @@ struct QTEditorWizardViewWrapper: View {
             verseEN: verseEN,
             verseRef: verseRef,
             explKR: explKR,
+            rationale: rationale,
             verse: verse
         )
         let wizardViewModel = QTEditorWizardViewModel(
