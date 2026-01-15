@@ -169,12 +169,6 @@ public struct QTListView: View {
                 // QT 작성/수정/삭제 시 리스트 갱신
                 viewModel.send(.load)
             }
-            .onChange(of: navigationPath.count) { oldCount, newCount in
-                // 상세/편집에서 돌아올 때 (navigationPath가 줄어들 때) 리스트 갱신
-                if newCount < oldCount {
-                    viewModel.send(.load)
-                }
-            }
             .alert("기록 삭제", isPresented: Binding(
                 get: { viewModel.state.showDeleteAlert },
                 set: { _ in }
