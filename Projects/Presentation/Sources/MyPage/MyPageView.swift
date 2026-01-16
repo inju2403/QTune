@@ -201,10 +201,9 @@ private extension MyPageView {
     var appVersion: String {
         // App Bundle에서 버전 정보 읽기
         guard let appBundle = Bundle.allBundles.first(where: { $0.bundleIdentifier == "com.inju.qtune" }),
-              let version = appBundle.infoDictionary?["CFBundleShortVersionString"] as? String,
-              let build = appBundle.infoDictionary?["CFBundleVersion"] as? String else {
-            return "1.2.0 (120)"
+              let version = appBundle.infoDictionary?["CFBundleShortVersionString"] as? String else {
+            return "1.2.1"
         }
-        return "\(version) (\(build))"
+        return version
     }
 }
