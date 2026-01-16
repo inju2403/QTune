@@ -34,10 +34,10 @@ public struct QTuneWoodCrossPulse: View {
 
 /// 목재 질감/하이라이트/그림자를 합성한 십자가 (세로길고 좌우 짧음)
 private struct WoodCrossBeveled: View {
-    // 컬러 프리셋 (골드)
-    private let woodDark  = Color(red: 0.71, green: 0.58, blue: 0.38)  // DS.Color.gold 어두운 톤
-    private let wood      = Color(red: 0.79, green: 0.66, blue: 0.46)  // DS.Color.gold 중간 톤
-    private let woodLite  = Color(red: 0.87, green: 0.74, blue: 0.54)  // DS.Color.gold 밝은 톤
+    // Bronze Gold
+    private let woodDark = Color(red: 0.43, green: 0.32, blue: 0.18)
+    private let wood     = Color(red: 0.58, green: 0.43, blue: 0.22)
+    private let woodLite = Color(red: 0.76, green: 0.60, blue: 0.34)
 
     var body: some View {
         GeometryReader { geo in
