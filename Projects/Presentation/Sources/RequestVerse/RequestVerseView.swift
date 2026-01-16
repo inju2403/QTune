@@ -14,7 +14,6 @@ public struct RequestVerseView: View {
     @State private var showConflict = false
     @State private var resultPhase: ResultPhase = .idle
     @Binding var userProfile: UserProfile?
-    @State private var showProfileEdit = false
     @Binding var path: NavigationPath
     @Binding var isLoading: Bool
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
@@ -27,6 +26,7 @@ public struct RequestVerseView: View {
     let getUserProfileUseCase: GetUserProfileUseCase
     let saveUserProfileUseCase: SaveUserProfileUseCase
     let onNavigateToRecordTab: () -> Void
+    let onNavigateToMyPage: () -> Void
 
     // MARK: - Init
     public init(
@@ -37,6 +37,7 @@ public struct RequestVerseView: View {
         getUserProfileUseCase: GetUserProfileUseCase,
         saveUserProfileUseCase: SaveUserProfileUseCase,
         onNavigateToRecordTab: @escaping () -> Void,
+        onNavigateToMyPage: @escaping () -> Void,
         isLoading: Binding<Bool>,
         userProfile: Binding<UserProfile?>
     ) {
@@ -49,6 +50,7 @@ public struct RequestVerseView: View {
         self.getUserProfileUseCase = getUserProfileUseCase
         self.saveUserProfileUseCase = saveUserProfileUseCase
         self.onNavigateToRecordTab = onNavigateToRecordTab
+        self.onNavigateToMyPage = onNavigateToMyPage
     }
 
     // MARK: - Body
@@ -66,10 +68,10 @@ public struct RequestVerseView: View {
                             .frame(width: 70, height: 70)
                             .clipShape(RoundedRectangle(cornerRadius: 16))
                             .shadow(color: .black.opacity(0.15), radius: 10, y: 5)
-                            .padding(.top, 8)
-                            .padding(.bottom, 24)
+                            .padding(.top, 4)
+                            .padding(.bottom, 16)
 
-                        VStack(alignment: .leading, spacing: 20) {
+                        VStack(alignment: .leading, spacing: 16) {
                             draftBanner()
                             descriptionSection()
                             inputSection()
@@ -105,7 +107,7 @@ public struct RequestVerseView: View {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     ProfileHeaderView(profile: userProfile) {
                         Haptics.tap()
-                        showProfileEdit = true
+                        onNavigateToMyPage()
                     }
                     .id(userProfile?.nickname ?? "default")
                 }
@@ -124,10 +126,6 @@ public struct RequestVerseView: View {
         }
         .onAppear {
             viewModel.send(.onAppear(userId: "me"))
-            // 프로필이 아직 없으면 로드 (fallback)
-            if userProfile == nil {
-                loadUserProfile()
-            }
         }
         .onReceive(viewModel.effect) { eff in
             switch eff {
@@ -167,12 +165,13 @@ public struct RequestVerseView: View {
                 switch route {
                 case .result(let result):
                     buildResultView(result: result)
-                case .editor(let template, let verseEN, let verseRef, let explKR, let verse):
+                case .editor(let template, let verseEN, let verseRef, let explKR, let rationale, let verse):
                     buildEditorWizardView(
                         template: template,
                         verseEN: verseEN,
                         verseRef: verseRef,
                         explKR: explKR,
+                        rationale: rationale,
                         verse: verse
                     )
                 }
@@ -192,9 +191,6 @@ public struct RequestVerseView: View {
             Button("취소", role: .cancel) {}
         } message: {
             Text("새로 시작하면 기존 초안은 삭제돼요. 어떻게 할까요?")
-        }
-        .sheet(isPresented: $showProfileEdit) {
-            profileEditSheet()
         }
     }
 }
@@ -250,12 +246,12 @@ private extension RequestVerseView {
     }
 
     func descriptionSection() -> some View {
-        VStack(alignment: .center, spacing: 16) {
+        VStack(alignment: .center, spacing: 12) {
             // 프로필이 있으면 실제 값, 없으면 기본값 표시 (깜빡임 방지)
             let nickname = userProfile?.nickname ?? "형제"
             let gender = userProfile?.gender.rawValue ?? "님"
 
-            VStack(spacing: 12) {
+            VStack(spacing: 8) {
                 Text("\(nickname) \(gender)님")
                     .font(.system(size: 32, weight: .bold, design: .serif))
                     .foregroundStyle(DS.Color.deepCocoa)
@@ -265,29 +261,28 @@ private extension RequestVerseView {
                     .font(.system(size: 16, weight: .light, design: .rounded))
                     .foregroundStyle(DS.Color.textSecondary)
                     .multilineTextAlignment(.center)
-                    .lineSpacing(5)
+                    .lineSpacing(4)
 
                 Text("글로 알려주시면 \(nickname) \(gender)님에게\n오늘의 말씀을 추천해드릴게요")
                     .font(.system(size: 14, weight: .regular, design: .rounded))
                     .foregroundStyle(DS.Color.textSecondary.opacity(0.8))
                     .multilineTextAlignment(.center)
-                    .lineSpacing(5)
+                    .lineSpacing(4)
             }
         }
         .frame(maxWidth: .infinity)
-        .padding(.vertical, 8)
+        .padding(.vertical, 4)
     }
 
     func inputSection() -> some View {
         // 단일 통합 입력 필드
-        VStack(alignment: .leading, spacing: 12) {
+        VStack(alignment: .leading, spacing: 8) {
             // 제목
             Text("어떤 내용이든 좋아요.\n오늘 느낀 감정, 생각 등을 공유해주세요.")
                 .font(.system(size: 15, weight: .medium, design: .rounded))
                 .foregroundStyle(Color(hex: "#6B6B6B"))
                 .multilineTextAlignment(.leading)
                 .lineSpacing(4)
-                .padding(.bottom, 2)
 
             // 입력 영역
             unifiedInputArea()
@@ -300,7 +295,7 @@ private extension RequestVerseView {
                     .foregroundStyle(viewModel.state.moodText.count > 700 ? Color.red.opacity(0.7) : Color(hex: "#AFAFAF"))
             }
         }
-        .padding(24)
+        .padding(20)
         .background(
             RoundedRectangle(cornerRadius: 24)
                 .fill(DS.Color.canvas.opacity(0.9))
@@ -446,18 +441,17 @@ private extension RequestVerseView {
         } label: {
             ctaButtonLabel
         }
+        .buttonStyle(.plain)
         .disabled(!viewModel.state.isValidInput)
         .animation(.easeInOut(duration: 0.2), value: viewModel.state.isValidInput)
-        .padding(.top, 4)
-        .padding(.bottom, 20)
+        .padding(.top, 2)
+        .padding(.bottom, 16)
         .id("ctaButton")
     }
 
     @ViewBuilder
     private var ctaButtonLabel: some View {
         let isValid = viewModel.state.isValidInput
-        let bgColor = isValid ? Color(hex: "#8B7355") : Color.gray.opacity(0.4)
-        let shadowColor = isValid ? Color.black.opacity(0.08) : Color.clear
 
         HStack(spacing: 8) {
             Image(systemName: "sparkles")
@@ -470,13 +464,30 @@ private extension RequestVerseView {
         .padding(.vertical, 16)
         .background(
             RoundedRectangle(cornerRadius: 14)
-                .fill(bgColor)
+                .fill(
+                    isValid ?
+                    LinearGradient(
+                        colors: [Color(hex: "#9B8265"), Color(hex: "#8B7355")],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    ) :
+                    LinearGradient(
+                        colors: [Color.gray.opacity(0.4), Color.gray.opacity(0.4)],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    )
+                )
         )
-        .shadow(color: shadowColor, radius: 8, y: 3)
+        .shadow(
+            color: isValid ? Color(hex: "#8B7355").opacity(0.3) : Color.clear,
+            radius: 8,
+            y: 3
+        )
     }
 
     private func handleRequestButtonTap() {
         Haptics.tap()
+        endTextEditing()
         Task {
             resultPhase = .loading
             isLoading = true
@@ -484,33 +495,6 @@ private extension RequestVerseView {
                 nickname: userProfile?.nickname,
                 gender: userProfile?.gender.rawValue
             ))
-        }
-    }
-
-    private func loadUserProfile() {
-        Task {
-            do {
-                let profile = try await getUserProfileUseCase.execute()
-                await MainActor.run {
-                    userProfile = profile
-                }
-            } catch {
-                print("Failed to load user profile: \(error)")
-            }
-        }
-    }
-
-    @ViewBuilder
-    private func profileEditSheet() -> some View {
-        NavigationStack {
-            ProfileEditViewWrapper(
-                userProfile: userProfile,
-                saveUserProfileUseCase: saveUserProfileUseCase,
-                onSaveComplete: {
-                    loadUserProfile()
-                    showProfileEdit = false
-                }
-            )
         }
     }
 
@@ -528,6 +512,7 @@ private extension RequestVerseView {
         verseEN: String,
         verseRef: String,
         explKR: String,
+        rationale: String,
         verse: Verse
     ) -> some View {
         QTEditorWizardViewWrapper(
@@ -535,6 +520,7 @@ private extension RequestVerseView {
             verseEN: verseEN,
             verseRef: verseRef,
             explKR: explKR,
+            rationale: rationale,
             verse: verse,
             commitQTUseCase: commitQTUseCase,
             session: session,
@@ -578,6 +564,7 @@ struct ResultViewWrapper: View {
                 verseEN: result.verse.text,
                 verseRef: result.verseRef,
                 explKR: result.korean,
+                rationale: result.rationale,
                 verse: result.verse
             )
             path.append(editorRoute)
@@ -591,6 +578,7 @@ struct QTEditorWizardViewWrapper: View {
     let verseEN: String
     let verseRef: String
     let explKR: String
+    let rationale: String
     let verse: Verse
     let commitQTUseCase: CommitQTUseCase
     let session: UserSession
@@ -602,6 +590,7 @@ struct QTEditorWizardViewWrapper: View {
             verseEN: verseEN,
             verseRef: verseRef,
             explKR: explKR,
+            rationale: rationale,
             verse: verse
         )
         let wizardViewModel = QTEditorWizardViewModel(

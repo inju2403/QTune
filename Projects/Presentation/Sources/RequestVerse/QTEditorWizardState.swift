@@ -15,6 +15,7 @@ public struct QTEditorWizardState: Equatable {
     public var verseEN: String
     public var verseRef: String
     public var explKR: String
+    public var rationale: String
     public var verse: Verse
 
     // 단계 관리
@@ -42,6 +43,7 @@ public struct QTEditorWizardState: Equatable {
         verseEN: String,
         verseRef: String,
         explKR: String,
+        rationale: String,
         verse: Verse,
         soapStep: SoapStep = .observation,
         actsStep: ActsStep = .adoration,
@@ -60,6 +62,7 @@ public struct QTEditorWizardState: Equatable {
         self.verseEN = verseEN
         self.verseRef = verseRef
         self.explKR = explKR
+        self.rationale = rationale
         self.verse = verse
         self.soapStep = soapStep
         self.actsStep = actsStep

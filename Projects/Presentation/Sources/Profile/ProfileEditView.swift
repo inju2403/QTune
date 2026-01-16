@@ -48,10 +48,7 @@ public struct ProfileEditView: View {
                     inputSection()
 
                     // 저장 버튼
-                    PrimaryCTAButton(title: "저장", icon: "checkmark") {
-                        Haptics.tap()
-                        viewModel.send(.saveProfile)
-                    }
+                    saveButton()
                     .padding(.top, 20)
 
                     Spacer()
@@ -257,6 +254,36 @@ private extension ProfileEditView {
                         lineWidth: viewModel.state.selectedGender == gender ? 2 : 1
                     )
             )
+        }
+        .buttonStyle(.plain)
+    }
+
+    @ViewBuilder
+    func saveButton() -> some View {
+        Button {
+            Haptics.tap()
+            viewModel.send(.saveProfile)
+        } label: {
+            Text("저장")
+                .font(.system(size: 17, weight: .bold))
+                .foregroundStyle(.white)
+                .frame(maxWidth: .infinity)
+                .frame(height: 50)
+                .background(
+                    RoundedRectangle(cornerRadius: 14)
+                        .fill(
+                            LinearGradient(
+                                colors: [DS.Color.gold.opacity(0.95), DS.Color.gold],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            )
+                        )
+                        .shadow(
+                            color: DS.Color.gold.opacity(0.3),
+                            radius: 8,
+                            y: 4
+                        )
+                )
         }
         .buttonStyle(.plain)
     }

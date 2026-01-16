@@ -43,7 +43,7 @@ public struct SOAPTemplate: Equatable {
 
 /// A.C.T.S 템플릿 상태
 public struct ACTSTemplate: Equatable {
-    public var adoration: String = ""        // A: 찬양
+    public var adoration: String = ""        // A: 경배
     public var confession: String = ""       // C: 회개
     public var thanksgiving: String = ""     // T: 감사
     public var supplication: String = ""     // S: 간구

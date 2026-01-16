@@ -35,11 +35,11 @@ AI가 그 흐름에 맞는 말씀을 추천해 줍니다.
 하루를 다시 조율해 보세요.
 
 <p align="center">
-  <img src="./Screenshots/QTune_AppStore_01_1284x2778.jpg" width="160"/>
-  <img src="./Screenshots/QTune_AppStore_02_1284x2778.jpg" width="160"/>
-  <img src="./Screenshots/QTune_AppStore_03_1284x2778.jpg" width="160"/>
-  <img src="./Screenshots/QTune_AppStore_04_1284x2778.jpg" width="160"/>
-  <img src="./Screenshots/QTune_AppStore_05_1284x2778.jpg" width="160"/>
+  <img src="./Screenshots/QTune_AppStore_01_1284x2778.png" width="160"/>
+  <img src="./Screenshots/QTune_AppStore_02_1284x2778.png" width="160"/>
+  <img src="./Screenshots/QTune_AppStore_03_1284x2778.png" width="160"/>
+  <img src="./Screenshots/QTune_AppStore_04_1284x2778.png" width="160"/>
+  <img src="./Screenshots/QTune_AppStore_05_1284x2778.png" width="160"/>
 </p>
 
 ---

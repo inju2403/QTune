@@ -145,7 +145,7 @@ public final class QTEditorWizardViewModel {
             var qt = QuietTime(
                 verse: state.verse,
                 korean: state.explKR,
-                rationale: nil,
+                rationale: state.rationale,
                 date: Date(),
                 status: .draft,
                 template: state.template == .soap ? "SOAP" : "ACTS"
@@ -166,7 +166,9 @@ public final class QTEditorWizardViewModel {
             // 저장
             _ = try await commitQTUseCase.execute(draft: qt, session: session)
 
-            // 성공
+            // 성공 - QT 변경 알림
+            NotificationCenter.default.post(name: .qtDidChange, object: nil)
+
             await MainActor.run {
                 state.isSaving = false
                 state.showSaveSuccessToast = true

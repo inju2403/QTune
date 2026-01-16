@@ -8,15 +8,25 @@
 import SwiftUI
 import Domain
 
+// MARK: - Notification Names
+
+extension Notification.Name {
+    static let qtDidChange = Notification.Name("qtDidChange")
+}
+
 public struct QTListView: View {
     @State private var viewModel: QTListViewModel
     @Binding var userProfile: UserProfile?
-    @State private var showProfileEdit = false
+    @State private var navigationPath = NavigationPath()
+    @State private var scrollPosition: UUID?
+    @SceneStorage("qt.list.scrollPosition") private var persistedScrollId: String?
+    @State private var hasLoaded = false
 
     let detailViewModelFactory: (QuietTime) -> QTDetailViewModel
     let editorViewModelFactory: () -> QTEditorViewModel
     let profileEditViewModelFactory: (UserProfile?) -> ProfileEditViewModel
     let getUserProfileUseCase: GetUserProfileUseCase
+    let onNavigateToMyPage: () -> Void
 
     public init(
         viewModel: QTListViewModel,
@@ -24,7 +34,8 @@ public struct QTListView: View {
         detailViewModelFactory: @escaping (QuietTime) -> QTDetailViewModel,
         editorViewModelFactory: @escaping () -> QTEditorViewModel,
         profileEditViewModelFactory: @escaping (UserProfile?) -> ProfileEditViewModel,
-        getUserProfileUseCase: GetUserProfileUseCase
+        getUserProfileUseCase: GetUserProfileUseCase,
+        onNavigateToMyPage: @escaping () -> Void
     ) {
         _viewModel = State(wrappedValue: viewModel)
         _userProfile = userProfile
@@ -32,38 +43,93 @@ public struct QTListView: View {
         self.editorViewModelFactory = editorViewModelFactory
         self.profileEditViewModelFactory = profileEditViewModelFactory
         self.getUserProfileUseCase = getUserProfileUseCase
+        self.onNavigateToMyPage = onNavigateToMyPage
     }
 
     public var body: some View {
-        NavigationStack {
+        NavigationStack(path: $navigationPath) {
             ZStack {
                 CrossSunsetBackground()
 
-                ScrollView {
-                    LazyVStack(spacing: 0, pinnedViews: []) {
-                        // 검색바
-                        searchBar()
-                            .padding(.top, DS.Spacing.m)
+                List {
+                    // 검색바
+                    searchBar()
+                        .listRowSeparator(.hidden)
+                        .listRowBackground(Color.clear)
+                        .listRowInsets(EdgeInsets(top: DS.Spacing.m, leading: 0, bottom: 0, trailing: 0))
 
-                        // 필터 바
-                        filterBar()
+                    // 필터 바
+                    filterBar()
+                        .listRowSeparator(.hidden)
+                        .listRowBackground(Color.clear)
+                        .listRowInsets(EdgeInsets())
 
-                        // 리스트
-                        if viewModel.state.isLoading {
-                            VStack {
-                                Spacer()
-                                    .frame(height: 100)
-                                ProgressView()
-                                    .tint(DS.Color.gold)
-                                    .controlSize(.large)
-                                Spacer()
-                                    .frame(height: 100)
+                    // 리스트
+                    if viewModel.state.isLoading {
+                        VStack {
+                            Spacer()
+                                .frame(height: 100)
+                            ProgressView()
+                                .tint(DS.Color.gold)
+                                .controlSize(.large)
+                            Spacer()
+                                .frame(height: 100)
+                        }
+                        .frame(maxWidth: .infinity)
+                        .listRowSeparator(.hidden)
+                        .listRowBackground(Color.clear)
+                        .listRowInsets(EdgeInsets())
+                    } else if viewModel.filteredAndSortedList.isEmpty {
+                        emptyStateView()
+                            .frame(minHeight: 400)
+                            .listRowSeparator(.hidden)
+                            .listRowBackground(Color.clear)
+                            .listRowInsets(EdgeInsets())
+                    } else {
+                        // ⚠️ CRITICAL: QuietTime.id는 반드시 안정적이어야 함
+                        // - DB에서 fetch할 때마다 새 UUID()를 생성하면 스크롤 유지 불가능
+                        // - 반드시 DB의 고정 ID를 QuietTime.id로 사용해야 함
+                        // - 현재 구조상 QuietTime.id는 생성 시 고정된 UUID로 가정
+                        ForEach(viewModel.filteredAndSortedList, id: \.id) { qt in
+                            entryCell(qt)
+                                .id(qt.id)  // scrollPosition 추적용 필수
+                                .contentShape(Rectangle())
+                                .onTapGesture {
+                                    navigationPath.append(qt)
+                                }
+                                .onAppear {
+                                    // 화면에 보이는 셀 id를 지속적으로 저장
+                                    scrollPosition = qt.id
+                                    persistedScrollId = qt.id.uuidString
+                                }
+                                .listRowSeparator(.hidden)
+                                .listRowBackground(Color.clear)
+                                .listRowInsets(EdgeInsets(top: DS.Spacing.m/2, leading: DS.Spacing.l, bottom: DS.Spacing.m/2, trailing: DS.Spacing.l))
+                        }
+                    }
+                }
+                .listStyle(.plain)
+                .scrollContentBackground(.hidden)
+                .scrollPosition(id: $scrollPosition, anchor: .center)
+                .onChange(of: navigationPath.count) { oldCount, newCount in
+                    // 뒤로 돌아왔을 때 (pop 감지)
+                    if newCount < oldCount {
+                        // SceneStorage에서 복원된 id 우선 사용
+                        let targetId: UUID? = {
+                            if let persisted = persistedScrollId, let uuid = UUID(uuidString: persisted) {
+                                return uuid
                             }
-                        } else if viewModel.filteredAndSortedList.isEmpty {
-                            emptyStateView()
-                                .frame(minHeight: 400)
-                        } else {
-                            entriesContent()
+                            return scrollPosition
+                        }()
+
+                        guard let finalId = targetId else { return }
+
+                        // 2-step 강제 복원: nil로 흔들고 → 다시 설정
+                        DispatchQueue.main.async {
+                            scrollPosition = nil
+                        }
+                        DispatchQueue.main.async {
+                            scrollPosition = finalId
                         }
                     }
                 }
@@ -84,12 +150,25 @@ public struct QTListView: View {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     ProfileHeaderView(profile: userProfile) {
                         Haptics.tap()
-                        showProfileEdit = true
+                        onNavigateToMyPage()
                     }
                     .id(userProfile?.nickname ?? "default")
                 }
             }
-            .task {
+            .onAppear {
+                // 최초 1회만 로드
+                if !hasLoaded {
+                    hasLoaded = true
+                    viewModel.send(.load)
+                }
+
+                // SceneStorage에서 스크롤 위치 복원
+                if let persisted = persistedScrollId, let uuid = UUID(uuidString: persisted) {
+                    scrollPosition = uuid
+                }
+            }
+            .onReceive(NotificationCenter.default.publisher(for: .qtDidChange)) { _ in
+                // QT 작성/수정/삭제 시 리스트 갱신
                 viewModel.send(.load)
             }
             .alert("기록 삭제", isPresented: Binding(
@@ -104,21 +183,6 @@ public struct QTListView: View {
                 }
             } message: {
                 Text("이 기록을 삭제할까요? 이 작업은 되돌릴 수 없습니다.")
-            }
-            .sheet(isPresented: $showProfileEdit, onDismiss: {
-                Task {
-                    if let profile = try? await getUserProfileUseCase.execute() {
-                        await MainActor.run {
-                            userProfile = profile
-                        }
-                    }
-                }
-            }) {
-                NavigationStack {
-                    ProfileEditView(
-                        viewModel: profileEditViewModelFactory(userProfile)
-                    )
-                }
             }
         }
     }
@@ -253,29 +317,6 @@ private extension QTListView {
     }
 
     @ViewBuilder
-    func entriesContent() -> some View {
-        LazyVStack(spacing: DS.Spacing.m) {
-            ForEach(Array(viewModel.filteredAndSortedList.enumerated()), id: \.element.id) { index, qt in
-                NavigationLink(value: qt) {
-                    entryCell(qt)
-                }
-                .buttonStyle(.plain)
-                .transition(.asymmetric(
-                    insertion: .move(edge: .bottom).combined(with: .opacity),
-                    removal: .opacity
-                ))
-                .animation(
-                    .spring(response: 0.5, dampingFraction: 0.9)
-                        .delay(Double(index) * 0.04),
-                    value: viewModel.filteredAndSortedList.count
-                )
-            }
-        }
-        .padding(DS.Spacing.l)
-        .padding(.top, DS.Spacing.xs)
-    }
-
-    @ViewBuilder
     func entryCell(_ qt: QuietTime) -> some View {
         SoftCard {
             VStack(alignment: .leading, spacing: DS.Spacing.l) {
@@ -326,7 +367,10 @@ private extension QTListView {
                         Image(systemName: qt.isFavorite ? "star.fill" : "star")
                             .foregroundStyle(qt.isFavorite ? DS.Color.gold : DS.Color.textSecondary)
                             .font(.system(size: 20))
+                            .padding(8)
                     }
+                    .buttonStyle(.plain)
+                    .contentShape(Rectangle())
                 }
             }
             .padding(DS.Spacing.xl)  // 더 넉넉한 패딩
