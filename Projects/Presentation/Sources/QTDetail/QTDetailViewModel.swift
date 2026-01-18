@@ -112,16 +112,22 @@ public final class QTDetailViewModel {
 
     // MARK: - Share Text Generation
     private func generateShareText() -> String {
+        // 날짜 포맷 생성
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "yyyy.MM.dd"
+        dateFormatter.locale = Locale(identifier: "ko_KR")
+        let dateString = dateFormatter.string(from: state.qt.date)
+
         // 사용자 호칭 생성
         let userTitle: String
         if let profile = userProfile {
             let genderSuffix = profile.gender == .brother ? "형제" : "자매"
-            userTitle = "\(profile.nickname) \(genderSuffix) 님의 묵상"
+            userTitle = "\(profile.nickname) \(genderSuffix)님의 묵상"
         } else {
             userTitle = "나의 묵상"
         }
 
-        var text = "📝 \(userTitle)\n\n"
+        var text = "🗓️ \(dateString)\n📝 \(userTitle)\n\n"
 
         text += """
         📖 \(state.qt.verse.id)
