@@ -20,7 +20,6 @@ public struct QTListView: View {
     @State private var navigationPath = NavigationPath()
     @State private var scrollPosition: UUID?
     @SceneStorage("qt.list.scrollPosition") private var persistedScrollId: String?
-    @State private var hasLoaded = false
 
     let detailViewModelFactory: (QuietTime) -> QTDetailViewModel
     let editorViewModelFactory: () -> QTEditorViewModel
@@ -101,10 +100,29 @@ public struct QTListView: View {
                                     // 화면에 보이는 셀 id를 지속적으로 저장
                                     scrollPosition = qt.id
                                     persistedScrollId = qt.id.uuidString
+
+                                    // 페이징: 마지막에서 5번째 아이템이 보이면 다음 페이지 로드
+                                    if let index = viewModel.filteredAndSortedList.firstIndex(where: { $0.id == qt.id }),
+                                       index >= viewModel.filteredAndSortedList.count - 5 {
+                                        viewModel.send(.loadMore)
+                                    }
                                 }
                                 .listRowSeparator(.hidden)
                                 .listRowBackground(Color.clear)
                                 .listRowInsets(EdgeInsets(top: DS.Spacing.m/2, leading: DS.Spacing.l, bottom: DS.Spacing.m/2, trailing: DS.Spacing.l))
+                        }
+
+                        // 로딩 인디케이터
+                        if viewModel.state.isLoadingMore {
+                            HStack {
+                                Spacer()
+                                ProgressView()
+                                    .tint(DS.Color.gold)
+                                Spacer()
+                            }
+                            .frame(height: 60)
+                            .listRowSeparator(.hidden)
+                            .listRowBackground(Color.clear)
                         }
                     }
                 }
@@ -156,12 +174,6 @@ public struct QTListView: View {
                 }
             }
             .onAppear {
-                // 최초 1회만 로드
-                if !hasLoaded {
-                    hasLoaded = true
-                    viewModel.send(.load)
-                }
-
                 // SceneStorage에서 스크롤 위치 복원
                 if let persisted = persistedScrollId, let uuid = UUID(uuidString: persisted) {
                     scrollPosition = uuid
