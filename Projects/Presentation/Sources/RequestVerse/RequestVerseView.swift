@@ -467,7 +467,7 @@ private extension RequestVerseView {
                 .fill(
                     isValid ?
                     LinearGradient(
-                        colors: [Color(hex: "#9B8265"), Color(hex: "#8B7355")],
+                        colors: [DS.Color.gold.opacity(0.95), DS.Color.gold],
                         startPoint: .topLeading,
                         endPoint: .bottomTrailing
                     ) :
@@ -479,9 +479,9 @@ private extension RequestVerseView {
                 )
         )
         .shadow(
-            color: isValid ? Color(hex: "#8B7355").opacity(0.3) : Color.clear,
+            color: isValid ? DS.Color.gold.opacity(0.3) : Color.clear,
             radius: 8,
-            y: 3
+            y: 4
         )
     }
 

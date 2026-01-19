@@ -11,10 +11,11 @@ let project = Project(
       deploymentTargets: .iOS("17.0"),
       infoPlist: .extendingDefault(with: [
         "CFBundleDisplayName": "QTune",
-        "CFBundleShortVersionString": "1.2.0",
-        "CFBundleVersion": "120",
+        "CFBundleShortVersionString": "1.2.1",
+        "CFBundleVersion": "124",
         "UILaunchStoryboardName": "LaunchScreen",
-        "UIViewControllerBasedStatusBarAppearance": true
+        "UIViewControllerBasedStatusBarAppearance": true,
+        "UIUserInterfaceStyle": "Light"
       ]),
       sources: nil,
       resources: [

@@ -34,10 +34,10 @@ public struct QTuneWoodCrossPulse: View {
 
 /// 목재 질감/하이라이트/그림자를 합성한 십자가 (세로길고 좌우 짧음)
 private struct WoodCrossBeveled: View {
-    // 컬러 프리셋 (깊은 코코아 브라운)
-    private let woodDark  = Color(red: 0.24, green: 0.18, blue: 0.13)
-    private let wood      = Color(red: 0.36, green: 0.27, blue: 0.20)
-    private let woodLite  = Color(red: 0.58, green: 0.46, blue: 0.35)
+    // Bronze Gold
+    private let woodDark = Color(red: 0.43, green: 0.32, blue: 0.18)
+    private let wood     = Color(red: 0.58, green: 0.43, blue: 0.22)
+    private let woodLite = Color(red: 0.76, green: 0.60, blue: 0.34)
 
     var body: some View {
         GeometryReader { geo in
@@ -103,7 +103,7 @@ private struct WoodCrossBeveled: View {
                     .strokeBorder(
                         LinearGradient(colors: [
                             .clear,
-                            Color.black.opacity(0.25)
+                            Color.black.opacity(0.12)
                         ], startPoint: .topLeading, endPoint: .bottomTrailing),
                         lineWidth: t * 0.10
                     )
@@ -114,7 +114,7 @@ private struct WoodCrossBeveled: View {
                     .strokeBorder(
                         LinearGradient(colors: [
                             .clear,
-                            Color.black.opacity(0.22)
+                            Color.black.opacity(0.10)
                         ], startPoint: .topLeading, endPoint: .bottomTrailing),
                         lineWidth: t * 0.10
                     )
@@ -122,7 +122,7 @@ private struct WoodCrossBeveled: View {
                     .position(x: W/2, y: armY)
             }
             // 외곽 드롭섀도우 (바닥에 살짝 떨어진 느낌)
-            .shadow(color: Color.black.opacity(0.25), radius: t * 0.35, x: 0, y: t * 0.25)
+            .shadow(color: Color.black.opacity(0.15), radius: t * 0.35, x: 0, y: t * 0.25)
         }
     }
 }
