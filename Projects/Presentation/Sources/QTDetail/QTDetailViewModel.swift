@@ -91,6 +91,10 @@ public final class QTDetailViewModel {
     private func deleteQT() async {
         do {
             try await deleteQTUseCase.execute(id: state.qt.id, session: session)
+
+            // QT 변경 알림
+            NotificationCenter.default.post(name: .qtDidChange, object: nil)
+
             await MainActor.run {
                 onDeleted?()
             }
