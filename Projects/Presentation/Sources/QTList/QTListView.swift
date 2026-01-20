@@ -179,6 +179,9 @@ public struct QTListView: View {
                 if let persisted = persistedScrollId, let uuid = UUID(uuidString: persisted) {
                     scrollPosition = uuid
                 }
+
+                // 탭 전환 시 리로드 (QT 작성/삭제 후 확실하게 반영)
+                viewModel.send(.load)
             }
             .onReceive(NotificationCenter.default.publisher(for: .qtDidChange)) { _ in
                 // QT 작성/수정/삭제 시 리스트 갱신
