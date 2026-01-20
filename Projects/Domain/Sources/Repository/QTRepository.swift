@@ -24,17 +24,20 @@ public struct DateRange: Equatable {
 public struct QTQuery: Equatable {
     public let dateRange: DateRange?
     public let isFavorite: Bool?
+    public let searchText: String?
     public let limit: Int
     public let offset: Int
 
     public init(
         dateRange: DateRange? = nil,
         isFavorite: Bool? = nil,
+        searchText: String? = nil,
         limit: Int = 20,
         offset: Int = 0
     ) {
         self.dateRange = dateRange
         self.isFavorite = isFavorite
+        self.searchText = searchText
         self.limit = limit
         self.offset = offset
     }

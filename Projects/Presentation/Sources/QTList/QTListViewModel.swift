@@ -20,6 +20,9 @@ public final class QTListViewModel {
     private let deleteQTUseCase: DeleteQTUseCase
     private let session: UserSession
 
+    // MARK: - Debounce
+    private var searchTask: Task<Void, Never>?
+
     // MARK: - Init
     public init(
         fetchQTListUseCase: FetchQTListUseCase,
@@ -40,11 +43,24 @@ public final class QTListViewModel {
         case .load:
             Task { await load() }
 
+        case .loadMore:
+            Task { await loadMore() }
+
         case .updateSearchText(let text):
             state.searchText = text
+            // 이전 검색 Task 취소
+            searchTask?.cancel()
+            // 200ms 후 검색 실행 (debounce)
+            searchTask = Task {
+                try? await Task.sleep(nanoseconds: 200_000_000) // 200ms
+                guard !Task.isCancelled else { return }
+                await load()
+            }
 
         case .selectFilter(let filter):
             state.selectedFilter = filter
+            // 필터 변경 시 새로 로드
+            Task { await load() }
 
         case .selectSort(let sort):
             state.selectedSort = sort
@@ -74,21 +90,69 @@ public final class QTListViewModel {
         }
 
         state.isLoading = true
+        state.currentPage = 0
 
         do {
-            let query = QTQuery(limit: 100, offset: 0)
+            // 검색어와 필터를 Query에 포함
+            let searchText = state.searchText.isEmpty ? nil : state.searchText
+            let isFavorite: Bool? = state.selectedFilter == .favorite ? true : nil
+
+            let query = QTQuery(
+                isFavorite: isFavorite,
+                searchText: searchText,
+                limit: 20,
+                offset: 0
+            )
             let list = try await fetchQTListUseCase.execute(query: query, session: session)
 
             await MainActor.run {
                 state.qtList = list
+                state.hasMoreData = list.count == 20
                 state.isLoading = false
             }
         } catch {
             await MainActor.run {
                 state.qtList = []
+                state.hasMoreData = false
                 state.isLoading = false
             }
             print("❌ [QTListViewModel] Failed to load QT list: \(error)")
+        }
+    }
+
+    private func loadMore() async {
+        // 이미 로딩 중이거나 더 이상 데이터가 없으면 리턴
+        guard !state.isLoadingMore && !state.isLoading && state.hasMoreData else {
+            return
+        }
+
+        state.isLoadingMore = true
+        let nextPage = state.currentPage + 1
+
+        do {
+            // 검색어와 필터를 Query에 포함
+            let searchText = state.searchText.isEmpty ? nil : state.searchText
+            let isFavorite: Bool? = state.selectedFilter == .favorite ? true : nil
+
+            let query = QTQuery(
+                isFavorite: isFavorite,
+                searchText: searchText,
+                limit: 20,
+                offset: nextPage * 20
+            )
+            let newList = try await fetchQTListUseCase.execute(query: query, session: session)
+
+            await MainActor.run {
+                state.qtList.append(contentsOf: newList)
+                state.currentPage = nextPage
+                state.hasMoreData = newList.count == 20
+                state.isLoadingMore = false
+            }
+        } catch {
+            await MainActor.run {
+                state.isLoadingMore = false
+            }
+            print("❌ [QTListViewModel] Failed to load more QT list: \(error)")
         }
     }
 
@@ -147,43 +211,17 @@ public final class QTListViewModel {
     public var filteredAndSortedList: [QuietTime] {
         var filtered = state.qtList
 
-        // 필터 적용
+        // 템플릿 필터는 로컬에서 처리 (서버에서는 검색/즐겨찾기만 처리)
         switch state.selectedFilter {
-        case .all:
+        case .all, .favorite:
             break
-        case .favorite:
-            filtered = filtered.filter { $0.isFavorite }
         case .soap:
             filtered = filtered.filter { $0.template == "SOAP" }
         case .acts:
             filtered = filtered.filter { $0.template == "ACTS" }
         }
 
-        // 검색 적용
-        if !state.searchText.isEmpty {
-            let searchLower = state.searchText.lowercased()
-            filtered = filtered.filter { qt in
-                let matchesVerse = qt.verse.id.lowercased().contains(searchLower)
-                let matchesKorean = (qt.korean ?? "").lowercased().contains(searchLower)
-                let matchesReason = (qt.rationale ?? "").lowercased().contains(searchLower)
-                let matchesTags = qt.tags.contains { $0.lowercased().contains(searchLower) }
-
-                var matchesTemplate = false
-                if qt.template == "SOAP" {
-                    matchesTemplate = [qt.soapObservation, qt.soapApplication, qt.soapPrayer]
-                        .compactMap { $0 }
-                        .contains { $0.lowercased().contains(searchLower) }
-                } else {
-                    matchesTemplate = [qt.actsAdoration, qt.actsConfession, qt.actsThanksgiving, qt.actsSupplication]
-                        .compactMap { $0 }
-                        .contains { $0.lowercased().contains(searchLower) }
-                }
-
-                return matchesVerse || matchesKorean || matchesReason || matchesTags || matchesTemplate
-            }
-        }
-
-        // 정렬 적용
+        // 정렬 적용 (로컬)
         switch state.selectedSort {
         case .newest:
             filtered.sort { $0.date > $1.date }

@@ -176,6 +176,13 @@ struct QTuneApp: App {
                 session: container.dummySession
             )
 
+            // 앱 시작 시 QT 리스트 미리 로드
+            let _ = {
+                Task {
+                    await qtListVM.send(.load)
+                }
+            }()
+
             MainTabViewWrapper(
                 qtListViewModel: qtListVM,
                 detailViewModelFactory: { qt in

@@ -11,6 +11,7 @@ import Domain
 /// QT 리스트 화면 Action
 public enum QTListAction: Equatable {
     case load
+    case loadMore
     case updateSearchText(String)
     case selectFilter(QTListState.FilterType)
     case selectSort(QTListState.SortType)

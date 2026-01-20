@@ -17,6 +17,9 @@ public struct QTListState: Equatable {
     public var qtToDelete: QuietTime?
     public var qtList: [QuietTime]
     public var isLoading: Bool
+    public var isLoadingMore: Bool
+    public var hasMoreData: Bool
+    public var currentPage: Int
 
     public init(
         searchText: String = "",
@@ -25,7 +28,10 @@ public struct QTListState: Equatable {
         showDeleteAlert: Bool = false,
         qtToDelete: QuietTime? = nil,
         qtList: [QuietTime] = [],
-        isLoading: Bool = false
+        isLoading: Bool = false,
+        isLoadingMore: Bool = false,
+        hasMoreData: Bool = true,
+        currentPage: Int = 0
     ) {
         self.searchText = searchText
         self.selectedFilter = selectedFilter
@@ -34,6 +40,9 @@ public struct QTListState: Equatable {
         self.qtToDelete = qtToDelete
         self.qtList = qtList
         self.isLoading = isLoading
+        self.isLoadingMore = isLoadingMore
+        self.hasMoreData = hasMoreData
+        self.currentPage = currentPage
     }
 
     // MARK: - Filter Types

@@ -51,6 +51,30 @@ public final class DefaultQTRepository: QTRepository {
             }
         }
 
+        // 검색 필터링
+        if let searchText = query.searchText, !searchText.isEmpty {
+            let searchLower = searchText.lowercased()
+            filtered = filtered.filter { model in
+                let matchesVerse = model.verseRef.lowercased().contains(searchLower)
+                let matchesKorean = (model.korean ?? "").lowercased().contains(searchLower)
+                let matchesRationale = (model.rationale ?? "").lowercased().contains(searchLower)
+                let matchesTags = model.tags.contains { $0.lowercased().contains(searchLower) }
+
+                var matchesTemplate = false
+                if model.template == "SOAP" {
+                    matchesTemplate = [model.soapObservation, model.soapApplication, model.soapPrayer]
+                        .compactMap { $0 }
+                        .contains { $0.lowercased().contains(searchLower) }
+                } else {
+                    matchesTemplate = [model.actsAdoration, model.actsConfession, model.actsThanksgiving, model.actsSupplication]
+                        .compactMap { $0 }
+                        .contains { $0.lowercased().contains(searchLower) }
+                }
+
+                return matchesVerse || matchesKorean || matchesRationale || matchesTags || matchesTemplate
+            }
+        }
+
         // 페이지네이션
         let paged = Array(filtered
             .dropFirst(query.offset)
