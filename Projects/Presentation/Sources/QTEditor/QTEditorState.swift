@@ -16,6 +16,7 @@ public struct QTEditorState: Equatable {
     public var showSaveSuccessToast: Bool
     public var showSaveErrorAlert: Bool
     public var editingQT: QuietTime?
+    public var isSaving: Bool
 
     public init(
         selectedTemplate: QTTemplateType = .soap,
@@ -23,7 +24,8 @@ public struct QTEditorState: Equatable {
         actsTemplate: ACTSTemplate = ACTSTemplate(),
         showSaveSuccessToast: Bool = false,
         showSaveErrorAlert: Bool = false,
-        editingQT: QuietTime? = nil
+        editingQT: QuietTime? = nil,
+        isSaving: Bool = false
     ) {
         self.selectedTemplate = selectedTemplate
         self.soapTemplate = soapTemplate
@@ -31,5 +33,6 @@ public struct QTEditorState: Equatable {
         self.showSaveSuccessToast = showSaveSuccessToast
         self.showSaveErrorAlert = showSaveErrorAlert
         self.editingQT = editingQT
+        self.isSaving = isSaving
     }
 }

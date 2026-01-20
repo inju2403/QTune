@@ -66,6 +66,11 @@ public final class QTEditorViewModel {
             state.actsTemplate.supplication = text
 
         case .saveQT(let draft):
+            // 이미 저장 중이면 무시
+            guard !state.isSaving else {
+                print("⚠️ [QTEditorViewModel] Already saving, ignoring duplicate save request")
+                return
+            }
             Task { await saveQT(draft: draft) }
         }
     }
@@ -123,6 +128,13 @@ public final class QTEditorViewModel {
         print("   Editing QT: \(state.editingQT?.id.uuidString ?? "nil")")
         print("   Selected Template: \(state.selectedTemplate)")
 
+        // 저장 시작
+        state.isSaving = true
+        defer {
+            // 저장 완료/실패 시 플래그 해제
+            state.isSaving = false
+        }
+
         do {
             var qtToSave = draft
             qtToSave.template = state.selectedTemplate.rawValue
@@ -175,10 +187,10 @@ public final class QTEditorViewModel {
                 print("   ✅ Commit succeeded")
             }
 
-            // QT 변경 알림
-            NotificationCenter.default.post(name: .qtDidChange, object: nil)
-
-            state.showSaveSuccessToast = true
+            await MainActor.run {
+                NotificationCenter.default.post(name: .qtDidChange, object: nil)
+                state.showSaveSuccessToast = true
+            }
         } catch {
             print("🔴 [QTEditorViewModel] Save failed: \(error)")
             if let localizedError = error as? LocalizedError {

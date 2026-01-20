@@ -201,11 +201,8 @@ public final class QTListViewModel {
         do {
             try await deleteQTUseCase.execute(id: qt.id, session: session)
 
-            // QT 변경 알림
-            NotificationCenter.default.post(name: .qtDidChange, object: nil)
-
-            // 로컬 state에서 삭제
             await MainActor.run {
+                NotificationCenter.default.post(name: .qtDidChange, object: nil)
                 state.qtList.removeAll { $0.id == qt.id }
                 state.qtToDelete = nil
                 state.showDeleteAlert = false

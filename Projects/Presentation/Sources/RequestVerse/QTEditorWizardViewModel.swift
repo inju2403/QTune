@@ -166,10 +166,8 @@ public final class QTEditorWizardViewModel {
             // 저장
             _ = try await commitQTUseCase.execute(draft: qt, session: session)
 
-            // 성공 - QT 변경 알림
-            NotificationCenter.default.post(name: .qtDidChange, object: nil)
-
             await MainActor.run {
+                NotificationCenter.default.post(name: .qtDidChange, object: nil)
                 state.isSaving = false
                 state.showSaveSuccessToast = true
 
