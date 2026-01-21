@@ -20,6 +20,10 @@ public struct QTListView: View {
     @State private var navigationPath = NavigationPath()
     @State private var scrollPosition: UUID?
     @SceneStorage("qt.list.scrollPosition") private var persistedScrollId: String?
+    @FocusState private var isSearchFocused: Bool
+    @State private var cancelSlotWidth: CGFloat = 0
+    @State private var showCancelButton: Bool = false
+    @State private var cancelButtonWorkItem: DispatchWorkItem?
 
     let detailViewModelFactory: (QuietTime) -> QTDetailViewModel
     let editorViewModelFactory: () -> QTEditorViewModel
@@ -158,9 +162,6 @@ public struct QTListView: View {
                     )
                 }
             }
-            .onTapGesture {
-                self.endTextEditing()
-            }
             .navigationTitle("기록")
             .navigationBarTitleDisplayMode(.inline)
             .toolbarBackground(.hidden, for: .navigationBar)
@@ -178,6 +179,9 @@ public struct QTListView: View {
                 if let persisted = persistedScrollId, let uuid = UUID(uuidString: persisted) {
                     scrollPosition = uuid
                 }
+
+                // 탭 전환 시 리로드 (QT 작성/삭제 후 확실하게 반영)
+                viewModel.send(.load)
             }
             .onReceive(NotificationCenter.default.publisher(for: .qtDidChange)) { _ in
                 // QT 작성/수정/삭제 시 리스트 갱신
@@ -204,40 +208,71 @@ public struct QTListView: View {
 private extension QTListView {
     @ViewBuilder
     func searchBar() -> some View {
-        HStack(spacing: DS.Spacing.m) {
-            Image(systemName: "magnifyingglass")
-                .foregroundStyle(DS.Color.gold)
-                .font(DS.Font.bodyL())
+        let cancelWidth: CGFloat = 32      //
+        let reservedGap: CGFloat = 8      //
+        let reservedWidth = cancelWidth + reservedGap
 
-            TextField("말씀, 태그, 내용으로 검색", text: Binding(
-                get: { viewModel.state.searchText },
-                set: { viewModel.send(.updateSearchText($0)) }
-            ))
+        ZStack(alignment: .trailing) {
+
+            HStack(spacing: DS.Spacing.m) {
+                Image(systemName: "magnifyingglass")
+                    .foregroundStyle(DS.Color.gold)
+                    .font(DS.Font.bodyL())
+
+                TextField("말씀, 태그, 내용으로 검색", text: Binding(
+                    get: { viewModel.state.searchText },
+                    set: { viewModel.send(.updateSearchText($0)) }
+                ))
                 .font(DS.Font.bodyM())
                 .foregroundStyle(DS.Color.textPrimary)
                 .textFieldStyle(.plain)
                 .autocapitalization(.none)
                 .disableAutocorrection(true)
+                .focused($isSearchFocused)
+            }
+            .padding(18)
+            .background(
+                RoundedRectangle(cornerRadius: 16)
+                    .fill(DS.Color.canvas.opacity(0.9))
+            )
+            .padding(.trailing, cancelSlotWidth)
+            .animation(.easeInOut(duration: 0.2), value: cancelSlotWidth)
 
-            if !viewModel.state.searchText.isEmpty {
-                Button {
-                    Haptics.tap()
-                    withAnimation(Motion.appear) {
-                        viewModel.send(.updateSearchText(""))
+            Button {
+                Haptics.tap()
+                viewModel.send(.updateSearchText(""))
+                isSearchFocused = false
+            } label: {
+                Text("취소")
+                    .font(DS.Font.bodyM(.medium))
+                    .foregroundStyle(DS.Color.gold)
+            }
+            .frame(width: cancelWidth, alignment: .trailing)
+            .opacity(showCancelButton ? 1 : 0)
+            .allowsHitTesting(showCancelButton)
+        }
+        .padding(.horizontal, DS.Spacing.l)
+        .onChange(of: isSearchFocused) { _, focused in
+            cancelButtonWorkItem?.cancel()
+
+            if focused {
+                cancelSlotWidth = reservedWidth
+
+                let workItem = DispatchWorkItem {
+                    withAnimation(.easeIn(duration: 0.12)) {
+                        showCancelButton = true
                     }
-                } label: {
-                    Image(systemName: "xmark.circle.fill")
-                        .foregroundStyle(DS.Color.textSecondary)
-                        .font(DS.Font.bodyL())
                 }
+                cancelButtonWorkItem = workItem
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.2, execute: workItem)
+
+            } else {
+                withAnimation(.easeOut(duration: 0.1)) {
+                    showCancelButton = false
+                }
+                cancelSlotWidth = 0
             }
         }
-        .padding(18)
-        .background(
-            RoundedRectangle(cornerRadius: 16)
-                .fill(DS.Color.canvas.opacity(0.9))
-        )
-        .padding(.horizontal, DS.Spacing.l)
     }
 
     @ViewBuilder

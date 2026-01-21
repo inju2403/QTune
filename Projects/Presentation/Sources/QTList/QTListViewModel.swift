@@ -47,14 +47,25 @@ public final class QTListViewModel {
             Task { await loadMore() }
 
         case .updateSearchText(let text):
+            let previousText = state.searchText
             state.searchText = text
+
+            // 텍스트가 실제로 변경되지 않았으면 아무것도 안 함
+            guard previousText != text else { return }
+
             // 이전 검색 Task 취소
             searchTask?.cancel()
-            // 200ms 후 검색 실행 (debounce)
-            searchTask = Task {
-                try? await Task.sleep(nanoseconds: 200_000_000) // 200ms
-                guard !Task.isCancelled else { return }
-                await load()
+
+            // 검색어가 비어있으면 즉시 로드 (debounce 없이)
+            if text.isEmpty {
+                Task { await load() }
+            } else {
+                // 200ms 후 검색 실행 (debounce)
+                searchTask = Task {
+                    try? await Task.sleep(nanoseconds: 200_000_000) // 200ms
+                    guard !Task.isCancelled else { return }
+                    await load()
+                }
             }
 
         case .selectFilter(let filter):
@@ -190,11 +201,8 @@ public final class QTListViewModel {
         do {
             try await deleteQTUseCase.execute(id: qt.id, session: session)
 
-            // QT 변경 알림
-            NotificationCenter.default.post(name: .qtDidChange, object: nil)
-
-            // 로컬 state에서 삭제
             await MainActor.run {
+                NotificationCenter.default.post(name: .qtDidChange, object: nil)
                 state.qtList.removeAll { $0.id == qt.id }
                 state.qtToDelete = nil
                 state.showDeleteAlert = false
