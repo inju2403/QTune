@@ -25,7 +25,6 @@ public struct QTSearchListView: View {
     let editorViewModelFactory: () -> QTEditorViewModel
     let profileEditViewModelFactory: (UserProfile?) -> ProfileEditViewModel
     let getUserProfileUseCase: GetUserProfileUseCase
-    let onNavigateToMyPage: () -> Void
 
     // MARK: - Init
     public init(
@@ -37,8 +36,7 @@ public struct QTSearchListView: View {
         detailViewModelFactory: @escaping (QuietTime) -> QTDetailViewModel,
         editorViewModelFactory: @escaping () -> QTEditorViewModel,
         profileEditViewModelFactory: @escaping (UserProfile?) -> ProfileEditViewModel,
-        getUserProfileUseCase: GetUserProfileUseCase,
-        onNavigateToMyPage: @escaping () -> Void
+        getUserProfileUseCase: GetUserProfileUseCase
     ) {
         _viewModel = State(wrappedValue: viewModel)
         _userProfile = userProfile
@@ -50,7 +48,6 @@ public struct QTSearchListView: View {
         self.editorViewModelFactory = editorViewModelFactory
         self.profileEditViewModelFactory = profileEditViewModelFactory
         self.getUserProfileUseCase = getUserProfileUseCase
-        self.onNavigateToMyPage = onNavigateToMyPage
     }
 
     // MARK: - Body
@@ -133,15 +130,6 @@ public struct QTSearchListView: View {
             .scrollPosition(id: $scrollPosition, anchor: .center)
         }
         .navigationBarHidden(true)
-        .toolbar {
-            ToolbarItem(placement: .navigationBarTrailing) {
-                ProfileHeaderView(profile: userProfile) {
-                    Haptics.tap()
-                    onNavigateToMyPage()
-                }
-                .id(userProfile?.nickname ?? "default")
-            }
-        }
         .onAppear {
             // 검색 모드로 초기화
             viewModel.send(.updateSearchText(searchText, isSearchMode: true))

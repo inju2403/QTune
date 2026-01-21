@@ -141,12 +141,7 @@ public struct MainTabViewWrapper: View {
                     detailViewModelFactory: detailViewModelFactory,
                     editorViewModelFactory: editorViewModelFactory,
                     profileEditViewModelFactory: profileEditViewModelFactory,
-                    getUserProfileUseCase: getUserProfileUseCase,
-                    onNavigateToMyPage: {
-                        selectedTab = 2
-                        isSearchPresented = false
-                        searchText = ""
-                    }
+                    getUserProfileUseCase: getUserProfileUseCase
                 )
                 .onChange(of: isSearchPresented) { _, presented in
                     if !presented && selectedTab == 3 && searchText.isEmpty {
