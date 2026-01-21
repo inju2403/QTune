@@ -174,6 +174,8 @@ public struct RequestVerseView: View {
                         rationale: rationale,
                         verse: verse
                     )
+                case .detail:
+                    EmptyView()
                 }
             }
         }

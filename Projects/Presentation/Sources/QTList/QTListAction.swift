@@ -12,7 +12,7 @@ import Domain
 public enum QTListAction: Equatable {
     case load
     case loadMore
-    case updateSearchText(String)
+    case updateSearchText(String, isSearchMode: Bool = false)
     case selectFilter(QTListState.FilterType)
     case selectSort(QTListState.SortType)
     case toggleFavorite(QuietTime)

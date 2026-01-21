@@ -1,35 +1,24 @@
 //
-//  QTListView.swift
+//  QTSearchListView.swift
 //  Presentation
 //
-//  Created by 이승주 on 10/12/25.
+//  Created by 이승주 on 1/21/26.
 //
 
 import SwiftUI
 import Domain
 
-// MARK: - Notification Names
-extension Notification.Name {
-    static let qtDidChange = Notification.Name("qtDidChange")
-}
-
-public struct QTListView: View {
+/// iOS 26 검색 탭 전용 뷰 (시스템 searchable 연동)
+public struct QTSearchListView: View {
 
     // MARK: - State
     @State private var viewModel: QTListViewModel
     @Binding var userProfile: UserProfile?
     @Binding var path: NavigationPath
+    @Binding var searchText: String
+    @Binding var isSearchPresented: Bool
 
     @State private var scrollPosition: UUID?
-    @SceneStorage("qt.list.scrollPosition") private var persistedScrollId: String?
-
-    @FocusState private var isSearchFocused: Bool
-    @State private var cancelSlotWidth: CGFloat = 0
-    @State private var showCancelButton: Bool = false
-    @State private var cancelButtonWorkItem: DispatchWorkItem?
-
-    /// iOS 26+ 기록 탭에서는 검색바 숨김
-    let hideSearchBar: Bool
 
     // MARK: - Dependencies
     let detailViewModelFactory: (QuietTime) -> QTDetailViewModel
@@ -43,23 +32,25 @@ public struct QTListView: View {
         viewModel: QTListViewModel,
         userProfile: Binding<UserProfile?>,
         path: Binding<NavigationPath>,
+        searchText: Binding<String>,
+        isSearchPresented: Binding<Bool>,
         detailViewModelFactory: @escaping (QuietTime) -> QTDetailViewModel,
         editorViewModelFactory: @escaping () -> QTEditorViewModel,
         profileEditViewModelFactory: @escaping (UserProfile?) -> ProfileEditViewModel,
         getUserProfileUseCase: GetUserProfileUseCase,
-        onNavigateToMyPage: @escaping () -> Void,
-        hideSearchBar: Bool = false
+        onNavigateToMyPage: @escaping () -> Void
     ) {
         _viewModel = State(wrappedValue: viewModel)
         _userProfile = userProfile
         _path = path
+        _searchText = searchText
+        _isSearchPresented = isSearchPresented
 
         self.detailViewModelFactory = detailViewModelFactory
         self.editorViewModelFactory = editorViewModelFactory
         self.profileEditViewModelFactory = profileEditViewModelFactory
         self.getUserProfileUseCase = getUserProfileUseCase
         self.onNavigateToMyPage = onNavigateToMyPage
-        self.hideSearchBar = hideSearchBar
     }
 
     // MARK: - Body
@@ -68,19 +59,15 @@ public struct QTListView: View {
             CrossSunsetBackground()
 
             List {
-                if !hideSearchBar {
-                    searchBar()
+                // 검색어가 있을 때만 리스트 표시
+                if searchText.isEmpty {
+                    emptyStateView()
+                        .frame(minHeight: 400)
                         .listRowSeparator(.hidden)
                         .listRowBackground(Color.clear)
-                        .listRowInsets(EdgeInsets(top: DS.Spacing.m, leading: 0, bottom: 0, trailing: 0))
-                }
+                        .listRowInsets(EdgeInsets())
 
-                filterBar()
-                    .listRowSeparator(.hidden)
-                    .listRowBackground(Color.clear)
-                    .listRowInsets(EdgeInsets())
-
-                if viewModel.state.isLoading {
+                } else if viewModel.state.isLoading {
                     VStack {
                         Spacer().frame(height: 100)
                         ProgressView()
@@ -106,11 +93,10 @@ public struct QTListView: View {
                             .id(qt.id)
                             .contentShape(Rectangle())
                             .onTapGesture {
-                                path.append(QTRoute.detail(qt))
+                                path.append(QTSearchRoute.detail(qt))
                             }
                             .onAppear {
                                 scrollPosition = qt.id
-                                persistedScrollId = qt.id.uuidString
 
                                 if let index = viewModel.filteredAndSortedList.firstIndex(where: { $0.id == qt.id }),
                                    index >= viewModel.filteredAndSortedList.count - 5 {
@@ -146,9 +132,7 @@ public struct QTListView: View {
             .scrollContentBackground(.hidden)
             .scrollPosition(id: $scrollPosition, anchor: .center)
         }
-        .navigationTitle("기록")
-        .navigationBarTitleDisplayMode(.inline)
-        .toolbarBackground(.hidden, for: .navigationBar)
+        .navigationBarHidden(true)
         .toolbar {
             ToolbarItem(placement: .navigationBarTrailing) {
                 ProfileHeaderView(profile: userProfile) {
@@ -159,15 +143,19 @@ public struct QTListView: View {
             }
         }
         .onAppear {
-            if let persisted = persistedScrollId,
-               let uuid = UUID(uuidString: persisted) {
-                scrollPosition = uuid
-            }
-
-            viewModel.send(.load)
+            // 검색 모드로 초기화
+            viewModel.send(.updateSearchText(searchText, isSearchMode: true))
+            // 검색 화면에서만 검색바 표시
+            isSearchPresented = true
+        }
+        .onChange(of: searchText) { _, newValue in
+            viewModel.send(.updateSearchText(newValue, isSearchMode: true))
         }
         .onReceive(NotificationCenter.default.publisher(for: .qtDidChange)) { _ in
-            viewModel.send(.load)
+            // 검색 결과 갱신 (검색어가 있을 때만)
+            if !searchText.isEmpty {
+                viewModel.send(.load)
+            }
         }
         .alert("기록 삭제", isPresented: Binding(
             get: { viewModel.state.showDeleteAlert },
@@ -182,176 +170,21 @@ public struct QTListView: View {
         } message: {
             Text("이 기록을 삭제할까요? 이 작업은 되돌릴 수 없습니다.")
         }
-        .navigationDestination(for: QTRoute.self) { route in
+        .navigationDestination(for: QTSearchRoute.self) { route in
             switch route {
             case .detail(let qt):
                 QTDetailView(
                     viewModel: detailViewModelFactory(qt),
                     editorViewModelFactory: editorViewModelFactory
                 )
-            case .result, .editor:
-                EmptyView()
+                .navigationBarBackButtonHidden(false)
             }
         }
     }
 }
 
 // MARK: - Subviews
-private extension QTListView {
-
-    @ViewBuilder
-    func searchBar() -> some View {
-        let cancelWidth: CGFloat = 32
-        let reservedGap: CGFloat = 8
-        let reservedWidth = cancelWidth + reservedGap
-
-        ZStack(alignment: .trailing) {
-            HStack(spacing: DS.Spacing.m) {
-                Image(systemName: "magnifyingglass")
-                    .foregroundStyle(DS.Color.gold)
-                    .font(DS.Font.bodyL())
-
-                TextField("말씀, 태그, 내용으로 검색", text: Binding(
-                    get: { viewModel.state.searchText },
-                    set: { viewModel.send(.updateSearchText($0, isSearchMode: false)) }
-                ))
-                .font(DS.Font.bodyM())
-                .foregroundStyle(DS.Color.textPrimary)
-                .textFieldStyle(.plain)
-                .autocapitalization(.none)
-                .disableAutocorrection(true)
-                .focused($isSearchFocused)
-            }
-            .padding(18)
-            .background(
-                RoundedRectangle(cornerRadius: 16)
-                    .fill(DS.Color.canvas.opacity(0.9))
-            )
-            .padding(.trailing, cancelSlotWidth)
-            .animation(.easeInOut(duration: 0.2), value: cancelSlotWidth)
-
-            Button {
-                Haptics.tap()
-                viewModel.send(.updateSearchText("", isSearchMode: false))
-                isSearchFocused = false
-            } label: {
-                Text("취소")
-                    .font(DS.Font.bodyM(.medium))
-                    .foregroundStyle(DS.Color.gold)
-            }
-            .frame(width: cancelWidth, alignment: .trailing)
-            .opacity(showCancelButton ? 1 : 0)
-            .allowsHitTesting(showCancelButton)
-        }
-        .padding(.horizontal, DS.Spacing.l)
-        .onChange(of: isSearchFocused) { _, focused in
-            cancelButtonWorkItem?.cancel()
-
-            if focused {
-                cancelSlotWidth = reservedWidth
-
-                let workItem = DispatchWorkItem {
-                    withAnimation(.easeIn(duration: 0.12)) {
-                        showCancelButton = true
-                    }
-                }
-                cancelButtonWorkItem = workItem
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.2, execute: workItem)
-
-            } else {
-                withAnimation(.easeOut(duration: 0.1)) {
-                    showCancelButton = false
-                }
-                cancelSlotWidth = 0
-            }
-        }
-    }
-
-    @ViewBuilder
-    func filterBar() -> some View {
-        ScrollView(.horizontal, showsIndicators: false) {
-            HStack(spacing: DS.Spacing.m) {
-                Menu {
-                    ForEach(QTListState.FilterType.allCases, id: \.self) { filter in
-                        Button {
-                            Haptics.tap()
-                            viewModel.send(.selectFilter(filter))
-                        } label: {
-                            HStack {
-                                Text(filter.displayName)
-                                if viewModel.state.selectedFilter == filter {
-                                    Image(systemName: "checkmark")
-                                }
-                            }
-                        }
-                    }
-                } label: {
-                    filterButton(text: viewModel.state.selectedFilter.displayName)
-                }
-
-                Menu {
-                    ForEach(QTListState.SortType.allCases, id: \.self) { sort in
-                        Button {
-                            Haptics.tap()
-                            viewModel.send(.selectSort(sort))
-                        } label: {
-                            HStack {
-                                Text(sort.displayName)
-                                if viewModel.state.selectedSort == sort {
-                                    Image(systemName: "checkmark")
-                                }
-                            }
-                        }
-                    }
-                } label: {
-                    sortButton(text: viewModel.state.selectedSort.displayName)
-                }
-            }
-            .padding(.horizontal, DS.Spacing.l)
-        }
-        .padding(.top, DS.Spacing.m)
-        .padding(.bottom, DS.Spacing.xs)
-    }
-
-    @ViewBuilder
-    func filterButton(text: String) -> some View {
-        ZStack {
-            Capsule()
-                .fill(DS.Color.canvas.opacity(0.9))
-                .frame(width: 105, height: 38)
-
-            HStack(spacing: DS.Spacing.xs) {
-                Text(text)
-                    .font(DS.Font.bodyM(.medium))
-                    .foregroundStyle(DS.Color.textPrimary)
-
-                Image(systemName: "chevron.down")
-                    .font(DS.Font.caption())
-                    .foregroundStyle(DS.Color.textPrimary)
-            }
-        }
-        .frame(width: 105, height: 38)
-    }
-
-    @ViewBuilder
-    func sortButton(text: String) -> some View {
-        ZStack {
-            Capsule()
-                .fill(DS.Color.canvas.opacity(0.9))
-                .frame(width: 105, height: 38)
-
-            HStack(spacing: DS.Spacing.xs) {
-                Text(text)
-                    .font(DS.Font.bodyM(.medium))
-                    .foregroundStyle(DS.Color.textPrimary)
-
-                Image(systemName: "chevron.down")
-                    .font(DS.Font.caption())
-                    .foregroundStyle(DS.Color.textPrimary)
-            }
-        }
-        .frame(width: 105, height: 38)
-    }
+private extension QTSearchListView {
 
     @ViewBuilder
     func entryCell(_ qt: QuietTime) -> some View {
@@ -421,19 +254,15 @@ private extension QTListView {
                     .frame(width: 120, height: 120)
                     .blur(radius: 20)
 
-                Image(systemName: "book.closed")
+                Image(systemName: "magnifyingglass")
                     .font(.system(size: 60))
                     .foregroundStyle(DS.Color.gold)
             }
 
             VStack(spacing: DS.Spacing.s) {
-                Text("아직 기록이 없어요")
+                Text(searchText.isEmpty ? "검색어를 입력해 주세요" : "검색된 내용이 없어요")
                     .font(DS.Font.titleM(.semibold))
                     .foregroundStyle(DS.Color.textPrimary)
-
-                Text("오늘의 말씀에서 시작해 보세요")
-                    .font(DS.Font.bodyM())
-                    .foregroundStyle(DS.Color.textSecondary)
             }
 
             Spacer()

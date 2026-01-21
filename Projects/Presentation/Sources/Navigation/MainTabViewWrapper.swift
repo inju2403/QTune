@@ -23,6 +23,9 @@ public struct MainTabViewWrapper: View {
     @State private var selectedTab = 0
     @Binding var userProfile: UserProfile?
     @State private var isRequestVerseLoading = false
+    @State private var searchText = ""
+    @State private var previousTab = 0
+    @State private var isSearchPresented = false
 
     public init(
         qtListViewModel: QTListViewModel,
@@ -54,6 +57,122 @@ public struct MainTabViewWrapper: View {
 
     @ViewBuilder
     private var tabViewContent: some View {
+        if #available(iOS 26.0, *) {
+            // iOS 26+ Liquid Glass Tab Bar
+            liquidGlassTabView
+        } else {
+            // iOS 18-25 fallback
+            legacyTabView
+        }
+    }
+
+    @available(iOS 26.0, *)
+    @ViewBuilder
+    private var liquidGlassTabView: some View {
+        TabView(selection: $selectedTab) {
+            Tab("오늘의 말씀", systemImage: "sparkles", value: 0) {
+                RootNavigationView(
+                    onNavigateToRecordTab: {
+                        withAnimation(.easeInOut(duration: 0.35)) {
+                            selectedTab = 1
+                        }
+                    }
+                ) { path, onNavigateToRecordTab in
+                    RequestVerseView(
+                        viewModel: RequestVerseViewModel(
+                            generateVerseUseCase: generateVerseUseCase
+                        ),
+                        path: path,
+                        commitQTUseCase: commitQTUseCase,
+                        session: session,
+                        getUserProfileUseCase: getUserProfileUseCase,
+                        saveUserProfileUseCase: saveUserProfileUseCase,
+                        onNavigateToRecordTab: onNavigateToRecordTab,
+                        onNavigateToMyPage: {
+                            withAnimation(.easeInOut(duration: 0.35)) {
+                                selectedTab = 2
+                            }
+                        },
+                        isLoading: $isRequestVerseLoading,
+                        userProfile: $userProfile
+                    )
+                }
+            }
+
+            Tab("기록", systemImage: "book.closed", value: 1) {
+                RootNavigationView(
+                    onNavigateToRecordTab: {
+                        // 이미 기록 탭이므로 아무것도 안 함
+                    }
+                ) { path, _ in
+                    QTListView(
+                        viewModel: qtListViewModel,
+                        userProfile: $userProfile,
+                        path: path,
+                        detailViewModelFactory: detailViewModelFactory,
+                        editorViewModelFactory: editorViewModelFactory,
+                        profileEditViewModelFactory: profileEditViewModelFactory,
+                        getUserProfileUseCase: getUserProfileUseCase,
+                        onNavigateToMyPage: {
+                            withAnimation(.easeInOut(duration: 0.35)) {
+                                selectedTab = 2
+                            }
+                        },
+                        hideSearchBar: true
+                    )
+                }
+            }
+
+            Tab("마이페이지", systemImage: "person.circle", value: 2) {
+                MyPageView(
+                    viewModel: MyPageViewModel(),
+                    userProfile: $userProfile,
+                    profileEditViewModelFactory: profileEditViewModelFactory,
+                    getUserProfileUseCase: getUserProfileUseCase
+                )
+            }
+
+            Tab(value: 3, role: .search) {
+                SearchTabNavigationView(
+                    qtListViewModel: qtListViewModel,
+                    userProfile: $userProfile,
+                    searchText: $searchText,
+                    isSearchPresented: $isSearchPresented,
+                    detailViewModelFactory: detailViewModelFactory,
+                    editorViewModelFactory: editorViewModelFactory,
+                    profileEditViewModelFactory: profileEditViewModelFactory,
+                    getUserProfileUseCase: getUserProfileUseCase,
+                    onNavigateToMyPage: {
+                        selectedTab = 2
+                        isSearchPresented = false
+                        searchText = ""
+                    }
+                )
+                .onChange(of: isSearchPresented) { _, presented in
+                    if !presented && selectedTab == 3 && searchText.isEmpty {
+                        selectedTab = previousTab
+                    }
+                }
+            }
+        }
+        .allowsHitTesting(!isRequestVerseLoading)
+        .tint(DS.Color.mocha)
+        .onChange(of: selectedTab) { oldValue, newValue in
+            if newValue == 3 {
+                previousTab = oldValue
+                // isSearchPresented는 QTSearchListView 내부에서 관리
+            } else {
+                isSearchPresented = false
+            }
+        }
+        .onAppear {
+            UITabBar.appearance().itemPositioning = .centered
+            UITabBar.appearance().itemSpacing = 8
+        }
+    }
+
+    @ViewBuilder
+    private var legacyTabView: some View {
         TabView(selection: $selectedTab) {
             RootNavigationView(
                 onNavigateToRecordTab: {
@@ -90,19 +209,26 @@ public struct MainTabViewWrapper: View {
                 removal: .move(edge: .trailing).combined(with: .opacity)
             ))
 
-            QTListView(
-                viewModel: qtListViewModel,
-                userProfile: $userProfile,
-                detailViewModelFactory: detailViewModelFactory,
-                editorViewModelFactory: editorViewModelFactory,
-                profileEditViewModelFactory: profileEditViewModelFactory,
-                getUserProfileUseCase: getUserProfileUseCase,
-                onNavigateToMyPage: {
-                    withAnimation(.easeInOut(duration: 0.35)) {
-                        selectedTab = 2
-                    }
+            RootNavigationView(
+                onNavigateToRecordTab: {
+                    // 이미 기록 탭이므로 아무것도 안 함
                 }
-            )
+            ) { path, _ in
+                QTListView(
+                    viewModel: qtListViewModel,
+                    userProfile: $userProfile,
+                    path: path,
+                    detailViewModelFactory: detailViewModelFactory,
+                    editorViewModelFactory: editorViewModelFactory,
+                    profileEditViewModelFactory: profileEditViewModelFactory,
+                    getUserProfileUseCase: getUserProfileUseCase,
+                    onNavigateToMyPage: {
+                        withAnimation(.easeInOut(duration: 0.35)) {
+                            selectedTab = 2
+                        }
+                    }
+                )
+            }
             .tabItem {
                 Label("기록", systemImage: "book.closed")
             }
