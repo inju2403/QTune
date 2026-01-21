@@ -59,12 +59,18 @@ public final class QTListViewModel {
             // 검색 모드일 때는 검색어가 있을 때만 로드
             if isSearchMode {
                 if !text.isEmpty {
+                    // 검색어가 변경되면 즉시 기존 리스트 비우기 (깜빡임 방지)
+                    state.qtList = []
+
                     // 200ms 후 검색 실행 (debounce)
                     searchTask = Task {
                         try? await Task.sleep(nanoseconds: 200_000_000) // 200ms
                         guard !Task.isCancelled else { return }
                         await load()
                     }
+                } else {
+                    // 검색어가 비어지면 즉시 리스트 비우기
+                    state.qtList = []
                 }
                 // 검색어가 비어있으면 아무것도 안 함 (빈 화면 유지)
             } else {
