@@ -2,9 +2,6 @@ import ProjectDescription
 
 let project = Project(
   name: "App",
-  packages: [
-    .remote(url: "https://github.com/firebase/firebase-ios-sdk", requirement: .upToNextMajor(from: "11.0.0"))
-  ],
   targets: [
     .target(
       name: "App",
@@ -64,11 +61,7 @@ let project = Project(
       dependencies: [
         .project(target: "Presentation", path: "../Presentation"),
         .project(target: "Domain", path: "../Domain"),
-        .project(target: "Data", path: "../Data"),
-        .package(product: "FirebaseAnalytics"),
-        .package(product: "FirebaseAuth"),
-        .package(product: "FirebaseCore"),
-        .package(product: "FirebaseCrashlytics")
+        .project(target: "Data", path: "../Data")
       ]
     )
   ]
