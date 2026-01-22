@@ -46,7 +46,7 @@ public final class QTListViewModel {
         case .loadMore:
             Task { await loadMore() }
 
-        case .updateSearchText(let text):
+        case .updateSearchText(let text, let isSearchMode):
             let previousText = state.searchText
             state.searchText = text
 
@@ -56,15 +56,34 @@ public final class QTListViewModel {
             // 이전 검색 Task 취소
             searchTask?.cancel()
 
-            // 검색어가 비어있으면 즉시 로드 (debounce 없이)
-            if text.isEmpty {
-                Task { await load() }
+            // 검색 모드일 때는 검색어가 있을 때만 로드
+            if isSearchMode {
+                if !text.isEmpty {
+                    // 검색어가 변경되면 즉시 기존 리스트 비우기 (깜빡임 방지)
+                    state.qtList = []
+
+                    // 200ms 후 검색 실행 (debounce)
+                    searchTask = Task {
+                        try? await Task.sleep(nanoseconds: 200_000_000) // 200ms
+                        guard !Task.isCancelled else { return }
+                        await load()
+                    }
+                } else {
+                    // 검색어가 비어지면 즉시 리스트 비우기
+                    state.qtList = []
+                }
+                // 검색어가 비어있으면 아무것도 안 함 (빈 화면 유지)
             } else {
-                // 200ms 후 검색 실행 (debounce)
-                searchTask = Task {
-                    try? await Task.sleep(nanoseconds: 200_000_000) // 200ms
-                    guard !Task.isCancelled else { return }
-                    await load()
+                // 일반 모드: 검색어가 비어있으면 즉시 로드
+                if text.isEmpty {
+                    Task { await load() }
+                } else {
+                    // 200ms 후 검색 실행 (debounce)
+                    searchTask = Task {
+                        try? await Task.sleep(nanoseconds: 200_000_000) // 200ms
+                        guard !Task.isCancelled else { return }
+                        await load()
+                    }
                 }
             }
 

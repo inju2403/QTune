@@ -12,6 +12,7 @@ import Domain
 public enum QTRoute: Hashable {
     case result(GeneratedVerseResult)
     case editor(template: TemplateKind, verseEN: String, verseRef: String, explKR: String, rationale: String, verse: Verse)
+    case detail(QuietTime)
 }
 
 /// 템플릿 종류
