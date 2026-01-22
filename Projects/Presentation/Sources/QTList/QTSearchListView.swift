@@ -133,8 +133,10 @@ public struct QTSearchListView: View {
         .onAppear {
             // 검색 모드로 초기화
             viewModel.send(.updateSearchText(searchText, isSearchMode: true))
-            // 검색 화면에서만 검색바 표시
-            isSearchPresented = true
+            // 검색 화면에서만 검색바 표시 (View 렌더링 후 활성화)
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                isSearchPresented = true
+            }
         }
         .onChange(of: searchText) { _, newValue in
             viewModel.send(.updateSearchText(newValue, isSearchMode: true))

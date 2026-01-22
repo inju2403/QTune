@@ -155,7 +155,6 @@ public struct MainTabViewWrapper: View {
         .onChange(of: selectedTab) { oldValue, newValue in
             if newValue == 3 {
                 previousTab = oldValue
-                // isSearchPresented는 QTSearchListView 내부에서 관리
             } else {
                 isSearchPresented = false
             }
