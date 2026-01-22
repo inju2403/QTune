@@ -179,7 +179,7 @@ struct QTuneApp: App {
             // 앱 시작 시 QT 리스트 미리 로드
             let _ = {
                 Task {
-                    await qtListVM.send(.load)
+                    qtListVM.send(.load)
                 }
             }()
 
