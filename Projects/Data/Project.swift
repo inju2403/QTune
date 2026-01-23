@@ -17,10 +17,8 @@ let project = Project(
       buildableFolders: [.folder("Sources")],
       dependencies: [
         .project(target: "Domain", path: "../Domain"),
-        .package(product: "FirebaseFunctions", type: .runtime),
-        .package(product: "FirebaseAuth", type: .runtime),
-        .package(product: "FirebaseCrashlytics", type: .runtime),
-        .package(product: "FirebaseAnalytics", type: .runtime)
+        .package(product: "FirebaseFunctions"),
+        .package(product: "FirebaseAuth")
       ]
     )
   ]
