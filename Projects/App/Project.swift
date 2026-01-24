@@ -14,8 +14,8 @@ let project = Project(
       deploymentTargets: .iOS("17.0"),
       infoPlist: .extendingDefault(with: [
         "CFBundleDisplayName": "QTune",
-        "CFBundleShortVersionString": "1.4.0",
-        "CFBundleVersion": "140",
+        "CFBundleShortVersionString": "1.4.1",
+        "CFBundleVersion": "146",
         "UILaunchStoryboardName": "LaunchScreen",
         "UIViewControllerBasedStatusBarAppearance": true,
         "UIUserInterfaceStyle": "Light"
@@ -66,10 +66,16 @@ let project = Project(
         .project(target: "Domain", path: "../Domain"),
         .project(target: "Data", path: "../Data"),
         .package(product: "FirebaseAnalytics"),
-        .package(product: "FirebaseAuth"),
-        .package(product: "FirebaseCore"),
-        .package(product: "FirebaseCrashlytics")
-      ]
+        .package(product: "FirebaseCrashlytics"),
+        .package(product: "FirebaseCore")
+      ],
+      settings: .settings(
+        base: [
+            "OTHER_LDFLAGS": .array(["$(inherited)", "-ObjC"])
+        ],
+        configurations: [],
+        defaultSettings: .recommended
+      )
     )
   ]
 )

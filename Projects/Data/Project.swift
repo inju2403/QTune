@@ -18,9 +18,7 @@ let project = Project(
       dependencies: [
         .project(target: "Domain", path: "../Domain"),
         .package(product: "FirebaseFunctions"),
-        .package(product: "FirebaseAuth"),
-        .package(product: "FirebaseCrashlytics"),
-        .package(product: "FirebaseAnalytics")
+        .package(product: "FirebaseAuth")
       ]
     )
   ]
