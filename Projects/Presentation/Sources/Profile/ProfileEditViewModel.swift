@@ -62,7 +62,14 @@ public final class ProfileEditViewModel {
             try await saveUserProfileUseCase.execute(profile: profile)
 
             state.isSaving = false
-            onSaveComplete?()
+            state.showSaveSuccessToast = true
+
+            // 1.5초 후 토스트 숨김 & dismiss
+            Task {
+                try? await Task.sleep(nanoseconds: 1_500_000_000)
+                state.showSaveSuccessToast = false
+                onSaveComplete?()
+            }
         } catch {
             print("Failed to save profile: \(error)")
             state.isSaving = false

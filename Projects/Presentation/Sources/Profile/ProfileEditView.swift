@@ -59,9 +59,18 @@ public struct ProfileEditView: View {
         }
         .navigationTitle("")
         .navigationBarTitleDisplayMode(.inline)
+        .overlay(alignment: .bottom) {
+            if viewModel.state.showSaveSuccessToast {
+                successToast()
+                    .transition(.move(edge: .bottom).combined(with: .opacity))
+                    .animation(Motion.appear, value: viewModel.state.showSaveSuccessToast)
+                    .onAppear {
+                        Haptics.success()
+                    }
+            }
+        }
         .onAppear {
             viewModel.onSaveComplete = {
-                Haptics.success()
                 dismiss()
             }
         }
@@ -286,5 +295,29 @@ private extension ProfileEditView {
                 )
         }
         .buttonStyle(.plain)
+    }
+
+    @ViewBuilder
+    func successToast() -> some View {
+        SoftCard {
+            HStack(spacing: DS.Spacing.m) {
+                ZStack {
+                    Circle()
+                        .fill(DS.Color.success.opacity(0.2))
+                        .frame(width: 32, height: 32)
+                        .blur(radius: 6)
+
+                    Image(systemName: "checkmark.circle.fill")
+                        .foregroundStyle(DS.Color.success)
+                        .font(DS.Font.titleM())
+                }
+
+                Text("프로필이 저장되었습니다")
+                    .font(DS.Font.bodyM(.semibold))
+                    .foregroundStyle(DS.Color.textPrimary)
+            }
+        }
+        .padding(.horizontal, DS.Spacing.l)
+        .padding(.bottom, DS.Spacing.xxl)
     }
 }
