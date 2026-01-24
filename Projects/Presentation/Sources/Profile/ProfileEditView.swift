@@ -295,6 +295,8 @@ private extension ProfileEditView {
                 )
         }
         .buttonStyle(.plain)
+        .disabled(viewModel.state.isSaving || viewModel.state.showSaveSuccessToast)
+        .opacity(viewModel.state.isSaving || viewModel.state.showSaveSuccessToast ? 0.5 : 1.0)
     }
 
     @ViewBuilder
@@ -312,7 +314,7 @@ private extension ProfileEditView {
                         .font(DS.Font.titleM())
                 }
 
-                Text("프로필이 저장되었습니다")
+                Text("저장되었습니다")
                     .font(DS.Font.bodyM(.semibold))
                     .foregroundStyle(DS.Color.textPrimary)
             }
