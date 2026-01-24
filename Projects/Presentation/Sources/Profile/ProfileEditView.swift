@@ -59,6 +59,12 @@ public struct ProfileEditView: View {
         }
         .navigationTitle("")
         .navigationBarTitleDisplayMode(.inline)
+        .onAppear {
+            viewModel.onSaveComplete = {
+                Haptics.success()
+                dismiss()
+            }
+        }
         .onTapGesture {
             self.endTextEditing()
         }
@@ -76,12 +82,6 @@ public struct ProfileEditView: View {
                         viewModel.send(.updateProfileImage(data))
                     }
                 }
-            }
-        }
-        .onChange(of: viewModel.state.isSaving) { _, isSaving in
-            if !isSaving && !viewModel.state.showError {
-                Haptics.success()
-                dismiss()
             }
         }
         .alert("오류", isPresented: Binding(
