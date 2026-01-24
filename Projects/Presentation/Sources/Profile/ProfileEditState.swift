@@ -15,19 +15,22 @@ public struct ProfileEditState: Equatable {
     public var profileImageData: Data?
     public var isSaving: Bool
     public var showError: Bool
+    public var showSaveSuccessToast: Bool
 
     public init(
         nickname: String = "",
         selectedGender: UserProfile.Gender = .brother,
         profileImageData: Data? = nil,
         isSaving: Bool = false,
-        showError: Bool = false
+        showError: Bool = false,
+        showSaveSuccessToast: Bool = false
     ) {
         self.nickname = nickname
         self.selectedGender = selectedGender
         self.profileImageData = profileImageData
         self.isSaving = isSaving
         self.showError = showError
+        self.showSaveSuccessToast = showSaveSuccessToast
     }
 
     public init(from profile: UserProfile?) {
@@ -36,5 +39,6 @@ public struct ProfileEditState: Equatable {
         self.profileImageData = profile?.profileImageData
         self.isSaving = false
         self.showError = false
+        self.showSaveSuccessToast = false
     }
 }

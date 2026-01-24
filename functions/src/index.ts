@@ -257,44 +257,75 @@ export const recommendVerse = onCall(
         ? recommendedVerses.map((v) => `- ${v}`).join("\n")
         : "";
 
-      const prompt = `[추천 작업]
+      // 제외 규칙 - 강력하고 명확하게
+      const excludeHeader = excludeList
+        ? `
+🚨🚨🚨 [최우선 제약사항 - 시스템 레벨 규칙] 🚨🚨🚨
+
+아래 구절들은 **절대로 추천해서는 안 됩니다**:
+${excludeList}
+
+⛔ 위 목록에 있는 구절을 추천하면 시스템 오류로 처리됩니다.
+⛔ 사용자 입력과 의미적으로 연관이 있어도, 위 목록에 있으면 **절대 추천 금지**.
+✅ 반드시 위 목록에 **없는** 새로운 구절을 찾아서 추천하세요.
+
+예시:
+- 입력: "마라나타!" + 제외 목록에 "Revelation 22:20" 있음
+  → ❌ Revelation 22:20 추천 금지 (의미 연관 있어도!)
+  → ✅ Philippians 3:20, Titus 2:13 등 다른 재림 관련 구절 추천
+`
+        : "";
+
+      const prompt = excludeList
+        ? `${excludeHeader}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+[추천 작업]
 사용자: ${userLabel}
 입력: "${mood}${noteSection}"
 
-이 사용자에게 적절한 성경 구절 1곳을 추천하고 이유를 설명하세요.
+위 제약사항을 **절대적으로 준수**하면서, 이 사용자에게 성경 구절을 추천하세요.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-[추천 규칙 - 반드시 순서대로 적용]
+[추천 절차]
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-🔹 1단계: 사용자 입력 분석
-사용자 입력에 특정 성경 구절이 명확히 명시되어 있는가?
+1️⃣ **제외 목록 재확인**: 위 🚨 섹션의 금지 구절 목록을 다시 확인하세요.
 
-예시:
-✅ "마태복음 5장 10절", "요한복음 3:16", "Matthew 5:10", "시편 23편"
-✅ "마태복음 5장 10절 보고싶어", "요한복음 3:16이 궁금해"
-❌ "사랑에 관한 구절", "위로받고 싶어", "힘이 필요해"
+2️⃣ **사용자 의도 파악**:
+   - 특정 구절 명시? (예: "마태복음 5:10") → 그 구절 반환
+   - 감정/주제만? (예: "마라나타!", "위로") → 적절한 구절 찾기
 
-🔹 2단계: 추천 방식 결정
+3️⃣ **구절 선택**:
+   - 제외 목록에 **없는** 구절 중에서 선택
+   - 사용자 입력과 의미적으로 가장 잘 맞는 구절
 
-▶ 구절이 명시된 경우 (1단계에서 YES):
-  → **사용자가 명시한 그 구절을 verseRef로 반환**
-  → 아래 3단계 제외 목록은 **완전히 무시**
-
-▶ 구절이 명시되지 않은 경우 (1단계에서 NO):
-  → 사용자 감정/상황에 맞는 구절 추천
-  → 3단계 제외 목록 규칙 적용
-
-🔹 3단계: 제외 목록 (구절 명시되지 않은 경우에만 적용)
-${excludeList ? `아래 구절들은 이미 추천했으므로 절대 추천하지 말 것:\n${excludeList}` : "(제외 목록 없음)"}
+4️⃣ **최종 검증**: 선택한 verseRef가 제외 목록에 **없는지** 다시 확인!
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-[출력 형식]
-- verseRef: 영어 책명 + 장:절 (예: "John 3:16", "Matthew 5:10", "Psalms 23:1")
-- rationale: "${userLabel}이" 로 시작하는 추천 이유 (1-2문장)
+[출력]
+- verseRef: 영어 책명 + 장:절 (예: "John 3:16")
+- rationale: 추천 이유 (1-2문장, 따뜻한 어조)`
+        : `[추천 작업]
+사용자: ${userLabel}
+입력: "${mood}${noteSection}"
 
-반드시 JSON Schema에 맞춰 응답하세요.`;
+이 사용자에게 성경 구절 1곳을 추천하고 이유를 설명하세요.
+
+[추천 절차]
+1. 사용자가 특정 구절을 명시했는가?
+   - YES: 그 구절 반환
+   - NO: 사용자 감정/상황에 맞는 구절 추천
+
+[출력]
+- verseRef: 영어 책명 + 장:절 (예: "John 3:16")
+- rationale: 추천 이유 (1-2문장, 따뜻한 어조)`;
+
+      const verseRefDescription = excludeList
+        ? `성경 구절 참조 (예: John 3:16). ⚠️ 중요: 제외 목록에 있는 구절은 절대 추천 금지! 새로운 구절만 반환할 것.`
+        : "성경 구절 참조 (예: John 3:16, Psalms 23:1)";
 
       const responseFormat = {
         type: "json_schema" as const,
@@ -306,7 +337,7 @@ ${excludeList ? `아래 구절들은 이미 추천했으므로 절대 추천하�
             properties: {
               verseRef: {
                 type: "string",
-                description: "성경 구절 참조 (예: John 3:16, Psalms 23:1)",
+                description: verseRefDescription,
               },
               rationale: {
                 type: "string",
@@ -323,6 +354,7 @@ ${excludeList ? `아래 구절들은 이미 추천했으므로 절대 추천하�
 
       const completion = await openai.chat.completions.create({
         model: "gpt-4o-mini",
+        temperature: 0.3, // 낮은 온도로 규칙 준수율 향상
         messages: [
           {
             role: "user",
@@ -341,6 +373,16 @@ ${excludeList ? `아래 구절들은 이미 추천했으므로 절대 추천하�
       }
 
       const result = JSON.parse(content);
+
+      // 제외 목록 위반 감지 (디버깅용 경고)
+      if (recommendedVerses.includes(result.verseRef)) {
+        logger.warn("⚠️ GPT가 제외 목록을 무시하고 이미 추천한 구절을 재추천함!", {
+          verseRef: result.verseRef,
+          mood,
+          excludedCount: recommendedVerses.length,
+        });
+      }
+
       logger.info("recommendVerse success", { verseRef: result.verseRef });
 
       // 추천 결과를 이력에 저장 (동기화하여 다음 요청에서 바로 반영되도록)
@@ -435,7 +477,10 @@ ${englishText}
 [출력 형식]
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 - korean: "{한글 구절명}\\n{의역문(1~2문장)}"
-- rationale: "${userLabel}님"으로 시작하는 추천 이유 (1~2문장)
+- rationale: 추천 이유 (1~2문장)
+  * 자연스럽고 따뜻한 어조로 작성
+  * 예: "${userLabel}께서 지친 하루를 보내셨기에, 이 말씀으로 위로를 받으시길 바랍니다."
+  * 예: "${userLabel}의 마음에 평안이 필요하실 것 같아, 이 구절을 추천드립니다."
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 [규칙 - 매우 중요]
@@ -519,6 +564,7 @@ C. 사람이 하나님께 드리는 고백/기도 톤(시편 등)인 경우
 
       const completion = await openai.chat.completions.create({
         model: "gpt-4o-mini",
+        temperature: 0.3, // 낮은 온도로 규칙 준수율 향상
         messages: [
           {
             role: "user",

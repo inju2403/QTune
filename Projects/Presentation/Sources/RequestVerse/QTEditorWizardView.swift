@@ -188,6 +188,9 @@ public struct QTEditorWizardView: View {
 
                     // 다음/저장 버튼 (확장)
                     Button {
+                        guard viewModel.state.isCurrentStepValid else { return }
+                        guard !viewModel.state.isSaving && !viewModel.state.showSaveSuccessToast else { return }
+
                         Haptics.tap()
                         withAnimation(.spring(response: 0.6, dampingFraction: 0.8)) {
                             viewModel.send(.stepNext)
@@ -235,7 +238,6 @@ public struct QTEditorWizardView: View {
                                 )
                         )
                     }
-                    .disabled(!viewModel.state.isCurrentStepValid)
                     .animation(.easeInOut(duration: 0.2), value: viewModel.state.isCurrentStepValid)
                     .buttonStyle(.plain)
                 }

@@ -59,6 +59,21 @@ public struct ProfileEditView: View {
         }
         .navigationTitle("")
         .navigationBarTitleDisplayMode(.inline)
+        .overlay(alignment: .bottom) {
+            if viewModel.state.showSaveSuccessToast {
+                successToast()
+                    .transition(.move(edge: .bottom).combined(with: .opacity))
+                    .animation(Motion.appear, value: viewModel.state.showSaveSuccessToast)
+                    .onAppear {
+                        Haptics.success()
+                    }
+            }
+        }
+        .onAppear {
+            viewModel.onSaveComplete = {
+                dismiss()
+            }
+        }
         .onTapGesture {
             self.endTextEditing()
         }
@@ -76,12 +91,6 @@ public struct ProfileEditView: View {
                         viewModel.send(.updateProfileImage(data))
                     }
                 }
-            }
-        }
-        .onChange(of: viewModel.state.isSaving) { _, isSaving in
-            if !isSaving && !viewModel.state.showError {
-                Haptics.success()
-                dismiss()
             }
         }
         .alert("오류", isPresented: Binding(
@@ -261,6 +270,7 @@ private extension ProfileEditView {
     @ViewBuilder
     func saveButton() -> some View {
         Button {
+            guard !viewModel.state.isSaving && !viewModel.state.showSaveSuccessToast else { return }
             Haptics.tap()
             viewModel.send(.saveProfile)
         } label: {
@@ -286,5 +296,29 @@ private extension ProfileEditView {
                 )
         }
         .buttonStyle(.plain)
+    }
+
+    @ViewBuilder
+    func successToast() -> some View {
+        SoftCard {
+            HStack(spacing: DS.Spacing.m) {
+                ZStack {
+                    Circle()
+                        .fill(DS.Color.success.opacity(0.2))
+                        .frame(width: 32, height: 32)
+                        .blur(radius: 6)
+
+                    Image(systemName: "checkmark.circle.fill")
+                        .foregroundStyle(DS.Color.success)
+                        .font(DS.Font.titleM())
+                }
+
+                Text("저장되었습니다")
+                    .font(DS.Font.bodyM(.semibold))
+                    .foregroundStyle(DS.Color.textPrimary)
+            }
+        }
+        .padding(.horizontal, DS.Spacing.l)
+        .padding(.bottom, DS.Spacing.xxl)
     }
 }

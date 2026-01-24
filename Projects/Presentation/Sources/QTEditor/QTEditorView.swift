@@ -275,6 +275,7 @@ private extension QTEditorView {
             title: "저장",
             icon: ""
         ) {
+            guard !viewModel.state.isSaving && !viewModel.state.showSaveSuccessToast else { return }
             Haptics.tap()
             viewModel.send(.saveQT(draft))
         }
