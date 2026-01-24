@@ -270,6 +270,7 @@ private extension ProfileEditView {
     @ViewBuilder
     func saveButton() -> some View {
         Button {
+            guard !viewModel.state.isSaving && !viewModel.state.showSaveSuccessToast else { return }
             Haptics.tap()
             viewModel.send(.saveProfile)
         } label: {
@@ -295,7 +296,6 @@ private extension ProfileEditView {
                 )
         }
         .buttonStyle(.plain)
-        .disabled(viewModel.state.isSaving || viewModel.state.showSaveSuccessToast)
         .opacity(viewModel.state.isSaving || viewModel.state.showSaveSuccessToast ? 0.5 : 1.0)
     }
 
