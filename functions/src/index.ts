@@ -257,47 +257,65 @@ export const recommendVerse = onCall(
         ? recommendedVerses.map((v) => `- ${v}`).join("\n")
         : "";
 
-      const prompt = `[추천 작업]
+      // 제외 규칙 강화
+      const excludeInstructions = excludeList
+        ? `
+⚠️ **절대 추천 금지 구절 목록** (반드시 회피!)
+${excludeList}
+
+❌ 위 목록에 있는 구절은 **어떤 경우에도 절대 추천하지 마세요!**
+❌ 이미 추천한 구절을 다시 추천하면 **실패**로 간주됩니다!
+✅ 위 목록에 **없는** 새로운 구절만 추천하세요!
+`
+        : "✅ 제외 목록 없음 - 자유롭게 추천 가능";
+
+      const prompt = `[중요 임무]
 사용자: ${userLabel}
 입력: "${mood}${noteSection}"
 
-이 사용자에게 적절한 성경 구절 1곳을 추천하고 이유를 설명하세요.
+이 사용자에게 성경 구절 1곳을 추천하고 이유를 설명하세요.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-[추천 규칙 - 반드시 순서대로 적용]
+[추천 규칙 - 위반 시 실패 처리됨]
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-🔹 1단계: 사용자 입력 분석
-사용자 입력에 특정 성경 구절이 명확히 명시되어 있는가?
+📌 **Step 1: 사용자 입력 분석**
+
+Q: 사용자가 특정 성경 구절을 명확히 지정했는가?
 
 예시:
-✅ "마태복음 5장 10절", "요한복음 3:16", "Matthew 5:10", "시편 23편"
-✅ "마태복음 5장 10절 보고싶어", "요한복음 3:16이 궁금해"
-❌ "사랑에 관한 구절", "위로받고 싶어", "힘이 필요해"
-
-🔹 2단계: 추천 방식 결정
-
-▶ 구절이 명시된 경우 (1단계에서 YES):
-  → **사용자가 명시한 그 구절을 verseRef로 반환**
-  → 아래 3단계 제외 목록은 **완전히 무시**
-
-▶ 구절이 명시되지 않은 경우 (1단계에서 NO):
-  → 사용자 감정/상황에 맞는 구절 추천
-  → 3단계 제외 목록 규칙 적용
-
-🔹 3단계: 제외 목록 (구절 명시되지 않은 경우에만 적용)
-${excludeList ? `아래 구절들은 이미 추천했으므로 절대 추천하지 말 것:\n${excludeList}` : "(제외 목록 없음)"}
+✅ YES: "마태복음 5:10", "요한복음 3:16", "Matthew 5:10 보고싶어"
+❌ NO: "사랑에 관한 구절", "위로받고 싶어", "힘이 필요해"
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-[출력 형식]
-- verseRef: 영어 책명 + 장:절 (예: "John 3:16", "Matthew 5:10", "Psalms 23:1")
-- rationale: 추천 이유 (1-2문장)
-  * 자연스럽고 따뜻한 어조로 작성
-  * 예: "${userLabel}께서 지친 하루를 보내셨기에, 이 말씀으로 위로를 받으시길 바랍니다."
-  * 예: "${userLabel}의 마음에 평안이 필요하실 것 같아, 이 구절을 추천드립니다."
+📌 **Step 2: 추천 방식 결정**
 
-반드시 JSON Schema에 맞춰 응답하세요.`;
+▶ **Step 1 = YES** (구절 명시됨):
+   → 사용자가 지정한 그 구절을 반환
+   → 아래 제외 목록 무시 OK
+
+▶ **Step 1 = NO** (구절 명시 안 됨):
+   → 사용자 감정/상황에 맞는 구절 추천
+   → ⚠️ **아래 제외 목록 반드시 준수!**
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📌 **Step 3: 제외 목록 확인** (Step 1 = NO인 경우만)
+
+${excludeInstructions}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+[출력]
+- verseRef: 영어 책명 + 장:절 (예: "John 3:16")
+- rationale: 추천 이유 (1-2문장, 따뜻한 어조)
+
+반드시 JSON Schema 형식으로 응답하세요.`;
+
+      const verseRefDescription = excludeList
+        ? `성경 구절 참조 (예: John 3:16). ⚠️ 중요: 제외 목록에 있는 구절은 절대 추천 금지! 새로운 구절만 반환할 것.`
+        : "성경 구절 참조 (예: John 3:16, Psalms 23:1)";
 
       const responseFormat = {
         type: "json_schema" as const,
@@ -309,7 +327,7 @@ ${excludeList ? `아래 구절들은 이미 추천했으므로 절대 추천하�
             properties: {
               verseRef: {
                 type: "string",
-                description: "성경 구절 참조 (예: John 3:16, Psalms 23:1)",
+                description: verseRefDescription,
               },
               rationale: {
                 type: "string",
@@ -344,6 +362,16 @@ ${excludeList ? `아래 구절들은 이미 추천했으므로 절대 추천하�
       }
 
       const result = JSON.parse(content);
+
+      // 제외 목록 위반 감지 (디버깅용 경고)
+      if (recommendedVerses.includes(result.verseRef)) {
+        logger.warn("⚠️ GPT가 제외 목록을 무시하고 이미 추천한 구절을 재추천함!", {
+          verseRef: result.verseRef,
+          mood,
+          excludedCount: recommendedVerses.length,
+        });
+      }
+
       logger.info("recommendVerse success", { verseRef: result.verseRef });
 
       // 추천 결과를 이력에 저장 (동기화하여 다음 요청에서 바로 반영되도록)
