@@ -20,7 +20,6 @@ public struct SearchTabNavigationView: View {
     let editorViewModelFactory: () -> QTEditorViewModel
     let profileEditViewModelFactory: (UserProfile?) -> ProfileEditViewModel
     let getUserProfileUseCase: GetUserProfileUseCase
-    let onNavigateToMyPage: () -> Void
 
     @State private var path = NavigationPath()
 
@@ -32,8 +31,7 @@ public struct SearchTabNavigationView: View {
         detailViewModelFactory: @escaping (QuietTime) -> QTDetailViewModel,
         editorViewModelFactory: @escaping () -> QTEditorViewModel,
         profileEditViewModelFactory: @escaping (UserProfile?) -> ProfileEditViewModel,
-        getUserProfileUseCase: GetUserProfileUseCase,
-        onNavigateToMyPage: @escaping () -> Void
+        getUserProfileUseCase: GetUserProfileUseCase
     ) {
         self.qtListViewModel = qtListViewModel
         self._userProfile = userProfile
@@ -43,7 +41,6 @@ public struct SearchTabNavigationView: View {
         self.editorViewModelFactory = editorViewModelFactory
         self.profileEditViewModelFactory = profileEditViewModelFactory
         self.getUserProfileUseCase = getUserProfileUseCase
-        self.onNavigateToMyPage = onNavigateToMyPage
     }
 
     public var body: some View {
@@ -57,8 +54,7 @@ public struct SearchTabNavigationView: View {
                 detailViewModelFactory: detailViewModelFactory,
                 editorViewModelFactory: editorViewModelFactory,
                 profileEditViewModelFactory: profileEditViewModelFactory,
-                getUserProfileUseCase: getUserProfileUseCase,
-                onNavigateToMyPage: onNavigateToMyPage
+                getUserProfileUseCase: getUserProfileUseCase
             )
             .searchable(text: $searchText, isPresented: $isSearchPresented, placement: .automatic, prompt: "QT 기록을 검색해보세요.")
             .autocorrectionDisabled()

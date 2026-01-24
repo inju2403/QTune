@@ -9,10 +9,7 @@ import SwiftUI
 import Presentation
 import Domain
 import Data
-import FirebaseCore
 import FirebaseAuth
-import FirebaseCrashlytics
-import FirebaseAnalytics
 
 @main
 struct QTuneApp: App {
@@ -23,30 +20,12 @@ struct QTuneApp: App {
     @State private var isProfileLoaded = false
     @State private var userProfile: UserProfile?
 
-    // Singleton container (init() 이후 첫 접근 시 lazy 초기화)
-    private let container = AppDependencyContainer.shared
+    // 실제로 사용할 때(body 안에서) 초기화되도록 computed property로 설정
+    var container: AppDependencyContainer {
+        return AppDependencyContainer.shared
+    }
 
     init() {
-        // Firebase를 가장 먼저 초기화
-        if FirebaseApp.app() == nil {
-            FirebaseApp.configure()
-            print("🔥 [QTuneApp.init] Firebase configured")
-
-            // Crashlytics 초기화 (자동 크래시 리포팅 활성화)
-            #if DEBUG
-            print("🐛 [QTuneApp.init] Crashlytics enabled (DEBUG mode)")
-            #else
-            print("📊 [QTuneApp.init] Crashlytics enabled (RELEASE mode)")
-            #endif
-
-            // Analytics 초기화 (자동 이벤트 수집 활성화)
-            #if DEBUG
-            print("📈 [QTuneApp.init] Analytics enabled (DEBUG mode)")
-            #else
-            print("📊 [QTuneApp.init] Analytics enabled (RELEASE mode)")
-            #endif
-        }
-
         // 전역 appearance 설정
         UIWindow.appearance().backgroundColor = .systemBackground
         UIWindow.appearance().tintColor = .systemBlue
@@ -179,7 +158,7 @@ struct QTuneApp: App {
             // 앱 시작 시 QT 리스트 미리 로드
             let _ = {
                 Task {
-                    await qtListVM.send(.load)
+                    qtListVM.send(.load)
                 }
             }()
 

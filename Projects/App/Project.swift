@@ -2,6 +2,9 @@ import ProjectDescription
 
 let project = Project(
   name: "App",
+  packages: [
+    .remote(url: "https://github.com/firebase/firebase-ios-sdk", requirement: .upToNextMajor(from: "11.0.0"))
+  ],
   targets: [
     .target(
       name: "App",
@@ -11,8 +14,8 @@ let project = Project(
       deploymentTargets: .iOS("17.0"),
       infoPlist: .extendingDefault(with: [
         "CFBundleDisplayName": "QTune",
-        "CFBundleShortVersionString": "1.4.0",
-        "CFBundleVersion": "140",
+        "CFBundleShortVersionString": "1.4.1",
+        "CFBundleVersion": "146",
         "UILaunchStoryboardName": "LaunchScreen",
         "UIViewControllerBasedStatusBarAppearance": true,
         "UIUserInterfaceStyle": "Light"
@@ -61,8 +64,18 @@ let project = Project(
       dependencies: [
         .project(target: "Presentation", path: "../Presentation"),
         .project(target: "Domain", path: "../Domain"),
-        .project(target: "Data", path: "../Data")
-      ]
+        .project(target: "Data", path: "../Data"),
+        .package(product: "FirebaseAnalytics"),
+        .package(product: "FirebaseCrashlytics"),
+        .package(product: "FirebaseCore")
+      ],
+      settings: .settings(
+        base: [
+            "OTHER_LDFLAGS": .array(["$(inherited)", "-ObjC"])
+        ],
+        configurations: [],
+        defaultSettings: .recommended
+      )
     )
   ]
 )

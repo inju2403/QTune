@@ -141,12 +141,7 @@ public struct MainTabViewWrapper: View {
                     detailViewModelFactory: detailViewModelFactory,
                     editorViewModelFactory: editorViewModelFactory,
                     profileEditViewModelFactory: profileEditViewModelFactory,
-                    getUserProfileUseCase: getUserProfileUseCase,
-                    onNavigateToMyPage: {
-                        selectedTab = 2
-                        isSearchPresented = false
-                        searchText = ""
-                    }
+                    getUserProfileUseCase: getUserProfileUseCase
                 )
                 .onChange(of: isSearchPresented) { _, presented in
                     if !presented && selectedTab == 3 && searchText.isEmpty {
@@ -160,7 +155,6 @@ public struct MainTabViewWrapper: View {
         .onChange(of: selectedTab) { oldValue, newValue in
             if newValue == 3 {
                 previousTab = oldValue
-                // isSearchPresented는 QTSearchListView 내부에서 관리
             } else {
                 isSearchPresented = false
             }

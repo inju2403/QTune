@@ -189,10 +189,9 @@ public final class QTListViewModel {
     private func toggleFavorite(_ qt: QuietTime) async {
         // Optimistic update: 로컬 state 먼저 업데이트
         if let index = state.qtList.firstIndex(where: { $0.id == qt.id }) {
-            var updatedQT = state.qtList[index]
-            updatedQT.isFavorite.toggle()
-
             await MainActor.run {
+                var updatedQT = state.qtList[index]
+                updatedQT.isFavorite.toggle()
                 state.qtList[index] = updatedQT
             }
         }
@@ -203,10 +202,9 @@ public final class QTListViewModel {
         } catch {
             // 실패 시 롤백
             if let index = state.qtList.firstIndex(where: { $0.id == qt.id }) {
-                var revertedQT = state.qtList[index]
-                revertedQT.isFavorite.toggle()
-
                 await MainActor.run {
+                    var revertedQT = state.qtList[index]
+                    revertedQT.isFavorite.toggle()
                     state.qtList[index] = revertedQT
                 }
             }
