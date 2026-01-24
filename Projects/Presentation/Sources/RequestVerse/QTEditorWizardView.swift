@@ -238,7 +238,6 @@ public struct QTEditorWizardView: View {
                                 )
                         )
                     }
-                    .opacity(viewModel.state.isSaving || viewModel.state.showSaveSuccessToast ? 0.5 : 1.0)
                     .animation(.easeInOut(duration: 0.2), value: viewModel.state.isCurrentStepValid)
                     .buttonStyle(.plain)
                 }

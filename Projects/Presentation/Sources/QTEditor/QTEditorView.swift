@@ -279,7 +279,6 @@ private extension QTEditorView {
             Haptics.tap()
             viewModel.send(.saveQT(draft))
         }
-        .opacity(viewModel.state.isSaving || viewModel.state.showSaveSuccessToast ? 0.5 : 1.0)
         .padding(.horizontal, DS.Spacing.l)
         .padding(.vertical, DS.Spacing.s)
     }

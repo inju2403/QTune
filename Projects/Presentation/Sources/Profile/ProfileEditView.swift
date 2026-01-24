@@ -296,7 +296,6 @@ private extension ProfileEditView {
                 )
         }
         .buttonStyle(.plain)
-        .opacity(viewModel.state.isSaving || viewModel.state.showSaveSuccessToast ? 0.5 : 1.0)
     }
 
     @ViewBuilder
