@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import UIKit
 import Domain
 
 /// QT 상세 화면 ViewModel
@@ -23,6 +24,7 @@ public final class QTDetailViewModel {
 
     // MARK: - Properties
     public var onDeleted: (() -> Void)?
+    private var cachedShareImage: UIImage?
 
     // MARK: - Init
     public init(
@@ -65,8 +67,8 @@ public final class QTDetailViewModel {
                 state.showShareTypeSelection = true
             } else {
                 // 이미지 공유 → 이미지 생성 후 공유
-                state.shareImage = generateShareImage()
-                state.showShareSheet = true
+                cachedShareImage = generateShareImage()
+                state.showImageShareSheet = true
             }
 
         case .selectShareType(let type):
@@ -101,6 +103,8 @@ public final class QTDetailViewModel {
 
         case .closeShareSheet:
             state.showShareSheet = false
+            state.showImageShareSheet = false
+            cachedShareImage = nil
 
         case .showEditSheet(let show):
             state.showEditSheet = show
@@ -334,6 +338,11 @@ public final class QTDetailViewModel {
     }
 
     // MARK: - Image Generation
+
+    /// 캐시된 공유 이미지 가져오기
+    public func getShareImage() -> UIImage? {
+        return cachedShareImage
+    }
 
     /// 공유용 이미지 생성
     private func generateShareImage() -> UIImage {

@@ -6,7 +6,6 @@
 //
 
 import Foundation
-import UIKit
 import Domain
 
 /// 공유 포맷
@@ -48,9 +47,9 @@ public struct QTDetailState: Equatable {
     public var showShareFormatSelection: Bool
     public var showShareTypeSelection: Bool
     public var showFieldSelection: Bool
+    public var showImageShareSheet: Bool
     public var selectedShareFormat: ShareFormat?
     public var selectedShareType: ShareType?
-    public var shareImage: UIImage?
 
     public init(
         qt: QuietTime,
@@ -61,9 +60,9 @@ public struct QTDetailState: Equatable {
         showShareFormatSelection: Bool = false,
         showShareTypeSelection: Bool = false,
         showFieldSelection: Bool = false,
+        showImageShareSheet: Bool = false,
         selectedShareFormat: ShareFormat? = nil,
-        selectedShareType: ShareType? = nil,
-        shareImage: UIImage? = nil
+        selectedShareType: ShareType? = nil
     ) {
         self.qt = qt
         self.showDeleteAlert = showDeleteAlert
@@ -73,8 +72,8 @@ public struct QTDetailState: Equatable {
         self.showShareFormatSelection = showShareFormatSelection
         self.showShareTypeSelection = showShareTypeSelection
         self.showFieldSelection = showFieldSelection
+        self.showImageShareSheet = showImageShareSheet
         self.selectedShareFormat = selectedShareFormat
         self.selectedShareType = selectedShareType
-        self.shareImage = shareImage
     }
 }

@@ -130,10 +130,14 @@ public struct QTDetailView: View {
             get: { viewModel.state.showShareSheet },
             set: { if !$0 { viewModel.send(.closeShareSheet) } }
         )) {
-            if let image = viewModel.state.shareImage {
+            ShareSheet(items: [viewModel.state.shareText])
+        }
+        .sheet(isPresented: Binding(
+            get: { viewModel.state.showImageShareSheet },
+            set: { if !$0 { viewModel.send(.closeShareSheet) } }
+        )) {
+            if let image = viewModel.getShareImage() {
                 ShareSheet(items: [image])
-            } else {
-                ShareSheet(items: [viewModel.state.shareText])
             }
         }
         .sheet(isPresented: Binding(
