@@ -115,7 +115,7 @@ public struct QTDetailView: View {
             set: { if !$0 { viewModel.send(.cancelShare) } }
         )) {
             FieldSelectionSheet(viewModel: viewModel)
-                .presentationDetents([.height(380)])
+                .presentationDetents([.height(viewModel.state.qt.template == "SOAP" ? 340 : 450)])
                 .presentationDragIndicator(.visible)
         }
         .sheet(isPresented: Binding(
