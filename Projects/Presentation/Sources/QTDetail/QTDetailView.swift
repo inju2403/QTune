@@ -103,6 +103,22 @@ public struct QTDetailView: View {
             Text("이 기록을 삭제할까요? 이 작업은 되돌릴 수 없습니다.")
         }
         .sheet(isPresented: Binding(
+            get: { viewModel.state.showShareTypeSelection },
+            set: { if !$0 { viewModel.send(.cancelShare) } }
+        )) {
+            ShareTypeSelectionSheet(viewModel: viewModel)
+                .presentationDetents([.height(280)])
+                .presentationDragIndicator(.visible)
+        }
+        .sheet(isPresented: Binding(
+            get: { viewModel.state.showFieldSelection },
+            set: { if !$0 { viewModel.send(.cancelShare) } }
+        )) {
+            FieldSelectionSheet(viewModel: viewModel)
+                .presentationDetents([.height(380)])
+                .presentationDragIndicator(.visible)
+        }
+        .sheet(isPresented: Binding(
             get: { viewModel.state.showShareSheet },
             set: { if !$0 { viewModel.send(.closeShareSheet) } }
         )) {
@@ -283,6 +299,217 @@ private extension QTDetailView {
         let formatter = DateFormatter()
         formatter.dateFormat = "yyyy.MM.dd"
         return formatter.string(from: date)
+    }
+}
+
+// MARK: - Share Type Selection Sheet
+struct ShareTypeSelectionSheet: View {
+    @ObservedObject var viewModel: QTDetailViewModel
+
+    var body: some View {
+        VStack(spacing: 0) {
+            // 타이틀
+            VStack(spacing: DS.Spacing.xs) {
+                Text("공유 방식 선택")
+                    .font(DS.Font.titleL(.bold))
+                    .foregroundStyle(DS.Color.deepCocoa)
+
+                Text("어떤 방식으로 공유할까요?")
+                    .font(DS.Font.bodyM())
+                    .foregroundStyle(DS.Color.textSecondary)
+            }
+            .padding(.top, DS.Spacing.xl)
+            .padding(.bottom, DS.Spacing.l)
+
+            // 옵션
+            VStack(spacing: DS.Spacing.m) {
+                shareTypeButton(
+                    icon: "sparkles",
+                    title: "선택한 묵상",
+                    description: "영어 말씀 + 해설 + 선택한 묵상 1개",
+                    color: DS.Color.gold,
+                    type: .summary
+                )
+
+                shareTypeButton(
+                    icon: "doc.text.fill",
+                    title: "전체 묵상",
+                    description: "영어 말씀 + 해설 + 전체 묵상 내용",
+                    color: DS.Color.olive,
+                    type: .full
+                )
+            }
+            .padding(.horizontal, DS.Spacing.l)
+
+            Spacer()
+        }
+    }
+
+    @ViewBuilder
+    func shareTypeButton(icon: String, title: String, description: String, color: Color, type: ShareType) -> some View {
+        Button {
+            Haptics.tap()
+            withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                viewModel.send(.selectShareType(type))
+            }
+        } label: {
+            HStack(spacing: DS.Spacing.m) {
+                ZStack {
+                    Circle()
+                        .fill(color.opacity(0.15))
+                        .frame(width: 48, height: 48)
+
+                    Image(systemName: icon)
+                        .font(.system(size: 20, weight: .semibold))
+                        .foregroundStyle(color)
+                }
+
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(title)
+                        .font(DS.Font.titleM(.semibold))
+                        .foregroundStyle(DS.Color.textPrimary)
+
+                    Text(description)
+                        .font(DS.Font.caption())
+                        .foregroundStyle(DS.Color.textSecondary)
+                }
+
+                Spacer()
+
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundStyle(DS.Color.textSecondary)
+            }
+            .padding(DS.Spacing.m)
+            .background(
+                RoundedRectangle(cornerRadius: DS.Radius.m)
+                    .fill(DS.Color.canvas)
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: DS.Radius.m)
+                    .stroke(color.opacity(0.2), lineWidth: 1)
+            )
+        }
+        .buttonStyle(.plain)
+    }
+}
+
+// MARK: - Field Selection Sheet
+struct FieldSelectionSheet: View {
+    @ObservedObject var viewModel: QTDetailViewModel
+
+    var body: some View {
+        VStack(spacing: 0) {
+            // 타이틀
+            VStack(spacing: DS.Spacing.xs) {
+                Text("묵상 선택")
+                    .font(DS.Font.titleL(.bold))
+                    .foregroundStyle(DS.Color.deepCocoa)
+
+                Text("공유할 묵상을 선택해주세요")
+                    .font(DS.Font.bodyM())
+                    .foregroundStyle(DS.Color.textSecondary)
+            }
+            .padding(.top, DS.Spacing.xl)
+            .padding(.bottom, DS.Spacing.l)
+
+            // SOAP 또는 ACTS 필드 선택
+            if viewModel.state.qt.template == "SOAP" {
+                soapFieldSelection()
+            } else {
+                actsFieldSelection()
+            }
+
+            Spacer()
+        }
+    }
+
+    @ViewBuilder
+    func soapFieldSelection() -> some View {
+        VStack(spacing: DS.Spacing.s) {
+            fieldButton(icon: "eye", title: "관찰", subtitle: "Observation", color: DS.Color.olive) {
+                viewModel.send(.selectSOAPField(.observation))
+            }
+
+            fieldButton(icon: "pencil", title: "적용", subtitle: "Application", color: DS.Color.olive) {
+                viewModel.send(.selectSOAPField(.application))
+            }
+
+            fieldButton(icon: "hands.sparkles", title: "기도", subtitle: "Prayer", color: DS.Color.olive) {
+                viewModel.send(.selectSOAPField(.prayer))
+            }
+        }
+        .padding(.horizontal, DS.Spacing.l)
+    }
+
+    @ViewBuilder
+    func actsFieldSelection() -> some View {
+        VStack(spacing: DS.Spacing.s) {
+            fieldButton(icon: "sparkles", title: "경배", subtitle: "Adoration", color: DS.Color.gold) {
+                viewModel.send(.selectACTSField(.adoration))
+            }
+
+            fieldButton(icon: "figure.walk", title: "회개", subtitle: "Confession", color: DS.Color.gold) {
+                viewModel.send(.selectACTSField(.confession))
+            }
+
+            fieldButton(icon: "heart.fill", title: "감사", subtitle: "Thanksgiving", color: DS.Color.gold) {
+                viewModel.send(.selectACTSField(.thanksgiving))
+            }
+
+            fieldButton(icon: "hands.and.sparkles.fill", title: "간구", subtitle: "Supplication", color: DS.Color.gold) {
+                viewModel.send(.selectACTSField(.supplication))
+            }
+        }
+        .padding(.horizontal, DS.Spacing.l)
+    }
+
+    @ViewBuilder
+    func fieldButton(icon: String, title: String, subtitle: String, color: Color, action: @escaping () -> Void) -> some View {
+        Button {
+            Haptics.tap()
+            withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                action()
+            }
+        } label: {
+            HStack(spacing: DS.Spacing.m) {
+                ZStack {
+                    Circle()
+                        .fill(color.opacity(0.15))
+                        .frame(width: 44, height: 44)
+
+                    Image(systemName: icon)
+                        .font(.system(size: 18, weight: .semibold))
+                        .foregroundStyle(color)
+                }
+
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(title)
+                        .font(DS.Font.titleM(.semibold))
+                        .foregroundStyle(DS.Color.textPrimary)
+
+                    Text(subtitle)
+                        .font(DS.Font.caption())
+                        .foregroundStyle(DS.Color.textSecondary)
+                }
+
+                Spacer()
+
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundStyle(DS.Color.textSecondary)
+            }
+            .padding(DS.Spacing.m)
+            .background(
+                RoundedRectangle(cornerRadius: DS.Radius.m)
+                    .fill(DS.Color.canvas)
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: DS.Radius.m)
+                    .stroke(color.opacity(0.2), lineWidth: 1)
+            )
+        }
+        .buttonStyle(.plain)
     }
 }
 

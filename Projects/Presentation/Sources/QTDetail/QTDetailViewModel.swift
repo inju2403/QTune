@@ -54,8 +54,35 @@ public final class QTDetailViewModel {
             Task { await deleteQT() }
 
         case .prepareShare:
-            state.shareText = generateShareText()
+            state.showShareTypeSelection = true
+
+        case .selectShareType(let type):
+            state.selectedShareType = type
+            state.showShareTypeSelection = false
+
+            if type == .full {
+                // 전체 묵상 → 바로 공유
+                state.shareText = generateFullShareText()
+                state.showShareSheet = true
+            } else {
+                // 선택한 묵상 → 필드 선택 화면으로
+                state.showFieldSelection = true
+            }
+
+        case .selectSOAPField(let field):
+            state.showFieldSelection = false
+            state.shareText = generateSummaryShareText(soapField: field)
             state.showShareSheet = true
+
+        case .selectACTSField(let field):
+            state.showFieldSelection = false
+            state.shareText = generateSummaryShareText(actsField: field)
+            state.showShareSheet = true
+
+        case .cancelShare:
+            state.showShareTypeSelection = false
+            state.showFieldSelection = false
+            state.selectedShareType = nil
 
         case .closeShareSheet:
             state.showShareSheet = false
@@ -113,7 +140,9 @@ public final class QTDetailViewModel {
     }
 
     // MARK: - Share Text Generation
-    private func generateShareText() -> String {
+
+    /// 전체 묵상 공유 텍스트 생성
+    private func generateFullShareText() -> String {
         // 날짜 포맷 생성
         let dateFormatter = DateFormatter()
         dateFormatter.dateFormat = "yyyy.MM.dd"
@@ -168,6 +197,118 @@ public final class QTDetailViewModel {
             if let thanksgiving = state.qt.actsThanksgiving, !thanksgiving.isEmpty {
                 text += "🙏 감사\n\(thanksgiving)\n\n"
             }
+            if let supplication = state.qt.actsSupplication, !supplication.isEmpty {
+                text += "🤲 간구\n\(supplication)\n\n"
+            }
+        }
+
+        text += "- QTune에서 작성"
+        return text
+    }
+
+    /// 요약 공유 텍스트 생성 (SOAP)
+    private func generateSummaryShareText(soapField: SOAPField) -> String {
+        // 날짜 포맷 생성
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "yyyy.MM.dd"
+        dateFormatter.locale = Locale(identifier: "ko_KR")
+        let dateString = dateFormatter.string(from: state.qt.date)
+
+        // 사용자 호칭 생성
+        let userTitle: String
+        if let profile = userProfile {
+            let genderSuffix = profile.gender == .brother ? "형제" : "자매"
+            userTitle = "\(profile.nickname) \(genderSuffix)님의 묵상"
+        } else {
+            userTitle = "나의 묵상"
+        }
+
+        var text = "🗓️ \(dateString)\n📝 \(userTitle)\n\n"
+
+        // 영어 말씀
+        text += """
+        📖 \(state.qt.verse.id)
+
+        \(state.qt.verse.text)
+
+        """
+
+        // 한글 해설
+        if let korean = state.qt.korean, !korean.isEmpty {
+            text += "\n💬 해설\n\(korean)\n"
+        }
+
+        // 선택한 SOAP 필드만 추가
+        text += "\n━━━━━━━━━━━━━━━━\n\n"
+
+        switch soapField {
+        case .observation:
+            if let observation = state.qt.soapObservation, !observation.isEmpty {
+                text += "🔎 관찰\n\(observation)\n\n"
+            }
+        case .application:
+            if let application = state.qt.soapApplication, !application.isEmpty {
+                text += "📝 적용\n\(application)\n\n"
+            }
+        case .prayer:
+            if let prayer = state.qt.soapPrayer, !prayer.isEmpty {
+                text += "🙏 기도\n\(prayer)\n\n"
+            }
+        }
+
+        text += "- QTune에서 작성"
+        return text
+    }
+
+    /// 요약 공유 텍스트 생성 (ACTS)
+    private func generateSummaryShareText(actsField: ACTSField) -> String {
+        // 날짜 포맷 생성
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "yyyy.MM.dd"
+        dateFormatter.locale = Locale(identifier: "ko_KR")
+        let dateString = dateFormatter.string(from: state.qt.date)
+
+        // 사용자 호칭 생성
+        let userTitle: String
+        if let profile = userProfile {
+            let genderSuffix = profile.gender == .brother ? "형제" : "자매"
+            userTitle = "\(profile.nickname) \(genderSuffix)님의 묵상"
+        } else {
+            userTitle = "나의 묵상"
+        }
+
+        var text = "🗓️ \(dateString)\n📝 \(userTitle)\n\n"
+
+        // 영어 말씀
+        text += """
+        📖 \(state.qt.verse.id)
+
+        \(state.qt.verse.text)
+
+        """
+
+        // 한글 해설
+        if let korean = state.qt.korean, !korean.isEmpty {
+            text += "\n💬 해설\n\(korean)\n"
+        }
+
+        // 선택한 ACTS 필드만 추가
+        text += "\n━━━━━━━━━━━━━━━━\n\n"
+
+        switch actsField {
+        case .adoration:
+            if let adoration = state.qt.actsAdoration, !adoration.isEmpty {
+                text += "✨ 경배\n\(adoration)\n\n"
+            }
+        case .confession:
+            if let confession = state.qt.actsConfession, !confession.isEmpty {
+                text += "🧎‍♂️ 회개\n\(confession)\n\n"
+            }
+        case .thanksgiving:
+            if let thanksgiving = state.qt.actsThanksgiving, !thanksgiving.isEmpty {
+                text += "🙏 감사\n\(thanksgiving)\n\n"
+            }
+        case .supplication:
             if let supplication = state.qt.actsSupplication, !supplication.isEmpty {
                 text += "🤲 간구\n\(supplication)\n\n"
             }
