@@ -103,6 +103,14 @@ public struct QTDetailView: View {
             Text("이 기록을 삭제할까요? 이 작업은 되돌릴 수 없습니다.")
         }
         .sheet(isPresented: Binding(
+            get: { viewModel.state.showShareFormatSelection },
+            set: { if !$0 { viewModel.send(.cancelShare) } }
+        )) {
+            ShareFormatSelectionSheet(viewModel: viewModel)
+                .presentationDetents([.height(280)])
+                .presentationDragIndicator(.visible)
+        }
+        .sheet(isPresented: Binding(
             get: { viewModel.state.showShareTypeSelection },
             set: { if !$0 { viewModel.send(.cancelShare) } }
         )) {
@@ -122,7 +130,11 @@ public struct QTDetailView: View {
             get: { viewModel.state.showShareSheet },
             set: { if !$0 { viewModel.send(.closeShareSheet) } }
         )) {
-            ShareSheet(text: viewModel.state.shareText)
+            if let image = viewModel.state.shareImage {
+                ShareSheet(items: [image])
+            } else {
+                ShareSheet(items: [viewModel.state.shareText])
+            }
         }
         .sheet(isPresented: Binding(
             get: { viewModel.state.showEditSheet },
@@ -299,6 +311,98 @@ private extension QTDetailView {
         let formatter = DateFormatter()
         formatter.dateFormat = "yyyy.MM.dd"
         return formatter.string(from: date)
+    }
+}
+
+// MARK: - Share Format Selection Sheet
+struct ShareFormatSelectionSheet: View {
+    let viewModel: QTDetailViewModel
+
+    var body: some View {
+        VStack(spacing: 0) {
+            // 타이틀
+            VStack(spacing: DS.Spacing.xs) {
+                Text("공유 방식 선택")
+                    .font(DS.Font.titleL(.bold))
+                    .foregroundStyle(DS.Color.deepCocoa)
+
+                Text("어떤 방식으로 공유할까요?")
+                    .font(DS.Font.bodyM())
+                    .foregroundStyle(DS.Color.textSecondary)
+            }
+            .padding(.top, DS.Spacing.xl)
+            .padding(.bottom, DS.Spacing.l)
+
+            // 옵션
+            VStack(spacing: DS.Spacing.m) {
+                shareFormatButton(
+                    icon: "photo.fill",
+                    title: "이미지로 공유",
+                    description: "아름다운 이미지 카드로 공유",
+                    color: DS.Color.gold,
+                    format: .image
+                )
+
+                shareFormatButton(
+                    icon: "text.alignleft",
+                    title: "텍스트로 공유",
+                    description: "텍스트 형식으로 공유",
+                    color: DS.Color.olive,
+                    format: .text
+                )
+            }
+            .padding(.horizontal, DS.Spacing.l)
+
+            Spacer()
+        }
+    }
+
+    @ViewBuilder
+    func shareFormatButton(icon: String, title: String, description: String, color: Color, format: ShareFormat) -> some View {
+        Button {
+            Haptics.tap()
+            withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                viewModel.send(.selectShareFormat(format))
+            }
+        } label: {
+            HStack(spacing: DS.Spacing.m) {
+                ZStack {
+                    Circle()
+                        .fill(color.opacity(0.15))
+                        .frame(width: 48, height: 48)
+
+                    Image(systemName: icon)
+                        .font(.system(size: 20, weight: .semibold))
+                        .foregroundStyle(color)
+                }
+
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(title)
+                        .font(DS.Font.titleM(.semibold))
+                        .foregroundStyle(DS.Color.textPrimary)
+
+                    Text(description)
+                        .font(DS.Font.caption())
+                        .foregroundStyle(DS.Color.textSecondary)
+                }
+
+                Spacer()
+
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundStyle(DS.Color.textSecondary)
+            }
+            .padding(DS.Spacing.m)
+            .background(
+                RoundedRectangle(cornerRadius: DS.Radius.m)
+                    .fill(DS.Color.canvas)
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: DS.Radius.m)
+                    .stroke(color.opacity(0.2), lineWidth: 1)
+            )
+        }
+        .buttonStyle(.plain)
     }
 }
 
@@ -515,11 +619,11 @@ struct FieldSelectionSheet: View {
 
 // MARK: - Share Sheet
 struct ShareSheet: UIViewControllerRepresentable {
-    let text: String
+    let items: [Any]
 
     func makeUIViewController(context: Context) -> UIActivityViewController {
         let controller = UIActivityViewController(
-            activityItems: [text],
+            activityItems: items,
             applicationActivities: nil
         )
         return controller

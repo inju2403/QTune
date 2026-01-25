@@ -54,7 +54,20 @@ public final class QTDetailViewModel {
             Task { await deleteQT() }
 
         case .prepareShare:
-            state.showShareTypeSelection = true
+            state.showShareFormatSelection = true
+
+        case .selectShareFormat(let format):
+            state.selectedShareFormat = format
+            state.showShareFormatSelection = false
+
+            if format == .text {
+                // 텍스트 공유 → 기존 플로우
+                state.showShareTypeSelection = true
+            } else {
+                // 이미지 공유 → 이미지 생성 후 공유
+                state.shareImage = generateShareImage()
+                state.showShareSheet = true
+            }
 
         case .selectShareType(let type):
             state.selectedShareType = type
@@ -80,8 +93,10 @@ public final class QTDetailViewModel {
             state.showShareSheet = true
 
         case .cancelShare:
+            state.showShareFormatSelection = false
             state.showShareTypeSelection = false
             state.showFieldSelection = false
+            state.selectedShareFormat = nil
             state.selectedShareType = nil
 
         case .closeShareSheet:
@@ -316,5 +331,115 @@ public final class QTDetailViewModel {
 
         text += "- QTune에서 작성"
         return text
+    }
+
+    // MARK: - Image Generation
+
+    /// 공유용 이미지 생성
+    private func generateShareImage() -> UIImage {
+        let size = CGSize(width: 1080, height: 1350) // Instagram 세로형
+        let renderer = UIGraphicsImageRenderer(size: size)
+
+        return renderer.image { context in
+            // 1. 그라데이션 배경
+            let gradient = CGGradient(
+                colorsSpace: CGColorSpaceCreateDeviceRGB(),
+                colors: [
+                    UIColor(red: 0.98, green: 0.85, blue: 0.70, alpha: 1.0).cgColor, // 연한 gold
+                    UIColor(red: 0.95, green: 0.75, blue: 0.60, alpha: 1.0).cgColor, // 중간 peach
+                    UIColor(red: 0.85, green: 0.65, blue: 0.50, alpha: 1.0).cgColor  // 진한 sunset
+                ] as CFArray,
+                locations: [0.0, 0.5, 1.0]
+            )!
+
+            context.cgContext.drawLinearGradient(
+                gradient,
+                start: CGPoint(x: size.width / 2, y: 0),
+                end: CGPoint(x: size.width / 2, y: size.height),
+                options: []
+            )
+
+            // 2. 상단 섹션 (성경 구절 참조 + 날짜)
+            let dateFormatter = DateFormatter()
+            dateFormatter.dateFormat = "yyyy.MM.dd"
+            let dateString = dateFormatter.string(from: state.qt.date)
+
+            let headerText = "\(state.qt.verse.id)\n\(dateString)"
+            let headerAttributes: [NSAttributedString.Key: Any] = [
+                .font: UIFont.systemFont(ofSize: 36, weight: .bold),
+                .foregroundColor: UIColor(red: 0.3, green: 0.2, blue: 0.15, alpha: 1.0) // 진한 cocoa
+            ]
+            let headerSize = headerText.boundingRect(
+                with: CGSize(width: size.width - 160, height: .greatestFiniteMagnitude),
+                options: .usesLineFragmentOrigin,
+                attributes: headerAttributes,
+                context: nil
+            ).size
+            headerText.draw(
+                in: CGRect(x: 80, y: 120, width: size.width - 160, height: headerSize.height),
+                withAttributes: headerAttributes
+            )
+
+            // 3. 중앙 섹션 (영어 본문)
+            let verseText = state.qt.verse.text
+            let verseAttributes: [NSAttributedString.Key: Any] = [
+                .font: UIFont.systemFont(ofSize: 32, weight: .medium),
+                .foregroundColor: UIColor(red: 0.2, green: 0.15, blue: 0.1, alpha: 1.0),
+                .paragraphStyle: {
+                    let style = NSMutableParagraphStyle()
+                    style.lineSpacing = 12
+                    return style
+                }()
+            ]
+            let verseSize = verseText.boundingRect(
+                with: CGSize(width: size.width - 160, height: .greatestFiniteMagnitude),
+                options: .usesLineFragmentOrigin,
+                attributes: verseAttributes,
+                context: nil
+            ).size
+            let verseY = (size.height - verseSize.height) / 2
+            verseText.draw(
+                in: CGRect(x: 80, y: verseY, width: size.width - 160, height: verseSize.height),
+                withAttributes: verseAttributes
+            )
+
+            // 4. 한글 해설 (있으면)
+            if let korean = state.qt.korean, !korean.isEmpty {
+                let koreanAttributes: [NSAttributedString.Key: Any] = [
+                    .font: UIFont.systemFont(ofSize: 28, weight: .regular),
+                    .foregroundColor: UIColor(red: 0.4, green: 0.3, blue: 0.2, alpha: 1.0),
+                    .paragraphStyle: {
+                        let style = NSMutableParagraphStyle()
+                        style.lineSpacing = 10
+                        return style
+                    }()
+                ]
+                let koreanSize = korean.boundingRect(
+                    with: CGSize(width: size.width - 160, height: .greatestFiniteMagnitude),
+                    options: .usesLineFragmentOrigin,
+                    attributes: koreanAttributes,
+                    context: nil
+                ).size
+                korean.draw(
+                    in: CGRect(x: 80, y: verseY + verseSize.height + 40, width: size.width - 160, height: koreanSize.height),
+                    withAttributes: koreanAttributes
+                )
+            }
+
+            // 5. 하단 워터마크
+            let watermark = "QTune에서 작성"
+            let watermarkAttributes: [NSAttributedString.Key: Any] = [
+                .font: UIFont.systemFont(ofSize: 24, weight: .regular),
+                .foregroundColor: UIColor(red: 0.5, green: 0.4, blue: 0.3, alpha: 0.8)
+            ]
+            let watermarkSize = watermark.size(withAttributes: watermarkAttributes)
+            watermark.draw(
+                at: CGPoint(
+                    x: (size.width - watermarkSize.width) / 2,
+                    y: size.height - 100
+                ),
+                withAttributes: watermarkAttributes
+            )
+        }
     }
 }

@@ -13,6 +13,7 @@ public enum QTDetailAction: Equatable {
     case confirmDelete
     case deleteQT
     case prepareShare
+    case selectShareFormat(ShareFormat)
     case selectShareType(ShareType)
     case selectSOAPField(SOAPField)
     case selectACTSField(ACTSField)

@@ -6,7 +6,14 @@
 //
 
 import Foundation
+import UIKit
 import Domain
+
+/// 공유 포맷
+public enum ShareFormat: Equatable {
+    case image // 이미지로 공유
+    case text  // 텍스트로 공유
+}
 
 /// 공유 타입
 public enum ShareType: Equatable {
@@ -38,9 +45,12 @@ public struct QTDetailState: Equatable {
     public var shareText: String
 
     // 공유 옵션
+    public var showShareFormatSelection: Bool
     public var showShareTypeSelection: Bool
     public var showFieldSelection: Bool
+    public var selectedShareFormat: ShareFormat?
     public var selectedShareType: ShareType?
+    public var shareImage: UIImage?
 
     public init(
         qt: QuietTime,
@@ -48,17 +58,23 @@ public struct QTDetailState: Equatable {
         showShareSheet: Bool = false,
         showEditSheet: Bool = false,
         shareText: String = "",
+        showShareFormatSelection: Bool = false,
         showShareTypeSelection: Bool = false,
         showFieldSelection: Bool = false,
-        selectedShareType: ShareType? = nil
+        selectedShareFormat: ShareFormat? = nil,
+        selectedShareType: ShareType? = nil,
+        shareImage: UIImage? = nil
     ) {
         self.qt = qt
         self.showDeleteAlert = showDeleteAlert
         self.showShareSheet = showShareSheet
         self.showEditSheet = showEditSheet
         self.shareText = shareText
+        self.showShareFormatSelection = showShareFormatSelection
         self.showShareTypeSelection = showShareTypeSelection
         self.showFieldSelection = showFieldSelection
+        self.selectedShareFormat = selectedShareFormat
         self.selectedShareType = selectedShareType
+        self.shareImage = shareImage
     }
 }
