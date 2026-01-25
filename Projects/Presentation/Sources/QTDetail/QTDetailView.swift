@@ -304,7 +304,7 @@ private extension QTDetailView {
 
 // MARK: - Share Type Selection Sheet
 struct ShareTypeSelectionSheet: View {
-    @ObservedObject var viewModel: QTDetailViewModel
+    let viewModel: QTDetailViewModel
 
     var body: some View {
         VStack(spacing: 0) {
@@ -396,7 +396,7 @@ struct ShareTypeSelectionSheet: View {
 
 // MARK: - Field Selection Sheet
 struct FieldSelectionSheet: View {
-    @ObservedObject var viewModel: QTDetailViewModel
+    let viewModel: QTDetailViewModel
 
     var body: some View {
         VStack(spacing: 0) {
