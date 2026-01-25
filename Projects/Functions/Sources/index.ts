@@ -36,7 +36,7 @@ async function getOpenAIClient() {
 }
 
 // =========================================
-// 호출자 식별 (installId 우선)
+// 호출자 식별
 // =========================================
 function getCallerId(
   context: functions.https.CallableContext,
@@ -47,12 +47,7 @@ function getCallerId(
     return `uid_${context.auth.uid}`;
   }
 
-  // 2. iOS 앱에서 전달한 installId
-  if (typeof data?.installId === "string" && data.installId.length > 0) {
-    return `install_${data.installId}`;
-  }
-
-  // 3. IP 주소 (최후 수단)
+  // 2. IP 주소 (최후 수단)
   const rawReq: any = (context as any).rawRequest;
   const ip: string | undefined =
     rawReq?.ip || rawReq?.headers?.["x-forwarded-for"];

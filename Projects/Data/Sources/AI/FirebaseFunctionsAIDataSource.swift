@@ -35,7 +35,6 @@ public final class FirebaseFunctionsAIDataSource: OpenAIRemoteDataSource {
         print("   IsAnonymous: \(currentUser.isAnonymous)")
 
         // Firebase Functions 호출 데이터 준비
-        // Firebase Auth로 인증된 상태이므로 installId는 불필요
         var data: [String: Any] = [
             "locale": request.locale,
             "mood": request.mood,
@@ -134,7 +133,6 @@ public final class FirebaseFunctionsAIDataSource: OpenAIRemoteDataSource {
         print("   IsAnonymous: \(currentUser.isAnonymous)")
 
         // Firebase Functions 호출 데이터 준비
-        // Firebase Auth로 인증된 상태이므로 installId는 불필요
         var data: [String: Any] = [
             "englishText": englishText,
             "verseRef": verseRef,
