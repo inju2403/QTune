@@ -48,8 +48,11 @@ public struct QTDetailState: Equatable {
     public var showShareTypeSelection: Bool
     public var showFieldSelection: Bool
     public var showImageShareSheet: Bool
+    public var showSystemShareSheet: Bool
     public var selectedShareFormat: ShareFormat?
     public var selectedShareType: ShareType?
+    public var selectedSOAPField: SOAPField?
+    public var selectedACTSField: ACTSField?
 
     public init(
         qt: QuietTime,
@@ -61,8 +64,11 @@ public struct QTDetailState: Equatable {
         showShareTypeSelection: Bool = false,
         showFieldSelection: Bool = false,
         showImageShareSheet: Bool = false,
+        showSystemShareSheet: Bool = false,
         selectedShareFormat: ShareFormat? = nil,
-        selectedShareType: ShareType? = nil
+        selectedShareType: ShareType? = nil,
+        selectedSOAPField: SOAPField? = nil,
+        selectedACTSField: ACTSField? = nil
     ) {
         self.qt = qt
         self.showDeleteAlert = showDeleteAlert
@@ -73,7 +79,10 @@ public struct QTDetailState: Equatable {
         self.showShareTypeSelection = showShareTypeSelection
         self.showFieldSelection = showFieldSelection
         self.showImageShareSheet = showImageShareSheet
+        self.showSystemShareSheet = showSystemShareSheet
         self.selectedShareFormat = selectedShareFormat
         self.selectedShareType = selectedShareType
+        self.selectedSOAPField = selectedSOAPField
+        self.selectedACTSField = selectedACTSField
     }
 }

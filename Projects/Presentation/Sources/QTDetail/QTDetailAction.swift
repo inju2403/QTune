@@ -19,6 +19,7 @@ public enum QTDetailAction: Equatable {
     case selectACTSField(ACTSField)
     case cancelShare
     case closeShareSheet
+    case shareImageToSystem
     case showEditSheet(Bool)
     case reloadQT
 }

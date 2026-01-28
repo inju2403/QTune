@@ -23,6 +23,82 @@ public struct QTDetailView: View {
     }
 
     public var body: some View {
+        contentView
+            .navigationTitle("QT 기록")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                toolbarContent
+            }
+            .alert("기록 삭제", isPresented: deleteAlertBinding) {
+                Button("취소", role: .cancel) {}
+                Button("삭제", role: .destructive) {
+                    viewModel.send(.deleteQT)
+                    dismiss()
+                }
+            } message: {
+                Text("이 기록을 삭제할까요? 이 작업은 되돌릴 수 없습니다.")
+            }
+            .modifier(ShareSheetsModifier(viewModel: viewModel))
+            .modifier(EditSheetModifier(viewModel: viewModel, editorFactory: editorViewModelFactory))
+    }
+
+    @ToolbarContentBuilder
+    private var toolbarContent: some ToolbarContent {
+        ToolbarItemGroup(placement: .navigationBarTrailing) {
+            HStack(spacing: 12) {
+                // 즐겨찾기
+                Button {
+                    Haptics.tap()
+                    viewModel.send(.toggleFavorite)
+                } label: {
+                    Image(systemName: viewModel.state.qt.isFavorite ? "star.fill" : "star")
+                        .foregroundStyle(viewModel.state.qt.isFavorite ? DS.Color.gold : DS.Color.textSecondary)
+                }
+                .animation(Motion.press, value: viewModel.state.qt.isFavorite)
+
+                // 공유
+                Button {
+                    Haptics.tap()
+                    viewModel.send(.prepareShare)
+                } label: {
+                    Image(systemName: "square.and.arrow.up")
+                        .foregroundStyle(DS.Color.textSecondary)
+                }
+
+                // 메뉴
+                Menu {
+                    Button {
+                        Haptics.tap()
+                        viewModel.send(.showEditSheet(true))
+                    } label: {
+                        Label("편집", systemImage: "pencil")
+                    }
+
+                    Button(role: .destructive) {
+                        Haptics.tap()
+                        viewModel.send(.confirmDelete)
+                    } label: {
+                        Label("삭제", systemImage: "trash")
+                    }
+                } label: {
+                    Image(systemName: "ellipsis.circle")
+                        .foregroundStyle(DS.Color.textSecondary)
+                }
+            }
+        }
+    }
+
+    private var deleteAlertBinding: Binding<Bool> {
+        Binding(
+            get: { viewModel.state.showDeleteAlert },
+            set: { _ in }
+        )
+    }
+}
+
+// MARK: - Subviews
+private extension QTDetailView {
+    var contentView: some View {
         ZStack {
             CrossSunsetBackground()
 
@@ -44,141 +120,8 @@ public struct QTDetailView: View {
                 .padding(DS.Spacing.l)
             }
         }
-        .navigationTitle("QT 기록")
-        .navigationBarTitleDisplayMode(.inline)
-        .toolbar {
-            ToolbarItemGroup(placement: .navigationBarTrailing) {
-                HStack(spacing: 12) {
-                    // 즐겨찾기
-                    Button {
-                        Haptics.tap()
-                        viewModel.send(.toggleFavorite)
-                    } label: {
-                        Image(systemName: viewModel.state.qt.isFavorite ? "star.fill" : "star")
-                            .foregroundStyle(viewModel.state.qt.isFavorite ? DS.Color.gold : DS.Color.textSecondary)
-                    }
-                    .animation(Motion.press, value: viewModel.state.qt.isFavorite)
-
-                    // 공유
-                    Button {
-                        Haptics.tap()
-                        viewModel.send(.prepareShare)
-                    } label: {
-                        Image(systemName: "square.and.arrow.up")
-                            .foregroundStyle(DS.Color.textSecondary)
-                    }
-
-                    // 메뉴
-                    Menu {
-                        Button {
-                            Haptics.tap()
-                            viewModel.send(.showEditSheet(true))
-                        } label: {
-                            Label("편집", systemImage: "pencil")
-                        }
-
-                        Button(role: .destructive) {
-                            Haptics.tap()
-                            viewModel.send(.confirmDelete)
-                        } label: {
-                            Label("삭제", systemImage: "trash")
-                        }
-                    } label: {
-                        Image(systemName: "ellipsis.circle")
-                            .foregroundStyle(DS.Color.textSecondary)
-                    }
-                }
-            }
-        }
-        .alert("기록 삭제", isPresented: Binding(
-            get: { viewModel.state.showDeleteAlert },
-            set: { _ in }
-        )) {
-            Button("취소", role: .cancel) {}
-            Button("삭제", role: .destructive) {
-                viewModel.send(.deleteQT)
-                dismiss()
-            }
-        } message: {
-            Text("이 기록을 삭제할까요? 이 작업은 되돌릴 수 없습니다.")
-        }
-        .sheet(isPresented: Binding(
-            get: { viewModel.state.showShareFormatSelection },
-            set: { if !$0 { viewModel.send(.cancelShare) } }
-        )) {
-            ShareFormatSelectionSheet(viewModel: viewModel)
-                .presentationDetents([.height(280)])
-                .presentationDragIndicator(.visible)
-        }
-        .sheet(isPresented: Binding(
-            get: { viewModel.state.showShareTypeSelection },
-            set: { if !$0 { viewModel.send(.cancelShare) } }
-        )) {
-            ShareTypeSelectionSheet(viewModel: viewModel)
-                .presentationDetents([.height(280)])
-                .presentationDragIndicator(.visible)
-        }
-        .sheet(isPresented: Binding(
-            get: { viewModel.state.showFieldSelection },
-            set: { if !$0 { viewModel.send(.cancelShare) } }
-        )) {
-            FieldSelectionSheet(viewModel: viewModel)
-                .presentationDetents([.height(viewModel.state.qt.template == "SOAP" ? 340 : 450)])
-                .presentationDragIndicator(.visible)
-        }
-        .sheet(isPresented: Binding(
-            get: { viewModel.state.showShareSheet },
-            set: { if !$0 { viewModel.send(.closeShareSheet) } }
-        )) {
-            ShareSheet(items: [viewModel.state.shareText])
-        }
-        .sheet(isPresented: Binding(
-            get: { viewModel.state.showImageShareSheet },
-            set: { if !$0 { viewModel.send(.closeShareSheet) } }
-        )) {
-            if let image = viewModel.getShareImage() {
-                QTShareCardView(image: image) {
-                    // 공유하기 버튼 클릭 시
-                    viewModel.send(.shareImageToSystem)
-                }
-                .presentationDetents([.large])
-                .presentationDragIndicator(.hidden)
-            }
-        }
-        .sheet(isPresented: Binding(
-            get: { viewModel.state.showSystemShareSheet },
-            set: { if !$0 { viewModel.send(.closeShareSheet) } }
-        )) {
-            if let image = viewModel.getShareImage() {
-                ShareSheet(items: [image])
-            }
-        }
-        .sheet(isPresented: Binding(
-            get: { viewModel.state.showEditSheet },
-            set: { if !$0 {
-                viewModel.send(.showEditSheet(false))
-                viewModel.send(.reloadQT)
-            } }
-        )) {
-            NavigationStack {
-                QTEditorView(
-                    draft: viewModel.state.qt,
-                    viewModel: editorViewModelFactory()
-                )
-                .toolbar {
-                    ToolbarItem(placement: .navigationBarLeading) {
-                        Button("취소") {
-                            viewModel.send(.showEditSheet(false))
-                        }
-                    }
-                }
-            }
-        }
     }
-}
 
-// MARK: - Subviews
-private extension QTDetailView {
     @ViewBuilder
     func headerSection() -> some View {
         VStack(alignment: .leading, spacing: DS.Spacing.m) {
@@ -622,6 +565,123 @@ struct FieldSelectionSheet: View {
             )
         }
         .buttonStyle(.plain)
+    }
+}
+
+// MARK: - Share Sheets Modifier
+struct ShareSheetsModifier: ViewModifier {
+    let viewModel: QTDetailViewModel
+
+    func body(content: Content) -> some View {
+        content
+            .sheet(isPresented: shareFormatSelectionBinding) {
+                ShareFormatSelectionSheet(viewModel: viewModel)
+                    .presentationDetents([.height(280)])
+                    .presentationDragIndicator(.visible)
+            }
+            .sheet(isPresented: shareTypeSelectionBinding) {
+                ShareTypeSelectionSheet(viewModel: viewModel)
+                    .presentationDetents([.height(280)])
+                    .presentationDragIndicator(.visible)
+            }
+            .sheet(isPresented: fieldSelectionBinding) {
+                FieldSelectionSheet(viewModel: viewModel)
+                    .presentationDetents([.height(viewModel.state.qt.template == "SOAP" ? 340 : 450)])
+                    .presentationDragIndicator(.visible)
+            }
+            .sheet(isPresented: textShareSheetBinding) {
+                ShareSheet(items: [viewModel.state.shareText])
+            }
+            .sheet(isPresented: imageShareSheetBinding) {
+                QTShareCardView(
+                    qt: viewModel.state.qt,
+                    onShare: {
+                        viewModel.send(.shareImageToSystem)
+                    }
+                )
+                .presentationDragIndicator(.hidden)
+                .presentationDetents([.large])
+            }
+            .sheet(isPresented: systemShareSheetBinding) {
+                QTShareImageView(qt: viewModel.state.qt)
+            }
+    }
+
+    private var shareFormatSelectionBinding: Binding<Bool> {
+        Binding(
+            get: { viewModel.state.showShareFormatSelection },
+            set: { if !$0 { viewModel.send(.cancelShare) } }
+        )
+    }
+
+    private var shareTypeSelectionBinding: Binding<Bool> {
+        Binding(
+            get: { viewModel.state.showShareTypeSelection },
+            set: { if !$0 { viewModel.send(.cancelShare) } }
+        )
+    }
+
+    private var fieldSelectionBinding: Binding<Bool> {
+        Binding(
+            get: { viewModel.state.showFieldSelection },
+            set: { if !$0 { viewModel.send(.cancelShare) } }
+        )
+    }
+
+    private var textShareSheetBinding: Binding<Bool> {
+        Binding(
+            get: { viewModel.state.showShareSheet },
+            set: { if !$0 { viewModel.send(.closeShareSheet) } }
+        )
+    }
+
+    private var imageShareSheetBinding: Binding<Bool> {
+        Binding(
+            get: { viewModel.state.showImageShareSheet },
+            set: { if !$0 { viewModel.send(.closeShareSheet) } }
+        )
+    }
+
+    private var systemShareSheetBinding: Binding<Bool> {
+        Binding(
+            get: { viewModel.state.showSystemShareSheet },
+            set: { if !$0 { viewModel.send(.closeShareSheet) } }
+        )
+    }
+}
+
+// MARK: - Edit Sheet Modifier
+struct EditSheetModifier: ViewModifier {
+    let viewModel: QTDetailViewModel
+    let editorFactory: () -> QTEditorViewModel
+
+    func body(content: Content) -> some View {
+        content
+            .sheet(isPresented: editSheetBinding) {
+                NavigationStack {
+                    QTEditorView(
+                        draft: viewModel.state.qt,
+                        viewModel: editorFactory()
+                    )
+                    .toolbar {
+                        ToolbarItem(placement: .navigationBarLeading) {
+                            Button("취소") {
+                                viewModel.send(.showEditSheet(false))
+                            }
+                        }
+                    }
+                }
+            }
+    }
+
+    private var editSheetBinding: Binding<Bool> {
+        Binding(
+            get: { viewModel.state.showEditSheet },
+            set: { if !$0 {
+                viewModel.send(.showEditSheet(false))
+                viewModel.send(.reloadQT)
+            } }
+        )
     }
 }
 
