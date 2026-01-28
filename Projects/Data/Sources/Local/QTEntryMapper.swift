@@ -21,11 +21,30 @@ extension QTEntryModel {
             translation: verseTranslation
         )
 
+        // 대조역본이 있으면 생성
+        let secondaryVerse: Verse? = {
+            guard let book = secondaryVerseBook,
+                  let chapter = secondaryVerseChapter,
+                  let number = secondaryVerseNumber,
+                  let text = secondaryVerseText,
+                  let translation = secondaryVerseTranslation else {
+                return nil
+            }
+            return Verse(
+                book: book,
+                chapter: chapter,
+                verse: number,
+                text: text,
+                translation: translation
+            )
+        }()
+
         let qtStatus: QuietTimeStatus = (status == "committed") ? .committed : .draft
 
         return QuietTime(
             id: id,
             verse: verse,
+            secondaryVerse: secondaryVerse,
             memo: "",  // Deprecated
             korean: korean,
             rationale: rationale,
@@ -61,6 +80,11 @@ extension QTEntryModel {
             verseNumber: qt.verse.verse,
             verseText: qt.verse.text,
             verseTranslation: qt.verse.translation,
+            secondaryVerseBook: qt.secondaryVerse?.book,
+            secondaryVerseChapter: qt.secondaryVerse?.chapter,
+            secondaryVerseNumber: qt.secondaryVerse?.verse,
+            secondaryVerseText: qt.secondaryVerse?.text,
+            secondaryVerseTranslation: qt.secondaryVerse?.translation,
             korean: qt.korean,
             rationale: qt.rationale,
             status: statusString,
@@ -80,6 +104,11 @@ extension QTEntryModel {
         self.updatedAt = qt.updatedAt
         self.isFavorite = qt.isFavorite
         self.tags = qt.tags
+        self.secondaryVerseBook = qt.secondaryVerse?.book
+        self.secondaryVerseChapter = qt.secondaryVerse?.chapter
+        self.secondaryVerseNumber = qt.secondaryVerse?.verse
+        self.secondaryVerseText = qt.secondaryVerse?.text
+        self.secondaryVerseTranslation = qt.secondaryVerse?.translation
         self.korean = qt.korean
         self.rationale = qt.rationale
         self.status = (qt.status == .committed) ? "committed" : "draft"

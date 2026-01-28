@@ -165,14 +165,15 @@ public struct RequestVerseView: View {
                 switch route {
                 case .result(let result):
                     buildResultView(result: result)
-                case .editor(let template, let verseEN, let verseRef, let explKR, let rationale, let verse):
+                case .editor(let template, let verseEN, let verseRef, let explKR, let rationale, let verse, let secondaryVerse):
                     buildEditorWizardView(
                         template: template,
                         verseEN: verseEN,
                         verseRef: verseRef,
                         explKR: explKR,
                         rationale: rationale,
-                        verse: verse
+                        verse: verse,
+                        secondaryVerse: secondaryVerse
                     )
                 case .detail:
                     EmptyView()
@@ -515,7 +516,8 @@ private extension RequestVerseView {
         verseRef: String,
         explKR: String,
         rationale: String,
-        verse: Verse
+        verse: Verse,
+        secondaryVerse: Verse?
     ) -> some View {
         QTEditorWizardViewWrapper(
             template: template,
@@ -524,6 +526,7 @@ private extension RequestVerseView {
             explKR: explKR,
             rationale: rationale,
             verse: verse,
+            secondaryVerse: secondaryVerse,
             commitQTUseCase: commitQTUseCase,
             session: session,
             onSaveComplete: {
@@ -567,7 +570,8 @@ struct ResultViewWrapper: View {
                 verseRef: result.verseRef,
                 explKR: result.korean,
                 rationale: result.rationale,
-                verse: result.verse
+                verse: result.verse,
+                secondaryVerse: result.secondaryVerse
             )
             path.append(editorRoute)
         }
@@ -582,6 +586,7 @@ struct QTEditorWizardViewWrapper: View {
     let explKR: String
     let rationale: String
     let verse: Verse
+    let secondaryVerse: Verse?
     let commitQTUseCase: CommitQTUseCase
     let session: UserSession
     let onSaveComplete: () -> Void
@@ -593,7 +598,8 @@ struct QTEditorWizardViewWrapper: View {
             verseRef: verseRef,
             explKR: explKR,
             rationale: rationale,
-            verse: verse
+            verse: verse,
+            secondaryVerse: secondaryVerse
         )
         let wizardViewModel = QTEditorWizardViewModel(
             commitQTUseCase: commitQTUseCase,

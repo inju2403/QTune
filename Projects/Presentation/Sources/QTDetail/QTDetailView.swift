@@ -137,6 +137,19 @@ public struct QTDetailView: View {
             set: { if !$0 { viewModel.send(.closeShareSheet) } }
         )) {
             if let image = viewModel.getShareImage() {
+                QTShareCardView(image: image) {
+                    // 공유하기 버튼 클릭 시
+                    viewModel.send(.shareImageToSystem)
+                }
+                .presentationDetents([.large])
+                .presentationDragIndicator(.hidden)
+            }
+        }
+        .sheet(isPresented: Binding(
+            get: { viewModel.state.showSystemShareSheet },
+            set: { if !$0 { viewModel.send(.closeShareSheet) } }
+        )) {
+            if let image = viewModel.getShareImage() {
                 ShareSheet(items: [image])
             }
         }
@@ -205,35 +218,26 @@ private extension QTDetailView {
     @ViewBuilder
     func verseCardSection() -> some View {
         VStack(alignment: .leading, spacing: 11) {
-            // 영문 본문
+            // 영문 본문 + 대조역본
             VerseCardView(title: "본문") {
-                VStack(alignment: .leading, spacing: DS.Spacing.s) {
+                VStack(alignment: .leading, spacing: DS.Spacing.m) {
+                    // 기본 역본
                     Text(viewModel.state.qt.verse.text)
                         .lineSpacing(4)
 
-                    Text("\(viewModel.state.qt.verse.translation) (Public Domain)")
-                        .font(DS.Font.caption())
-                        .foregroundStyle(DS.Color.textSecondary)
+                    // 대조역본이 있으면 표시
+                    if let secondaryVerse = viewModel.state.qt.secondaryVerse {
+                        Text(secondaryVerse.text)
+                            .lineSpacing(4)
+                    }
                 }
             }
 
-            // 한국어 해석
+            // 한국어 해설
             if let korean = viewModel.state.qt.korean, !korean.isEmpty {
                 VerseCardView(title: "해설") {
-                    let lines = korean.split(separator: "\n", maxSplits: 1, omittingEmptySubsequences: false)
-                    if lines.count == 2 {
-                        VStack(alignment: .leading, spacing: DS.Spacing.s) {
-                            Text(String(lines[0]))
-                                .font(DS.Font.bodyM(.semibold))
-                                .foregroundStyle(DS.Color.gold)
-
-                            Text(String(lines[1]))
-                                .lineSpacing(4)
-                        }
-                    } else {
-                        Text(korean)
-                            .lineSpacing(4)
-                    }
+                    Text(korean)
+                        .lineSpacing(4)
                 }
             }
 
@@ -433,8 +437,8 @@ struct ShareTypeSelectionSheet: View {
             VStack(spacing: DS.Spacing.m) {
                 shareTypeButton(
                     icon: "sparkles",
-                    title: "선택한 묵상",
-                    description: "영어 말씀 + 해설 + 선택한 묵상 1개",
+                    title: "핵심 묵상",
+                    description: "영어 말씀 + 해설 + 핵심 묵상",
                     color: DS.Color.gold,
                     type: .summary
                 )

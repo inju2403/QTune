@@ -80,8 +80,13 @@ public final class QTDetailViewModel {
                 state.shareText = generateFullShareText()
                 state.showShareSheet = true
             } else {
-                // 선택한 묵상 → 필드 선택 화면으로
-                state.showFieldSelection = true
+                // 핵심 묵상 → SOAP는 Prayer, ACTS는 Thanksgiving
+                if state.qt.template == "SOAP" {
+                    state.shareText = generateSummaryShareText(soapField: .prayer)
+                } else {
+                    state.shareText = generateSummaryShareText(actsField: .thanksgiving)
+                }
+                state.showShareSheet = true
             }
 
         case .selectSOAPField(let field):
@@ -104,7 +109,11 @@ public final class QTDetailViewModel {
         case .closeShareSheet:
             state.showShareSheet = false
             state.showImageShareSheet = false
+            state.showSystemShareSheet = false
             cachedShareImage = nil
+
+        case .shareImageToSystem:
+            state.showSystemShareSheet = true
 
         case .showEditSheet(let show):
             state.showEditSheet = show
@@ -344,108 +353,168 @@ public final class QTDetailViewModel {
         return cachedShareImage
     }
 
-    /// 공유용 이미지 생성
+    /// 공유용 이미지 생성 (스크린샷 디자인 동일)
     private func generateShareImage() -> UIImage {
-        let size = CGSize(width: 1080, height: 1350) // Instagram 세로형
+        let size = CGSize(width: 1080, height: 1920) // 9:16 비율
         let renderer = UIGraphicsImageRenderer(size: size)
 
         return renderer.image { context in
-            // 1. 그라데이션 배경
-            let gradient = CGGradient(
-                colorsSpace: CGColorSpaceCreateDeviceRGB(),
-                colors: [
-                    UIColor(red: 0.98, green: 0.85, blue: 0.70, alpha: 1.0).cgColor, // 연한 gold
-                    UIColor(red: 0.95, green: 0.75, blue: 0.60, alpha: 1.0).cgColor, // 중간 peach
-                    UIColor(red: 0.85, green: 0.65, blue: 0.50, alpha: 1.0).cgColor  // 진한 sunset
-                ] as CFArray,
-                locations: [0.0, 0.5, 1.0]
-            )!
+            // 1. 밝은 베이지 배경
+            UIColor(red: 0.96, green: 0.94, blue: 0.90, alpha: 1.0).setFill()
+            context.fill(CGRect(origin: .zero, size: size))
 
-            context.cgContext.drawLinearGradient(
-                gradient,
-                start: CGPoint(x: size.width / 2, y: 0),
-                end: CGPoint(x: size.width / 2, y: size.height),
-                options: []
-            )
+            let padding: CGFloat = 80
+            let contentWidth = size.width - (padding * 2)
+            var currentY: CGFloat = 150
 
-            // 2. 상단 섹션 (성경 구절 참조 + 날짜)
+            // 2. 날짜 (중앙 상단)
             let dateFormatter = DateFormatter()
             dateFormatter.dateFormat = "yyyy.MM.dd"
             let dateString = dateFormatter.string(from: state.qt.date)
 
-            let headerText = "\(state.qt.verse.id)\n\(dateString)"
-            let headerAttributes: [NSAttributedString.Key: Any] = [
-                .font: UIFont.systemFont(ofSize: 36, weight: .bold),
-                .foregroundColor: UIColor(red: 0.3, green: 0.2, blue: 0.15, alpha: 1.0) // 진한 cocoa
+            let dateAttributes: [NSAttributedString.Key: Any] = [
+                .font: UIFont.systemFont(ofSize: 32, weight: .regular),
+                .foregroundColor: UIColor(red: 0.5, green: 0.5, blue: 0.5, alpha: 1.0)
             ]
-            let headerSize = headerText.boundingRect(
-                with: CGSize(width: size.width - 160, height: .greatestFiniteMagnitude),
-                options: .usesLineFragmentOrigin,
-                attributes: headerAttributes,
-                context: nil
-            ).size
-            headerText.draw(
-                in: CGRect(x: 80, y: 120, width: size.width - 160, height: headerSize.height),
-                withAttributes: headerAttributes
+            let dateSize = dateString.size(withAttributes: dateAttributes)
+            dateString.draw(
+                at: CGPoint(x: (size.width - dateSize.width) / 2, y: currentY),
+                withAttributes: dateAttributes
             )
+            currentY += dateSize.height + 80
 
-            // 3. 중앙 섹션 (영어 본문)
+            // 3. 구절 참조 (왼쪽 정렬, 볼드)
+            let verseRef = state.qt.verse.id
+            let verseRefAttributes: [NSAttributedString.Key: Any] = [
+                .font: UIFont.systemFont(ofSize: 42, weight: .bold),
+                .foregroundColor: UIColor(red: 0.2, green: 0.2, blue: 0.2, alpha: 1.0)
+            ]
+            let verseRefSize = verseRef.size(withAttributes: verseRefAttributes)
+            verseRef.draw(
+                at: CGPoint(x: padding, y: currentY),
+                withAttributes: verseRefAttributes
+            )
+            currentY += verseRefSize.height + 50
+
+            // 4. 말씀 본문 (한글 또는 영어)
             let verseText = state.qt.verse.text
             let verseAttributes: [NSAttributedString.Key: Any] = [
-                .font: UIFont.systemFont(ofSize: 32, weight: .medium),
-                .foregroundColor: UIColor(red: 0.2, green: 0.15, blue: 0.1, alpha: 1.0),
+                .font: UIFont.systemFont(ofSize: 38, weight: .regular),
+                .foregroundColor: UIColor(red: 0.2, green: 0.2, blue: 0.2, alpha: 1.0),
                 .paragraphStyle: {
                     let style = NSMutableParagraphStyle()
-                    style.lineSpacing = 12
+                    style.lineSpacing = 14
                     return style
                 }()
             ]
             let verseSize = verseText.boundingRect(
-                with: CGSize(width: size.width - 160, height: .greatestFiniteMagnitude),
+                with: CGSize(width: contentWidth, height: .greatestFiniteMagnitude),
                 options: .usesLineFragmentOrigin,
                 attributes: verseAttributes,
                 context: nil
             ).size
-            let verseY = (size.height - verseSize.height) / 2
             verseText.draw(
-                in: CGRect(x: 80, y: verseY, width: size.width - 160, height: verseSize.height),
+                in: CGRect(x: padding, y: currentY, width: contentWidth, height: verseSize.height),
                 withAttributes: verseAttributes
             )
+            currentY += verseSize.height + 60
 
-            // 4. 한글 해설 (있으면)
+            // 5. 해설
             if let korean = state.qt.korean, !korean.isEmpty {
-                let koreanAttributes: [NSAttributedString.Key: Any] = [
-                    .font: UIFont.systemFont(ofSize: 28, weight: .regular),
-                    .foregroundColor: UIColor(red: 0.4, green: 0.3, blue: 0.2, alpha: 1.0),
+                // "해설" 레이블
+                let explanationLabel = "해설"
+                let labelAttributes: [NSAttributedString.Key: Any] = [
+                    .font: UIFont.systemFont(ofSize: 32, weight: .semibold),
+                    .foregroundColor: UIColor(red: 0.3, green: 0.3, blue: 0.3, alpha: 1.0)
+                ]
+                let labelSize = explanationLabel.size(withAttributes: labelAttributes)
+                explanationLabel.draw(
+                    at: CGPoint(x: padding, y: currentY),
+                    withAttributes: labelAttributes
+                )
+                currentY += labelSize.height + 25
+
+                // 해설 내용
+                let explanationAttributes: [NSAttributedString.Key: Any] = [
+                    .font: UIFont.systemFont(ofSize: 34, weight: .regular),
+                    .foregroundColor: UIColor(red: 0.25, green: 0.25, blue: 0.25, alpha: 1.0),
                     .paragraphStyle: {
                         let style = NSMutableParagraphStyle()
-                        style.lineSpacing = 10
+                        style.lineSpacing = 12
                         return style
                     }()
                 ]
-                let koreanSize = korean.boundingRect(
-                    with: CGSize(width: size.width - 160, height: .greatestFiniteMagnitude),
+                let explanationSize = korean.boundingRect(
+                    with: CGSize(width: contentWidth, height: .greatestFiniteMagnitude),
                     options: .usesLineFragmentOrigin,
-                    attributes: koreanAttributes,
+                    attributes: explanationAttributes,
                     context: nil
                 ).size
                 korean.draw(
-                    in: CGRect(x: 80, y: verseY + verseSize.height + 40, width: size.width - 160, height: koreanSize.height),
-                    withAttributes: koreanAttributes
+                    in: CGRect(x: padding, y: currentY, width: contentWidth, height: explanationSize.height),
+                    withAttributes: explanationAttributes
+                )
+                currentY += explanationSize.height + 60
+            }
+
+            // 6. 핵심 묵상 (SOAP → Prayer, ACTS → Thanksgiving)
+            var meditationLabel = ""
+            var meditationContent = ""
+
+            if state.qt.template == "SOAP" {
+                meditationLabel = "기도"
+                meditationContent = state.qt.soapPrayer ?? ""
+            } else {
+                meditationLabel = "감사"
+                meditationContent = state.qt.actsThanksgiving ?? ""
+            }
+
+            if !meditationContent.isEmpty {
+                // 묵상 레이블
+                let mLabelAttributes: [NSAttributedString.Key: Any] = [
+                    .font: UIFont.systemFont(ofSize: 32, weight: .semibold),
+                    .foregroundColor: UIColor(red: 0.3, green: 0.3, blue: 0.3, alpha: 1.0)
+                ]
+                let mLabelSize = meditationLabel.size(withAttributes: mLabelAttributes)
+                meditationLabel.draw(
+                    at: CGPoint(x: padding, y: currentY),
+                    withAttributes: mLabelAttributes
+                )
+                currentY += mLabelSize.height + 25
+
+                // 묵상 내용
+                let mContentAttributes: [NSAttributedString.Key: Any] = [
+                    .font: UIFont.systemFont(ofSize: 34, weight: .regular),
+                    .foregroundColor: UIColor(red: 0.25, green: 0.25, blue: 0.25, alpha: 1.0),
+                    .paragraphStyle: {
+                        let style = NSMutableParagraphStyle()
+                        style.lineSpacing = 12
+                        return style
+                    }()
+                ]
+                let mContentSize = meditationContent.boundingRect(
+                    with: CGSize(width: contentWidth, height: .greatestFiniteMagnitude),
+                    options: .usesLineFragmentOrigin,
+                    attributes: mContentAttributes,
+                    context: nil
+                ).size
+                meditationContent.draw(
+                    in: CGRect(x: padding, y: currentY, width: contentWidth, height: mContentSize.height),
+                    withAttributes: mContentAttributes
                 )
             }
 
-            // 5. 하단 워터마크
-            let watermark = "QTune에서 작성"
+            // 7. 하단 워터마크 "QTune" (중앙)
+            let watermark = "QTune"
             let watermarkAttributes: [NSAttributedString.Key: Any] = [
-                .font: UIFont.systemFont(ofSize: 24, weight: .regular),
-                .foregroundColor: UIColor(red: 0.5, green: 0.4, blue: 0.3, alpha: 0.8)
+                .font: UIFont.systemFont(ofSize: 28, weight: .regular),
+                .foregroundColor: UIColor(red: 0.6, green: 0.6, blue: 0.6, alpha: 1.0)
             ]
             let watermarkSize = watermark.size(withAttributes: watermarkAttributes)
             watermark.draw(
                 at: CGPoint(
                     x: (size.width - watermarkSize.width) / 2,
-                    y: size.height - 100
+                    y: size.height - 120
                 ),
                 withAttributes: watermarkAttributes
             )

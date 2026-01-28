@@ -54,12 +54,15 @@ public final class DefaultAIRepository: AIRepository {
             throw AIRepositoryError.koreanExplanationFailed(reason: error.localizedDescription)
         }
 
-        // 2. Bible API에서 영어 본문 가져오기 (WEB → KJV 폴백)
-        print("📖 [DefaultAIRepository] Fetching English text from Bible API...")
+        // 2. Bible API에서 기본 역본 본문 가져오기
+        print("📖 [DefaultAIRepository] Fetching primary translation: \(request.primaryTranslation.displayName)")
         let bibleDTO: BibleVerseDTO
         do {
-            bibleDTO = try await bibleDataSource.getVerse(verseRef: recommendation.verseRef)
-            print("✅ [DefaultAIRepository] English text fetched: \(bibleDTO.translation_id ?? "unknown")")
+            bibleDTO = try await bibleDataSource.getVerseWithTranslation(
+                verseRef: recommendation.verseRef,
+                translation: request.primaryTranslation.code
+            )
+            print("✅ [DefaultAIRepository] Primary text fetched: \(bibleDTO.translation_id ?? "unknown")")
         } catch {
             print("🔴 [DefaultAIRepository] Bible API failed: \(error)")
             throw AIRepositoryError.bibleAPIFailed(reason: error.localizedDescription)
@@ -93,7 +96,29 @@ public final class DefaultAIRepository: AIRepository {
             throw AIRepositoryError.koreanExplanationFailed(reason: error.localizedDescription)
         }
 
-        // 4. Domain 모델로 변환
+        // 4. 대조역본 가져오기 (선택사항)
+        var secondaryVerse: Verse? = nil
+        if let secondaryTranslation = request.secondaryTranslation {
+            print("📖 [DefaultAIRepository] Fetching secondary translation: \(secondaryTranslation.displayName)")
+
+            do {
+                let secondaryDTO = try await bibleDataSource.getVerseWithTranslation(
+                    verseRef: recommendation.verseRef,
+                    translation: secondaryTranslation.code
+                )
+                secondaryVerse = try parseVerse(
+                    reference: secondaryDTO.reference,
+                    text: secondaryDTO.text,
+                    translation: secondaryDTO.translation_id ?? secondaryTranslation.code
+                )
+                print("✅ [DefaultAIRepository] Secondary verse fetched: \(secondaryTranslation.displayName)")
+            } catch {
+                print("⚠️ [DefaultAIRepository] Secondary translation fetch failed: \(error)")
+                // 대조역본 실패는 무시하고 계속 진행
+            }
+        }
+
+        // 5. Domain 모델로 변환
         let verse = try parseVerse(
             reference: bibleDTO.reference,
             text: bibleDTO.text,
@@ -102,6 +127,7 @@ public final class DefaultAIRepository: AIRepository {
 
         let generatedVerse = GeneratedVerse(
             verse: verse,
+            secondaryVerse: secondaryVerse,
             korean: koreanExplanation.korean,
             reason: koreanExplanation.rationale
         )

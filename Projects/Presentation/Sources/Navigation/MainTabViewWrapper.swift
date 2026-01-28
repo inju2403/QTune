@@ -55,6 +55,24 @@ public struct MainTabViewWrapper: View {
         tabViewContent
     }
 
+    private func myPageViewModel() -> MyPageViewModel {
+        let viewModel = MyPageViewModel(saveUserProfileUseCase: saveUserProfileUseCase)
+        viewModel.onTranslationChanged = {
+            // 역본 변경 시 userProfile 다시 로드
+            Task {
+                do {
+                    let profile = try await getUserProfileUseCase.execute()
+                    await MainActor.run {
+                        userProfile = profile
+                    }
+                } catch {
+                    print("❌ Failed to reload user profile: \(error)")
+                }
+            }
+        }
+        return viewModel
+    }
+
     @ViewBuilder
     private var tabViewContent: some View {
         if #available(iOS 26.0, *) {
@@ -80,7 +98,8 @@ public struct MainTabViewWrapper: View {
                 ) { path, onNavigateToRecordTab in
                     RequestVerseView(
                         viewModel: RequestVerseViewModel(
-                            generateVerseUseCase: generateVerseUseCase
+                            generateVerseUseCase: generateVerseUseCase,
+                            getUserProfileUseCase: getUserProfileUseCase
                         ),
                         path: path,
                         commitQTUseCase: commitQTUseCase,
@@ -125,7 +144,7 @@ public struct MainTabViewWrapper: View {
 
             Tab("마이페이지", systemImage: "person.circle", value: 2) {
                 MyPageView(
-                    viewModel: MyPageViewModel(),
+                    viewModel: myPageViewModel(),
                     userProfile: $userProfile,
                     profileEditViewModelFactory: profileEditViewModelFactory,
                     getUserProfileUseCase: getUserProfileUseCase
@@ -177,7 +196,8 @@ public struct MainTabViewWrapper: View {
             ) { path, onNavigateToRecordTab in
                 RequestVerseView(
                     viewModel: RequestVerseViewModel(
-                        generateVerseUseCase: generateVerseUseCase
+                        generateVerseUseCase: generateVerseUseCase,
+                        getUserProfileUseCase: getUserProfileUseCase
                     ),
                     path: path,
                     commitQTUseCase: commitQTUseCase,
@@ -233,7 +253,7 @@ public struct MainTabViewWrapper: View {
             ))
 
             MyPageView(
-                viewModel: MyPageViewModel(),
+                viewModel: myPageViewModel(),
                 userProfile: $userProfile,
                 profileEditViewModelFactory: profileEditViewModelFactory,
                 getUserProfileUseCase: getUserProfileUseCase

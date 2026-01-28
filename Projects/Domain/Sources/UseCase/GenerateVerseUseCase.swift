@@ -34,12 +34,14 @@ public protocol GenerateVerseUseCase {
     ///   - timeZone: 사용자 타임존 (하루 1회 제한 계산용, 기본값: .current)
     ///   - nickname: 사용자 닉네임 (선택)
     ///   - gender: 사용자 성별 (선택)
+    ///   - primaryTranslation: 기본 역본 (기본값: 개역한글)
+    ///   - secondaryTranslation: 대조역본 (선택)
     /// - Returns: 생성된 말씀
     /// - Throws:
     ///   - DomainError.rateLimited: 요청 제한 초과 (하루 1회)
     ///   - DomainError.moderationBlocked: 부적절한 콘텐츠
     ///   - DomainError.network: 네트워크 오류
-    func execute(normalizedText: String, userId: String, timeZone: TimeZone, nickname: String?, gender: String?) async throws -> GeneratedVerse
+    func execute(normalizedText: String, userId: String, timeZone: TimeZone, nickname: String?, gender: String?, primaryTranslation: Translation?, secondaryTranslation: Translation?) async throws -> GeneratedVerse
 }
 
 /// 말씀 생성 유스케이스 구현체
@@ -68,7 +70,7 @@ public final class GenerateVerseInteractor: GenerateVerseUseCase {
         self.rateLimiterRepository = rateLimiterRepository
     }
 
-    public func execute(normalizedText: String, userId: String, timeZone: TimeZone = .current, nickname: String? = nil, gender: String? = nil) async throws -> GeneratedVerse {
+    public func execute(normalizedText: String, userId: String, timeZone: TimeZone = .current, nickname: String? = nil, gender: String? = nil, primaryTranslation: Translation? = nil, secondaryTranslation: Translation? = nil) async throws -> GeneratedVerse {
         // MARK: - 1단계: 입력 검증
 
         do {
@@ -117,7 +119,9 @@ public final class GenerateVerseInteractor: GenerateVerseUseCase {
             mood: normalizedText,
             note: nil,
             nickname: nickname,
-            gender: gender
+            gender: gender,
+            primaryTranslation: primaryTranslation ?? .koreanRevisedVersion,
+            secondaryTranslation: secondaryTranslation
         )
 
         do {

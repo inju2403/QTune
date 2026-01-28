@@ -27,6 +27,13 @@ public final class QTEntryModel {
     public var verseText: String
     public var verseTranslation: String
 
+    // MARK: - 대조역본
+    public var secondaryVerseBook: String?
+    public var secondaryVerseChapter: Int?
+    public var secondaryVerseNumber: Int?
+    public var secondaryVerseText: String?
+    public var secondaryVerseTranslation: String?
+
     // MARK: - AI 생성 필드
     public var korean: String?
     public var rationale: String?
@@ -61,6 +68,11 @@ public final class QTEntryModel {
         verseNumber: Int,
         verseText: String,
         verseTranslation: String,
+        secondaryVerseBook: String? = nil,
+        secondaryVerseChapter: Int? = nil,
+        secondaryVerseNumber: Int? = nil,
+        secondaryVerseText: String? = nil,
+        secondaryVerseTranslation: String? = nil,
         korean: String?,
         rationale: String?,
         status: String,
@@ -84,6 +96,11 @@ public final class QTEntryModel {
         self.verseNumber = verseNumber
         self.verseText = verseText
         self.verseTranslation = verseTranslation
+        self.secondaryVerseBook = secondaryVerseBook
+        self.secondaryVerseChapter = secondaryVerseChapter
+        self.secondaryVerseNumber = secondaryVerseNumber
+        self.secondaryVerseText = secondaryVerseText
+        self.secondaryVerseTranslation = secondaryVerseTranslation
         self.korean = korean
         self.rationale = rationale
         self.status = status

@@ -9,18 +9,22 @@ import Foundation
 
 /// AI 기반 말씀 생성 요청
 public struct AIGenerateVerseRequest {
-    public let locale: String       // 예: "ko_KR", "en_US"
-    public let mood: String         // 사용자의 감정/상황
-    public let note: String?        // 추가 메모
-    public let nickname: String?    // 사용자 닉네임
-    public let gender: String?      // 사용자 성별
+    public let locale: String           // 예: "ko_KR", "en_US"
+    public let mood: String             // 사용자의 감정/상황
+    public let note: String?            // 추가 메모
+    public let nickname: String?        // 사용자 닉네임
+    public let gender: String?          // 사용자 성별
+    public let primaryTranslation: Translation       // 기본 역본
+    public let secondaryTranslation: Translation?    // 대조역본
 
-    public init(locale: String, mood: String, note: String?, nickname: String? = nil, gender: String? = nil) {
+    public init(locale: String, mood: String, note: String?, nickname: String? = nil, gender: String? = nil, primaryTranslation: Translation = .koreanRevisedVersion, secondaryTranslation: Translation? = nil) {
         self.locale = locale
         self.mood = mood
         self.note = note
         self.nickname = nickname
         self.gender = gender
+        self.primaryTranslation = primaryTranslation
+        self.secondaryTranslation = secondaryTranslation
     }
 }
 

@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import Domain
 
 /// 마이페이지 Action
 public enum MyPageAction: Equatable {
@@ -15,4 +16,9 @@ public enum MyPageAction: Equatable {
     case tapPrivacyPolicy
     case tapVersionInfo
     case dismissVersionAlert
+    case tapTranslationSelection
+    case selectPrimaryTranslation(Translation)
+    case selectSecondaryTranslation(Translation?)
+    case saveTranslations(UserProfile)
+    case dismissTranslationSelection
 }

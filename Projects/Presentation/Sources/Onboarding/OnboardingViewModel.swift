@@ -49,7 +49,9 @@ public final class OnboardingViewModel {
         do {
             let profile = UserProfile(
                 nickname: state.nickname,
-                gender: state.selectedGender
+                gender: state.selectedGender,
+                profileImageData: nil,
+                preferredTranslation: .koreanRevisedVersion  // 새 기기 기본값
             )
             try await saveUserProfileUseCase.execute(profile: profile)
 
