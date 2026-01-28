@@ -14,8 +14,8 @@ let project = Project(
       deploymentTargets: .iOS("17.0"),
       infoPlist: .extendingDefault(with: [
         "CFBundleDisplayName": "QTune",
-        "CFBundleShortVersionString": "1.4.2",
-        "CFBundleVersion": "147",
+        "CFBundleShortVersionString": "1.5.0",
+        "CFBundleVersion": "150",
         "UILaunchStoryboardName": "LaunchScreen",
         "UIViewControllerBasedStatusBarAppearance": true,
         "UIUserInterfaceStyle": "Light"
