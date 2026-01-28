@@ -55,13 +55,13 @@ public struct QTShareCard: View {
                     // 해설
                     if let korean = qt.korean, !korean.isEmpty {
                         Text("해설")
-                            .font(.system(size: 30, weight: .semibold))
-                            .foregroundStyle(Color.black.opacity(0.65))
+                            .font(.system(size: 32, weight: .semibold))
+                            .foregroundStyle(Color.black.opacity(0.6))
                             .frame(maxWidth: .infinity, alignment: .leading)
                             .padding(.bottom, 14)
 
                         Text(korean)
-                            .font(.system(size: 34, weight: .light))
+                            .font(.system(size: 36, weight: .regular))
                             .foregroundStyle(Color.black.opacity(0.8))
                             .lineSpacing(18)
                             .frame(maxWidth: .infinity, alignment: .leading)
@@ -72,13 +72,13 @@ public struct QTShareCard: View {
                     if qt.template == "SOAP" {
                         if let prayer = qt.soapPrayer, !prayer.isEmpty {
                             Text("기도")
-                                .font(.system(size: 30, weight: .semibold))
-                                .foregroundStyle(Color.black.opacity(0.65))
+                                .font(.system(size: 32, weight: .semibold))
+                                .foregroundStyle(Color.black.opacity(0.6))
                                 .frame(maxWidth: .infinity, alignment: .leading)
                                 .padding(.bottom, 14)
 
                             Text(prayer)
-                                .font(.system(size: 34, weight: .light))
+                                .font(.system(size: 36, weight: .regular))
                                 .foregroundStyle(Color.black.opacity(0.85))
                                 .lineSpacing(18)
                                 .frame(maxWidth: .infinity, alignment: .leading)
@@ -86,13 +86,13 @@ public struct QTShareCard: View {
                     } else {
                         if let thanksgiving = qt.actsThanksgiving, !thanksgiving.isEmpty {
                             Text("감사")
-                                .font(.system(size: 30, weight: .semibold))
-                                .foregroundStyle(Color.black.opacity(0.65))
+                                .font(.system(size: 32, weight: .semibold))
+                                .foregroundStyle(Color.black.opacity(0.6))
                                 .frame(maxWidth: .infinity, alignment: .leading)
                                 .padding(.bottom, 14)
 
                             Text(thanksgiving)
-                                .font(.system(size: 34, weight: .light))
+                                .font(.system(size: 36, weight: .regular))
                                 .foregroundStyle(Color.black.opacity(0.85))
                                 .lineSpacing(18)
                                 .frame(maxWidth: .infinity, alignment: .leading)
