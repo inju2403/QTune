@@ -51,3 +51,4 @@ Tuist/Cache/
 .claude/
 CLAUDE.md
 
+firebase-debug*.log
