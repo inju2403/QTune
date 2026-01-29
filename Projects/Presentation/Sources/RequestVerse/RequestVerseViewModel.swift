@@ -15,9 +15,11 @@ public final class RequestVerseViewModel {
     let effect = PassthroughSubject<RequestVerseEffect, Never>()
 
     private let generateVerseUseCase: GenerateVerseUseCase
+    private let getUserProfileUseCase: GetUserProfileUseCase
 
-    public init(generateVerseUseCase: GenerateVerseUseCase) {
+    public init(generateVerseUseCase: GenerateVerseUseCase, getUserProfileUseCase: GetUserProfileUseCase) {
         self.generateVerseUseCase = generateVerseUseCase
+        self.getUserProfileUseCase = getUserProfileUseCase
     }
 
     func send(_ action: RequestVerseAction) {
@@ -37,7 +39,7 @@ public final class RequestVerseViewModel {
 
         case .tapGoToQT:
             guard let result = state.generatedResult else { return }
-            effect.send(.navigateToQTEditor(verse: result.verse, korean: result.korean, rationale: result.rationale))
+            effect.send(.navigateToQTEditor(verse: result.verse, secondaryVerse: result.secondaryVerse, korean: result.korean, rationale: result.rationale))
 
         case .tapResumeDraft:
             guard let draft = state.todayDraft else { return }
@@ -94,22 +96,30 @@ public final class RequestVerseViewModel {
         }
 
         do {
+            // 사용자 프로필 조회 (기본역본 + 대조역본 가져오기)
+            let userProfile = try? await getUserProfileUseCase.execute()
+            let primaryTranslation = userProfile?.preferredTranslation
+            let secondaryTranslation = userProfile?.secondaryTranslation
+
             let generated = try await generateVerseUseCase.execute(
                 normalizedText: state.moodText,
                 userId: "me", // TODO: 실제 userId로 교체 필요
                 timeZone: .current,
                 nickname: nickname,
-                gender: gender
+                gender: gender,
+                primaryTranslation: primaryTranslation,
+                secondaryTranslation: secondaryTranslation
             )
 
             // 4. 결과를 State에 저장
             let result = GeneratedVerseResult(
-                verseRef: "\(generated.verse.book) \(generated.verse.chapter):\(generated.verse.verse)",
+                verseRef: "\(generated.verse.localizedBookName) \(generated.verse.chapter):\(generated.verse.verse)",
                 verseText: generated.verse.text,
                 verseTextEN: nil,  // TODO: OpenAI API에서 verseTextEN 받아오면 사용
                 korean: generated.korean,
                 rationale: generated.reason,
                 verse: generated.verse,
+                secondaryVerse: generated.secondaryVerse,
                 isSafe: true  // DomainError.moderationBlocked가 throw되지 않았으므로 안전
             )
 

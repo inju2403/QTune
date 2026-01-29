@@ -33,7 +33,7 @@ public struct ResultView: View {
                         .padding(.top, 16)
                         .padding(.horizontal, 20)
 
-                    // 영어 말씀
+                    // 영어 말씀 (+ 대조역본)
                     verseBlock()
 
                     // 한글 해설
@@ -82,7 +82,8 @@ public struct ResultView: View {
 private extension ResultView {
     @ViewBuilder
     func verseBlock() -> some View {
-        VStack(alignment: .leading, spacing: 12) {
+        VStack(alignment: .leading, spacing: 0) {
+            // 타이틀
             HStack(spacing: 8) {
                 Image(systemName: "book.closed.fill")
                     .foregroundStyle(DS.Color.gold)
@@ -91,29 +92,21 @@ private extension ResultView {
                     .font(DS.Font.titleM(.semibold))
                     .foregroundStyle(DS.Color.deepCocoa)
             }
+            .padding(.bottom, 16)
 
+            // 기본 역본 본문
             Text(viewModel.state.result.verse.text)
                 .font(DS.Font.verse(17, .regular))
                 .foregroundStyle(DS.Color.textPrimary)
                 .lineSpacing(6)
-                .padding(.bottom, 8)
+                .padding(.bottom, viewModel.state.result.secondaryVerse != nil ? 12 : 0)
 
-            // 번역본 표시 (좌측 정렬)
-            HStack(spacing: 6) {
-                Image(systemName: "text.book.closed")
-                    .font(.system(size: 11))
-                    .foregroundStyle(DS.Color.gold.opacity(0.7))
-
-                Text(viewModel.state.result.verse.translation.uppercased())
-                    .font(.system(size: 12, weight: .medium, design: .rounded))
-                    .foregroundStyle(DS.Color.gold.opacity(0.8))
-
-                Text("·")
-                    .foregroundStyle(DS.Color.textSecondary.opacity(0.5))
-
-                Text("Public Domain")
-                    .font(.system(size: 11, weight: .regular))
-                    .foregroundStyle(DS.Color.textSecondary.opacity(0.7))
+            // 대조역본이 있으면 표시
+            if let secondaryVerse = viewModel.state.result.secondaryVerse {
+                Text(secondaryVerse.text)
+                    .font(DS.Font.verse(17, .regular))
+                    .foregroundStyle(DS.Color.textPrimary)
+                    .lineSpacing(6)
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -136,25 +129,10 @@ private extension ResultView {
                     .foregroundStyle(DS.Color.deepCocoa)
             }
 
-            // 첫 줄이 볼드인 경우 분리
-            let lines = viewModel.state.result.korean.split(separator: "\n", maxSplits: 1, omittingEmptySubsequences: false)
-            if lines.count == 2 {
-                VStack(alignment: .leading, spacing: 8) {
-                    Text(String(lines[0]))
-                        .font(DS.Font.bodyL(.semibold))
-                        .foregroundStyle(DS.Color.gold)
-
-                    Text(String(lines[1]))
-                        .font(DS.Font.bodyM())
-                        .foregroundStyle(DS.Color.textPrimary)
-                        .lineSpacing(6)
-                }
-            } else {
-                Text(viewModel.state.result.korean)
-                    .font(DS.Font.bodyM())
-                    .foregroundStyle(DS.Color.textPrimary)
-                    .lineSpacing(6)
-            }
+            Text(viewModel.state.result.korean)
+                .font(DS.Font.bodyM())
+                .foregroundStyle(DS.Color.textPrimary)
+                .lineSpacing(6)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(20)

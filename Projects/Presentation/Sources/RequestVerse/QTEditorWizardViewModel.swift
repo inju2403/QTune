@@ -144,6 +144,7 @@ public final class QTEditorWizardViewModel {
             // QuietTime 생성
             var qt = QuietTime(
                 verse: state.verse,
+                secondaryVerse: state.secondaryVerse,
                 korean: state.explKR,
                 rationale: state.rationale,
                 date: Date(),

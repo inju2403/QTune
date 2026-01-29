@@ -10,8 +10,8 @@ import Foundation
 /// Bible API DTO (bible-api.com 응답)
 public struct BibleVerseDTO: Codable {
     public let reference: String    // "John 3:16"
-    public let text: String         // 영어 본문
-    public let translation_id: String?  // "web" or "kjv"
+    public let text: String         // 영어 본문 또는 한국어 본문
+    public let translation_id: String?  // "web", "kjv", "KRV" 등
     public let translation_name: String?
 
     enum CodingKeys: String, CodingKey {
@@ -20,6 +20,13 @@ public struct BibleVerseDTO: Codable {
         case translation_id
         case translation_name
     }
+}
+
+/// bolls.life API 응답 (배열)
+private struct BollsVerseResponse: Codable {
+    let pk: Int
+    let verse: Int
+    let text: String
 }
 
 /// Bible API DataSource
@@ -54,6 +61,68 @@ public final class BibleAPIDataSource {
         }
     }
 
+    /// 특정 역본으로 본문 가져오기 (KRV는 bolls.life, WEB/KJV는 bible-api.com)
+    public func getVerseWithTranslation(verseRef: String, translation: String) async throws -> BibleVerseDTO {
+        print("📖 [BibleAPI] Fetching \(verseRef) with \(translation)")
+
+        // KRV (개역한글)이면 bolls.life 사용
+        if translation.uppercased() == "KRV" {
+            let dto = try await fetchFromBolls(verseRef: verseRef)
+            print("✅ [BibleAPI] Success with KRV (bolls.life)")
+            return dto
+        }
+
+        // WEB/KJV는 기존 bible-api.com 사용
+        let dto = try await fetchVerse(verseRef: verseRef, translation: translation.lowercased())
+        print("✅ [BibleAPI] Success with \(translation)")
+        return dto
+    }
+
+    /// bolls.life API에서 한국어 성경 가져오기
+    private func fetchFromBolls(verseRef: String) async throws -> BibleVerseDTO {
+        // verseRef 파싱: "John 3:16" → book="John", chapter=3, verse=16
+        let components = verseRef.split(separator: " ")
+        guard components.count >= 2 else {
+            throw NSError(domain: "BibleAPI", code: -1, userInfo: [NSLocalizedDescriptionKey: "Invalid verse reference"])
+        }
+
+        let book = components[0..<components.count-1].joined(separator: " ")
+        let chapterVerse = String(components.last!)
+
+        let chapterVerseComponents = chapterVerse.split(separator: ":")
+        guard chapterVerseComponents.count == 2,
+              let chapter = Int(chapterVerseComponents[0]),
+              let verse = Int(chapterVerseComponents[1]) else {
+            throw NSError(domain: "BibleAPI", code: -1, userInfo: [NSLocalizedDescriptionKey: "Invalid chapter:verse format"])
+        }
+
+        // 책명을 bolls.life 약어로 변환
+        guard let bookCode = BibleBookMapper.toBollsCode(book) else {
+            throw NSError(domain: "BibleAPI", code: -1, userInfo: [NSLocalizedDescriptionKey: "Unknown book name: \(book)"])
+        }
+
+        // bolls.life API 호출: https://bolls.life/get-text/KRV/{book}/{chapter}/
+        let urlString = "https://bolls.life/get-text/KRV/\(bookCode)/\(chapter)/"
+        guard let url = URL(string: urlString) else {
+            throw NSError(domain: "BibleAPI", code: -1, userInfo: [NSLocalizedDescriptionKey: "Invalid URL"])
+        }
+
+        let (data, _) = try await URLSession.shared.data(from: url)
+        let verses = try JSONDecoder().decode([BollsVerseResponse].self, from: data)
+
+        // 원하는 절 찾기
+        guard let foundVerse = verses.first(where: { $0.verse == verse }) else {
+            throw NSError(domain: "BibleAPI", code: -1, userInfo: [NSLocalizedDescriptionKey: "Verse \(verse) not found"])
+        }
+
+        return BibleVerseDTO(
+            reference: verseRef,
+            text: foundVerse.text.trimmingCharacters(in: .whitespacesAndNewlines),
+            translation_id: "KRV",
+            translation_name: "개역한글"
+        )
+    }
+
     private func fetchVerse(verseRef: String, translation: String) async throws -> BibleVerseDTO {
         // URLComponents가 자동으로 인코딩하므로 여기서는 인코딩하지 않음
         let endpoint = Endpoint<EmptyRequest, BibleVerseDTO>(
@@ -63,6 +132,14 @@ public final class BibleAPIDataSource {
         )
 
         // GET 요청은 body를 nil로 전달
-        return try await client.request(endpoint, body: nil, headers: [:])
+        let dto = try await client.request(endpoint, body: nil, headers: [:])
+        // WEB/KJV 텍스트의 끝 개행문자 제거 - 새 DTO 생성
+        let trimmedDTO = BibleVerseDTO(
+            reference: dto.reference,
+            text: dto.text.trimmingCharacters(in: .whitespacesAndNewlines),
+            translation_id: dto.translation_id,
+            translation_name: dto.translation_name
+        )
+        return trimmedDTO
     }
 }

@@ -13,6 +13,7 @@ public struct ProfileEditState: Equatable {
     public var nickname: String
     public var selectedGender: UserProfile.Gender
     public var profileImageData: Data?
+    public var preferredTranslation: Translation  // 기존 역본 보존용
     public var isSaving: Bool
     public var showError: Bool
     public var showSaveSuccessToast: Bool
@@ -21,6 +22,7 @@ public struct ProfileEditState: Equatable {
         nickname: String = "",
         selectedGender: UserProfile.Gender = .brother,
         profileImageData: Data? = nil,
+        preferredTranslation: Translation = .koreanRevisedVersion,
         isSaving: Bool = false,
         showError: Bool = false,
         showSaveSuccessToast: Bool = false
@@ -28,6 +30,7 @@ public struct ProfileEditState: Equatable {
         self.nickname = nickname
         self.selectedGender = selectedGender
         self.profileImageData = profileImageData
+        self.preferredTranslation = preferredTranslation
         self.isSaving = isSaving
         self.showError = showError
         self.showSaveSuccessToast = showSaveSuccessToast
@@ -37,6 +40,7 @@ public struct ProfileEditState: Equatable {
         self.nickname = profile?.nickname ?? ""
         self.selectedGender = profile?.gender ?? .brother
         self.profileImageData = profile?.profileImageData
+        self.preferredTranslation = profile?.preferredTranslation ?? .koreanRevisedVersion
         self.isSaving = false
         self.showError = false
         self.showSaveSuccessToast = false

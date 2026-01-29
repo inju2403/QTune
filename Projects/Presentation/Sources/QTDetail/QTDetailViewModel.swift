@@ -54,11 +54,58 @@ public final class QTDetailViewModel {
             Task { await deleteQT() }
 
         case .prepareShare:
-            state.shareText = generateShareText()
-            state.showShareSheet = true
+            state.showShareFormatSelection = true
+
+        case .selectShareFormat(let format):
+            state.selectedShareFormat = format
+            state.showShareFormatSelection = false
+
+            if format == .image {
+                // 이미지 공유 → 바로 이미지 바텀시트 표시
+                state.showImageShareSheet = true
+            } else {
+                // 텍스트 공유 → 타입 선택 (핵심/전체)
+                state.showShareTypeSelection = true
+            }
+
+        case .selectShareType(let type):
+            state.selectedShareType = type
+            state.showShareTypeSelection = false
+
+            // 텍스트 공유만 처리 (이미지는 selectShareFormat에서 처리)
+            if state.selectedShareFormat == .text {
+                if type == .full {
+                    // 전체 묵상 → 바로 공유
+                    state.shareText = generateFullShareText()
+                    state.showShareSheet = true
+                } else {
+                    // 핵심 묵상 → 말씀 + 해설 + Prayer(SOAP) or Thanksgiving(ACTS)
+                    state.shareText = generateSummaryShareText()
+                    state.showShareSheet = true
+                }
+            }
+
+        case .selectSOAPField, .selectACTSField:
+            // 더 이상 사용하지 않음 (이미지/텍스트 공유 모두 고정 필드 사용)
+            break
+
+        case .cancelShare:
+            state.showShareFormatSelection = false
+            state.showShareTypeSelection = false
+            state.showFieldSelection = false
+            state.selectedShareFormat = nil
+            state.selectedShareType = nil
+            state.selectedSOAPField = nil
+            state.selectedACTSField = nil
 
         case .closeShareSheet:
             state.showShareSheet = false
+            state.showImageShareSheet = false
+            state.showSystemShareSheet = false
+
+        case .shareImageToSystem:
+            state.showImageShareSheet = false
+            state.showSystemShareSheet = true
 
         case .showEditSheet(let show):
             state.showEditSheet = show
@@ -113,7 +160,9 @@ public final class QTDetailViewModel {
     }
 
     // MARK: - Share Text Generation
-    private func generateShareText() -> String {
+
+    /// 전체 묵상 공유 텍스트 생성
+    private func generateFullShareText() -> String {
         // 날짜 포맷 생성
         let dateFormatter = DateFormatter()
         dateFormatter.dateFormat = "yyyy.MM.dd"
@@ -133,9 +182,9 @@ public final class QTDetailViewModel {
 
         text += """
         📖 \(state.qt.verse.id)
-
+        
         \(state.qt.verse.text)
-
+        
         """
 
         if let korean = state.qt.korean, !korean.isEmpty {
@@ -170,6 +219,55 @@ public final class QTDetailViewModel {
             }
             if let supplication = state.qt.actsSupplication, !supplication.isEmpty {
                 text += "🤲 간구\n\(supplication)\n\n"
+            }
+        }
+
+        text += "- QTune에서 작성"
+        return text
+    }
+
+    /// 핵심 묵상 공유 텍스트 생성 (말씀 + 해설 + Prayer/Thanksgiving)
+    private func generateSummaryShareText() -> String {
+        // 날짜 포맷 생성
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "yyyy.MM.dd"
+        dateFormatter.locale = Locale(identifier: "ko_KR")
+        let dateString = dateFormatter.string(from: state.qt.date)
+
+        // 사용자 호칭 생성
+        let userTitle: String
+        if let profile = userProfile {
+            let genderSuffix = profile.gender == .brother ? "형제" : "자매"
+            userTitle = "\(profile.nickname) \(genderSuffix)님의 묵상"
+        } else {
+            userTitle = "나의 묵상"
+        }
+
+        var text = "🗓️ \(dateString)\n📝 \(userTitle)\n\n"
+
+        // 영어 말씀
+        text += """
+        📖 \(state.qt.verse.id)
+
+        \(state.qt.verse.text)
+
+        """
+
+        // 한글 해설
+        if let korean = state.qt.korean, !korean.isEmpty {
+            text += "\n💬 해설\n\(korean)\n"
+        }
+
+        text += "\n━━━━━━━━━━━━━━━━\n\n"
+
+        // SOAP → Prayer만, ACTS → Thanksgiving만
+        if state.qt.template == "SOAP" {
+            if let prayer = state.qt.soapPrayer, !prayer.isEmpty {
+                text += "🙏 기도\n\(prayer)\n\n"
+            }
+        } else {
+            if let thanksgiving = state.qt.actsThanksgiving, !thanksgiving.isEmpty {
+                text += "🙏 감사\n\(thanksgiving)\n\n"
             }
         }
 

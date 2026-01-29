@@ -24,6 +24,7 @@ public enum QuietTimeStatus: Equatable, Hashable {
 public struct QuietTime: Identifiable, Equatable, Hashable {
     public let id: UUID
     public var verse: Verse
+    public var secondaryVerse: Verse?  // 대조역본
     public var memo: String          // Deprecated: 템플릿 필드로 대체됨
     public var korean: String?       // GPT 한글 해설
     public var rationale: String?    // 추천 이유
@@ -50,6 +51,7 @@ public struct QuietTime: Identifiable, Equatable, Hashable {
     public init(
         id: UUID = UUID(),
         verse: Verse,
+        secondaryVerse: Verse? = nil,
         memo: String = "",
         korean: String? = nil,
         rationale: String? = nil,
@@ -69,6 +71,7 @@ public struct QuietTime: Identifiable, Equatable, Hashable {
     ) {
         self.id = id
         self.verse = verse
+        self.secondaryVerse = secondaryVerse
         self.memo = memo
         self.korean = korean
         self.rationale = rationale
