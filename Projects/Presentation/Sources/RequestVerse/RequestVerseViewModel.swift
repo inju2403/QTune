@@ -96,7 +96,7 @@ public final class RequestVerseViewModel {
         }
 
         do {
-            // 사용자 프로필 조회 (기본역본 + 대조역본 가져오기)
+            // 사용자 프로필 조회 (주 역본 + 비교 역본 가져오기)
             let userProfile = try? await getUserProfileUseCase.execute()
             let primaryTranslation = userProfile?.preferredTranslation
             let secondaryTranslation = userProfile?.secondaryTranslation

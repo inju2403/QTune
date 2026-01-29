@@ -54,7 +54,7 @@ public final class DefaultAIRepository: AIRepository {
             throw AIRepositoryError.koreanExplanationFailed(reason: error.localizedDescription)
         }
 
-        // 2. Bible API에서 기본 역본 본문 가져오기
+        // 2. Bible API에서 주 역본 본문 가져오기
         print("📖 [DefaultAIRepository] Fetching primary translation: \(request.primaryTranslation.displayName)")
         let bibleDTO: BibleVerseDTO
         do {
@@ -96,7 +96,7 @@ public final class DefaultAIRepository: AIRepository {
             throw AIRepositoryError.koreanExplanationFailed(reason: error.localizedDescription)
         }
 
-        // 4. 대조역본 가져오기 (선택사항)
+        // 4. 비교 역본 가져오기 (선택사항)
         var secondaryVerse: Verse? = nil
         if let secondaryTranslation = request.secondaryTranslation {
             print("📖 [DefaultAIRepository] Fetching secondary translation: \(secondaryTranslation.displayName)")
@@ -114,7 +114,7 @@ public final class DefaultAIRepository: AIRepository {
                 print("✅ [DefaultAIRepository] Secondary verse fetched: \(secondaryTranslation.displayName)")
             } catch {
                 print("⚠️ [DefaultAIRepository] Secondary translation fetch failed: \(error)")
-                // 대조역본 실패는 무시하고 계속 진행
+                // 비교 역본 실패는 무시하고 계속 진행
             }
         }
 

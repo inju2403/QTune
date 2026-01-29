@@ -293,7 +293,7 @@ struct DualTranslationSelectionSheet: View {
                     .font(DS.Font.titleL(.bold))
                     .foregroundStyle(DS.Color.deepCocoa)
 
-                Text("기본 역본과 대조 역본을 선택하세요")
+                Text("주 역본과 비교 역본을 선택하세요")
                     .font(DS.Font.bodyM())
                     .foregroundStyle(DS.Color.textSecondary)
             }
@@ -302,9 +302,9 @@ struct DualTranslationSelectionSheet: View {
 
             // 2컬럼 레이아웃
             HStack(alignment: .top, spacing: DS.Spacing.m) {
-                // 기본 역본 컬럼
+                // 주 역본 컬럼
                 VStack(spacing: DS.Spacing.xs) {
-                    Text("기본 역본")
+                    Text("주 역본")
                         .font(DS.Font.bodyM(.semibold))
                         .foregroundStyle(DS.Color.textPrimary)
                         .frame(maxWidth: .infinity, alignment: .leading)
@@ -319,9 +319,9 @@ struct DualTranslationSelectionSheet: View {
                     }
                 }
 
-                // 대조 역본 컬럼
+                // 비교 역본 컬럼
                 VStack(spacing: DS.Spacing.xs) {
-                    Text("대조 역본")
+                    Text("비교 역본")
                         .font(DS.Font.bodyM(.semibold))
                         .foregroundStyle(DS.Color.textPrimary)
                         .frame(maxWidth: .infinity, alignment: .leading)
@@ -334,7 +334,7 @@ struct DualTranslationSelectionSheet: View {
                         action: { selectedSecondary = nil }
                     )
 
-                    // 역본 옵션들 (기본 역본 제외)
+                    // 역본 옵션들 (주 역본 제외)
                     ForEach(Translation.allCases, id: \.self) { translation in
                         if translation != selectedPrimary {
                             translationButton(

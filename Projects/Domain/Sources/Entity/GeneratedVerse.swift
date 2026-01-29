@@ -9,7 +9,7 @@ import Foundation
 
 public struct GeneratedVerse: Equatable {
     public let verse: Verse
-    public let secondaryVerse: Verse?   // 대조역본 말씀 (선택)
+    public let secondaryVerse: Verse?   // 비교 역본 말씀 (선택)
     public let korean: String           // GPT 한글 해설 (3~5문장)
     public let reason: String           // 추천 이유 (1~2문장)
 

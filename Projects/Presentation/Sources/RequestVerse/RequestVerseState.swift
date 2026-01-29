@@ -44,7 +44,7 @@ public struct GeneratedVerseResult: Equatable, Hashable {
     public let korean: String          // 한글 해설 (GPT 생성, 3~5문장)
     public let rationale: String       // 추천 이유
     public let verse: Verse            // Domain 모델 (QT 작성 화면으로 전달용)
-    public let secondaryVerse: Verse?  // 대조역본 말씀 (선택)
+    public let secondaryVerse: Verse?  // 비교 역본 말씀 (선택)
     public let isSafe: Bool            // safety 검증 결과 (차단되지 않았는지)
 
     public init(verseRef: String, verseText: String, verseTextEN: String?, korean: String, rationale: String, verse: Verse, secondaryVerse: Verse? = nil, isSafe: Bool) {

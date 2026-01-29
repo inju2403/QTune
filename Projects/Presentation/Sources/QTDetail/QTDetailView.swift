@@ -161,14 +161,14 @@ private extension QTDetailView {
     @ViewBuilder
     func verseCardSection() -> some View {
         VStack(alignment: .leading, spacing: 11) {
-            // 영문 본문 + 대조역본
+            // 영문 본문 + 비교 역본
             VerseCardView(title: "본문") {
                 VStack(alignment: .leading, spacing: DS.Spacing.m) {
-                    // 기본 역본
+                    // 주 역본
                     Text(viewModel.state.qt.verse.text)
                         .lineSpacing(4)
 
-                    // 대조역본이 있으면 표시
+                    // 비교 역본이 있으면 표시
                     if let secondaryVerse = viewModel.state.qt.secondaryVerse {
                         Text(secondaryVerse.text)
                             .lineSpacing(4)
