@@ -181,10 +181,10 @@ public final class QTDetailViewModel {
         var text = "🗓️ \(dateString)\n📝 \(userTitle)\n\n"
 
         text += """
-        📖 \(state.qt.verse.id)
-        
+        📖 \(state.qt.verse.localizedId)
+
         \(state.qt.verse.text)
-        
+
         """
 
         if let korean = state.qt.korean, !korean.isEmpty {
@@ -247,7 +247,7 @@ public final class QTDetailViewModel {
 
         // 말씀
         text += """
-        📖 \(state.qt.verse.id)
+        📖 \(state.qt.verse.localizedId)
 
         \(state.qt.verse.text)
 

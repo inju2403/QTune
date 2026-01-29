@@ -131,7 +131,7 @@ private extension QTDetailView {
                     .font(DS.Font.titleL())
 
                 VStack(alignment: .leading, spacing: DS.Spacing.xs) {
-                    Text(viewModel.state.qt.verse.id)
+                    Text(viewModel.state.qt.verse.localizedId)
                         .font(DS.Font.titleM(.bold))
                         .foregroundStyle(DS.Color.deepCocoa)
 
