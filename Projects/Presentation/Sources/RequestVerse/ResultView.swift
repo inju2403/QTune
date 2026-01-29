@@ -33,7 +33,7 @@ public struct ResultView: View {
                         .padding(.top, 16)
                         .padding(.horizontal, 20)
 
-                    // 영어 말씀 (+ 대조역본)
+                    // 말씀 (+ 비교역본)
                     verseBlock()
 
                     // 한글 해설

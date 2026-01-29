@@ -245,7 +245,7 @@ public final class QTDetailViewModel {
 
         var text = "🗓️ \(dateString)\n📝 \(userTitle)\n\n"
 
-        // 영어 말씀
+        // 말씀
         text += """
         📖 \(state.qt.verse.id)
 

@@ -381,7 +381,7 @@ struct ShareTypeSelectionSheet: View {
                 shareTypeButton(
                     icon: "sparkles",
                     title: "핵심 묵상",
-                    description: "영어 말씀 + 해설 + 핵심 묵상",
+                    description: "말씀 + 해설 + 핵심 묵상",
                     color: DS.Color.gold,
                     type: .summary
                 )
@@ -389,7 +389,7 @@ struct ShareTypeSelectionSheet: View {
                 shareTypeButton(
                     icon: "doc.text.fill",
                     title: "전체 묵상",
-                    description: "영어 말씀 + 해설 + 전체 묵상 내용",
+                    description: "말씀 + 해설 + 전체 묵상 내용",
                     color: DS.Color.olive,
                     type: .full
                 )
