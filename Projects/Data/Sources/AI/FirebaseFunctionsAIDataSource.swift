@@ -18,6 +18,13 @@ public final class FirebaseFunctionsAIDataSource: OpenAIRemoteDataSource {
     // Lazy 초기화: FirebaseApp.configure() 이후에 처음 접근할 때 생성
     private lazy var functions: Functions = Functions.functions()
 
+    // Sandbox 환경 체크
+    private var isSandboxEnvironment: Bool {
+        // Bundle ID로 환경 구분
+        let bundleId = Bundle.main.bundleIdentifier ?? ""
+        return bundleId.contains(".sandbox")
+    }
+
     public init() {
         // functions는 lazy이므로 여기서는 생성하지 않음
     }
@@ -38,7 +45,8 @@ public final class FirebaseFunctionsAIDataSource: OpenAIRemoteDataSource {
         var data: [String: Any] = [
             "locale": request.locale,
             "mood": request.mood,
-            "note": request.note ?? ""
+            "note": request.note ?? "",
+            "isSandbox": isSandboxEnvironment  // 환경 정보 추가
         ]
 
         // 프로필 정보 추가
@@ -47,6 +55,11 @@ public final class FirebaseFunctionsAIDataSource: OpenAIRemoteDataSource {
         }
         if let gender = request.gender {
             data["gender"] = gender
+        }
+
+        // 디버깅용 로그
+        if isSandboxEnvironment {
+            print("🏖️ [FirebaseFunctionsAIDataSource] Running in SANDBOX environment")
         }
 
         do {
@@ -136,7 +149,8 @@ public final class FirebaseFunctionsAIDataSource: OpenAIRemoteDataSource {
         var data: [String: Any] = [
             "englishText": englishText,
             "verseRef": verseRef,
-            "mood": mood
+            "mood": mood,
+            "isSandbox": isSandboxEnvironment  // 환경 정보 추가
         ]
 
         if let note = note {
@@ -149,6 +163,11 @@ public final class FirebaseFunctionsAIDataSource: OpenAIRemoteDataSource {
         }
         if let gender = gender {
             data["gender"] = gender
+        }
+
+        // 디버깅용 로그
+        if isSandboxEnvironment {
+            print("🏖️ [FirebaseFunctionsAIDataSource] Running in SANDBOX environment")
         }
 
         do {
