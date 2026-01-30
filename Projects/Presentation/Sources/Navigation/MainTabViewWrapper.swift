@@ -75,11 +75,11 @@ public struct MainTabViewWrapper: View {
 
     @ViewBuilder
     private var tabViewContent: some View {
-        if #available(iOS 26.0, *) {
-            // iOS 26+ Liquid Glass Tab Bar
+        if #available(iOS 26.0, *), UIDevice.current.userInterfaceIdiom != .pad {
+            // iOS 26+ Liquid Glass Tab Bar (iPhone only)
             liquidGlassTabView
         } else {
-            // iOS 18-25 fallback
+            // iOS 18-25 fallback + iPad all versions
             legacyTabView
         }
     }
