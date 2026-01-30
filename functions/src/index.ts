@@ -61,9 +61,32 @@ function getCallerId(request: any): string {
 }
 
 // =========================================
+// 환경 구분 (Sandbox vs Production)
+// =========================================
+function isSandboxEnvironment(request: any): boolean {
+  // 앱 체크 토큰이나 커스텀 클레임으로 구분
+  // 또는 앱 ID로 구분 (com.inju.qtune.sandbox)
+  const token = request.auth?.token;
+  const appId = token?.firebase?.sign_in_provider;
+
+  // Bundle ID나 커스텀 헤더로 구분
+  // iOS에서 보낸 헤더나 토큰 정보로 판단
+  return request.data?.isSandbox === true ||
+         request.rawRequest?.headers?.["x-app-environment"] === "sandbox";
+}
+
+// =========================================
+// 환경별 컬렉션 이름 가져오기
+// =========================================
+function getCollectionName(baseName: string, request: any): string {
+  const prefix = isSandboxEnvironment(request) ? "dev_" : "";
+  return `${prefix}${baseName}`;
+}
+
+// =========================================
 // 하루 10회 제한 체크 (Firestore 기반)
 // =========================================
-async function checkDailyQuota(callerId: string): Promise<void> {
+async function checkDailyQuota(callerId: string, request: any): Promise<void> {
   const db = admin.firestore();
 
   // 오늘 날짜 (한국시간 기준, YYYY-MM-DD)
@@ -73,7 +96,10 @@ async function checkDailyQuota(callerId: string): Promise<void> {
   const kstDate = new Date(now.getTime() + kstOffset);
   const today = kstDate.toISOString().split("T")[0];
   const docId = `${callerId}_${today}`;
-  const docRef = db.collection("usage").doc(docId);
+
+  // 환경에 따라 컬렉션 이름 결정 (usage vs dev_usage)
+  const collectionName = getCollectionName("usage", request);
+  const docRef = db.collection(collectionName).doc(docId);
 
   await db.runTransaction(async (transaction) => {
     const doc = await transaction.get(docRef);
@@ -115,9 +141,10 @@ async function checkDailyQuota(callerId: string): Promise<void> {
 // =========================================
 // 추천 이력 조회 (Firestore 기반)
 // =========================================
-async function getRecommendedVerses(callerId: string): Promise<string[]> {
+async function getRecommendedVerses(callerId: string, request: any): Promise<string[]> {
   const db = admin.firestore();
-  const docRef = db.collection("verse_history").doc(callerId);
+  const collectionName = getCollectionName("verse_history", request);
+  const docRef = db.collection(collectionName).doc(callerId);
 
   try {
     const doc = await docRef.get();
@@ -141,10 +168,12 @@ async function getRecommendedVerses(callerId: string): Promise<string[]> {
 // =========================================
 async function saveRecommendedVerse(
   callerId: string,
-  verseRef: string
+  verseRef: string,
+  request: any
 ): Promise<void> {
   const db = admin.firestore();
-  const docRef = db.collection("verse_history").doc(callerId);
+  const collectionName = getCollectionName("verse_history", request);
+  const docRef = db.collection(collectionName).doc(callerId);
 
   try {
     await db.runTransaction(async (transaction) => {
@@ -230,10 +259,10 @@ export const recommendVerse = onCall(
 
       // 호출자 식별 및 하루 10회 제한 체크
       const callerId = getCallerId(request);
-      await checkDailyQuota(callerId);
+      await checkDailyQuota(callerId, request);
 
       // 이미 추천한 구절 목록 조회
-      const recommendedVerses = await getRecommendedVerses(callerId);
+      const recommendedVerses = await getRecommendedVerses(callerId, request);
 
       logger.info("recommendVerse called", {
         locale,
@@ -392,7 +421,7 @@ ${excludeList}
       logger.info("recommendVerse success", { verseRef: result.verseRef });
 
       // 추천 결과를 이력에 저장 (동기화하여 다음 요청에서 바로 반영되도록)
-      await saveRecommendedVerse(callerId, result.verseRef);
+      await saveRecommendedVerse(callerId, result.verseRef, request);
 
       return result;
     } catch (error: any) {
@@ -575,7 +604,7 @@ rationale: "${userLabel}께서 오늘 나누신 마음에 이 말씀이 위로�
       logger.info("generateKoreanExplanation success");
 
       // 사용자가 직접 지정한 구절도 이력에 저장 (동기화)
-      await saveRecommendedVerse(callerId, verseRef);
+      await saveRecommendedVerse(callerId, verseRef, request);
 
       return result;
     } catch (error: any) {
