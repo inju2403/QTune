@@ -138,7 +138,7 @@ let project = Project(
         "Resources/Assets.xcassets",
         "Resources/LaunchScreen.storyboard",
         "Resources/Preview Content/**",
-        "Resources/GoogleService-Info-sandbox.plist"
+        "Resources/GoogleService-Info.plist"  // Firebase SDK는 이 이름을 찾음
       ],
       buildableFolders: [.folder("Sources")],
       scripts: [
@@ -146,7 +146,12 @@ let project = Project(
           script: """
           # Sandbox 환경용 GoogleService-Info.plist 설정
           echo "📋 Setting up Sandbox GoogleService-Info.plist"
-          cp "${SRCROOT}/Resources/GoogleService-Info-sandbox.plist" "${SRCROOT}/Resources/GoogleService-Info.plist"
+          if [ -f "${SRCROOT}/Resources/GoogleService-Info-sandbox.plist" ]; then
+            cp -f "${SRCROOT}/Resources/GoogleService-Info-sandbox.plist" "${SRCROOT}/Resources/GoogleService-Info.plist"
+            echo "✅ Copied sandbox plist to GoogleService-Info.plist"
+          else
+            echo "⚠️ GoogleService-Info-sandbox.plist not found!"
+          fi
           """,
           name: "Setup Sandbox Firebase Config",
           basedOnDependencyAnalysis: false
