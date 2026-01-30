@@ -98,21 +98,24 @@ let project = Project(
       ],
       settings: .settings(
         base: [
-            "OTHER_LDFLAGS": .array(["$(inherited)", "-ObjC"]),
-            "PRODUCT_NAME": .string("$(ENVIRONMENT:default=PRODUCTION:lower=sandbox=QTune-Sandbox,*=QTune)")
+            "OTHER_LDFLAGS": .array(["$(inherited)", "-ObjC"])
         ],
         configurations: [
           .debug(name: "Debug", settings: [
-            "PRODUCT_BUNDLE_IDENTIFIER": "com.inju.qtune"
+            "PRODUCT_BUNDLE_IDENTIFIER": "com.inju.qtune",
+            "PRODUCT_NAME": "QTune"
           ]),
           .release(name: "Release", settings: [
-            "PRODUCT_BUNDLE_IDENTIFIER": "com.inju.qtune"
+            "PRODUCT_BUNDLE_IDENTIFIER": "com.inju.qtune",
+            "PRODUCT_NAME": "QTune"
           ]),
           .debug(name: "Debug-Sandbox", settings: [
-            "PRODUCT_BUNDLE_IDENTIFIER": "com.inju.qtune.sandbox"
+            "PRODUCT_BUNDLE_IDENTIFIER": "com.inju.qtune.sandbox",
+            "PRODUCT_NAME": "QTune-Sandbox"
           ]),
           .release(name: "Release-Sandbox", settings: [
-            "PRODUCT_BUNDLE_IDENTIFIER": "com.inju.qtune.sandbox"
+            "PRODUCT_BUNDLE_IDENTIFIER": "com.inju.qtune.sandbox",
+            "PRODUCT_NAME": "QTune-Sandbox"
           ])
         ],
         defaultSettings: .recommended
