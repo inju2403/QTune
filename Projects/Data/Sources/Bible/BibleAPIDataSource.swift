@@ -91,9 +91,31 @@ public final class BibleAPIDataSource {
 
         let chapterVerseComponents = chapterVerse.split(separator: ":")
         guard chapterVerseComponents.count == 2,
-              let chapter = Int(chapterVerseComponents[0]),
-              let verse = Int(chapterVerseComponents[1]) else {
+              let chapter = Int(chapterVerseComponents[0]) else {
             throw NSError(domain: "BibleAPI", code: -1, userInfo: [NSLocalizedDescriptionKey: "Invalid chapter:verse format"])
+        }
+
+        // 절 파싱 (범위인 경우 시작과 끝 절 모두 처리)
+        let verseString = String(chapterVerseComponents[1])
+        let startVerse: Int
+        let endVerse: Int
+
+        if let dashIndex = verseString.firstIndex(of: "-") {
+            // 범위인 경우 (예: "6-7")
+            let startStr = String(verseString[..<dashIndex])
+            let endStr = String(verseString[verseString.index(after: dashIndex)...])
+            guard let start = Int(startStr), let end = Int(endStr) else {
+                throw NSError(domain: "BibleAPI", code: -1, userInfo: [NSLocalizedDescriptionKey: "Invalid verse range format"])
+            }
+            startVerse = start
+            endVerse = end
+        } else {
+            // 단일 절인 경우
+            guard let verse = Int(verseString) else {
+                throw NSError(domain: "BibleAPI", code: -1, userInfo: [NSLocalizedDescriptionKey: "Invalid verse format"])
+            }
+            startVerse = verse
+            endVerse = verse
         }
 
         // 책명을 bolls.life 약어로 변환
@@ -110,14 +132,21 @@ public final class BibleAPIDataSource {
         let (data, _) = try await URLSession.shared.data(from: url)
         let verses = try JSONDecoder().decode([BollsVerseResponse].self, from: data)
 
-        // 원하는 절 찾기
-        guard let foundVerse = verses.first(where: { $0.verse == verse }) else {
-            throw NSError(domain: "BibleAPI", code: -1, userInfo: [NSLocalizedDescriptionKey: "Verse \(verse) not found"])
+        // 범위의 모든 절 가져오기
+        let selectedVerses = verses.filter { $0.verse >= startVerse && $0.verse <= endVerse }
+        guard !selectedVerses.isEmpty else {
+            throw NSError(domain: "BibleAPI", code: -1, userInfo: [NSLocalizedDescriptionKey: "Verses \(startVerse)-\(endVerse) not found"])
         }
+
+        // 여러 절을 하나의 텍스트로 합치기
+        let combinedText = selectedVerses
+            .sorted { $0.verse < $1.verse }
+            .map { $0.text.trimmingCharacters(in: .whitespacesAndNewlines) }
+            .joined(separator: " ")
 
         return BibleVerseDTO(
             reference: verseRef,
-            text: foundVerse.text.trimmingCharacters(in: .whitespacesAndNewlines),
+            text: combinedText,
             translation_id: "KRV",
             translation_name: "개역한글"
         )
