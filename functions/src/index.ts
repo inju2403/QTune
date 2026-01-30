@@ -64,13 +64,8 @@ function getCallerId(request: any): string {
 // 환경 구분 (Sandbox vs Production)
 // =========================================
 function isSandboxEnvironment(request: any): boolean {
-  // 앱 체크 토큰이나 커스텀 클레임으로 구분
-  // 또는 앱 ID로 구분 (com.inju.qtune.sandbox)
-  const token = request.auth?.token;
-  const appId = token?.firebase?.sign_in_provider;
-
   // Bundle ID나 커스텀 헤더로 구분
-  // iOS에서 보낸 헤더나 토큰 정보로 판단
+  // iOS에서 보낸 데이터로 판단
   return request.data?.isSandbox === true ||
          request.rawRequest?.headers?.["x-app-environment"] === "sandbox";
 }
@@ -264,6 +259,15 @@ export const recommendVerse = onCall(
       // 이미 추천한 구절 목록 조회
       const recommendedVerses = await getRecommendedVerses(callerId, request);
 
+      // 샌드박스 환경 체크 로그
+      const isSandbox = isSandboxEnvironment(request);
+      if (isSandbox) {
+        logger.info("🏖️ SANDBOX ENVIRONMENT DETECTED", {
+          isSandbox: true,
+          collection: "dev_usage"
+        });
+      }
+
       logger.info("recommendVerse called", {
         locale,
         mood,
@@ -272,6 +276,7 @@ export const recommendVerse = onCall(
         gender,
         callerId,
         historyCount: recommendedVerses.length,
+        isSandbox,  // 환경 정보 추가
       });
 
       const noteSection = note ? ` (${note})` : "";
@@ -366,7 +371,7 @@ ${excludeList}
         type: "json_schema" as const,
         json_schema: {
           name: "VerseRecommendation",
-          strict: true,
+          strict: false,  // 특수문자 입력 시 에러 방지
           schema: {
             type: "object",
             properties: {
@@ -559,7 +564,7 @@ rationale: "${userLabel}께서 오늘 나누신 마음에 이 말씀이 위로�
         type: "json_schema" as const,
         json_schema: {
           name: "KoreanExplanation",
-          strict: true,
+          strict: false,  // 특수문자 입력 시 에러 방지
           schema: {
             type: "object",
             properties: {
