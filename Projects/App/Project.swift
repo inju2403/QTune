@@ -16,7 +16,7 @@ let project = Project(
   targets: [
     .target(
       name: "App",
-      destinations: [.iPhone],
+      destinations: [.iPhone, .iPad],
       product: .app,
       bundleId: "com.inju.qtune",
       deploymentTargets: .iOS("17.0"),
@@ -124,7 +124,7 @@ let project = Project(
     // Sandbox 전용 타겟 (선택사항)
     .target(
       name: "App-Sandbox",
-      destinations: [.iPhone],
+      destinations: [.iPhone, .iPad],
       product: .app,
       bundleId: "com.inju.qtune.sandbox",
       deploymentTargets: .iOS("17.0"),
