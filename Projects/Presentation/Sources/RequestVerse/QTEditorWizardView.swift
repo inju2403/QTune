@@ -51,7 +51,7 @@ public struct QTEditorWizardView: View {
                 // 전체 스크롤뷰 (말씀 + 해설 + 입력 카드)
                 ScrollView {
                     VStack(spacing: 0) {
-                        // 상단: 영어 말씀 + 해설
+                        // 상단: 말씀 + 해설
                         verseHeaderContent()
 
                         // 중앙: 현재 스텝의 입력 카드

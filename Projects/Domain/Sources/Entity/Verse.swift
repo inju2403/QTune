@@ -9,6 +9,7 @@ import Foundation
 
 public struct Verse: Equatable, Hashable {
     public var id: String { "\(book) \(chapter):\(verse)" }
+    public var localizedId: String { "\(localizedBookName) \(chapter):\(verse)" }
     public let book: String            // 성경 책 이름, 예: "John"
     public let chapter: Int            // 장 번호, 예: 3
     public let verse: Int              // 절 번호, 예: 16

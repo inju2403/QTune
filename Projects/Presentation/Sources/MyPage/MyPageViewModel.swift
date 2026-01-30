@@ -64,7 +64,7 @@ public final class MyPageViewModel {
 
         case .selectPrimaryTranslation(let translation):
             state.selectedPrimaryTranslation = translation
-            // 만약 대조 역본이 기본 역본과 같으면 선택 안 함으로 변경
+            // 만약 비교 역본이 주 역본과 같으면 선택 안 함으로 변경
             if state.selectedSecondaryTranslation == translation {
                 state.selectedSecondaryTranslation = nil
             }

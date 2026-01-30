@@ -21,7 +21,7 @@ extension QTEntryModel {
             translation: verseTranslation
         )
 
-        // 대조역본이 있으면 생성
+        // 비교 역본이 있으면 생성
         let secondaryVerse: Verse? = {
             guard let book = secondaryVerseBook,
                   let chapter = secondaryVerseChapter,

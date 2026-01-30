@@ -27,7 +27,7 @@ public final class QTEntryModel {
     public var verseText: String
     public var verseTranslation: String
 
-    // MARK: - 대조역본
+    // MARK: - 비교 역본
     public var secondaryVerseBook: String?
     public var secondaryVerseChapter: Int?
     public var secondaryVerseNumber: Int?
