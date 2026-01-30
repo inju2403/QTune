@@ -22,6 +22,8 @@ public struct SearchTabNavigationView: View {
     let getUserProfileUseCase: GetUserProfileUseCase
 
     @State private var path = NavigationPath()
+    @FocusState private var isSearchFieldFocused: Bool
+    @State private var forceRefresh = false
 
     public init(
         qtListViewModel: QTListViewModel,
@@ -59,11 +61,31 @@ public struct SearchTabNavigationView: View {
             .searchable(
                 text: $searchText,
                 isPresented: $isSearchPresented,
-                placement: .navigationBarDrawer(displayMode: .always),
+                placement: UIDevice.current.userInterfaceIdiom == .pad
+                    ? .toolbar  // iPad에서는 toolbar placement 시도
+                    : .automatic,
                 prompt: "QT 기록을 검색해보세요."
             )
+            .searchSuggestions {
+                // 빈 suggestion view로 검색창 활성화 유도
+                if UIDevice.current.userInterfaceIdiom == .pad && searchText.isEmpty && isSearchPresented {
+                    Text("검색어를 입력하세요")
+                        .foregroundStyle(.secondary)
+                }
+            }
             .autocorrectionDisabled()
             .textInputAutocapitalization(.never)
+            .onChange(of: isSearchPresented) { _, newValue in
+                if newValue && UIDevice.current.userInterfaceIdiom == .pad {
+                    // iPad에서 검색이 활성화되면 강제 refresh로 UI 업데이트
+                    forceRefresh.toggle()
+                }
+            }
+            // 숨겨진 Toggle로 강제 UI 재렌더링 (iOS 17 workaround)
+            .background(
+                Toggle("", isOn: $forceRefresh)
+                    .hidden()
+            )
         }
     }
 }
