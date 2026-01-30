@@ -33,7 +33,7 @@ public struct ResultView: View {
                         .padding(.top, 16)
                         .padding(.horizontal, 20)
 
-                    // 영어 말씀 (+ 대조역본)
+                    // 말씀 (+ 비교역본)
                     verseBlock()
 
                     // 한글 해설
@@ -94,14 +94,14 @@ private extension ResultView {
             }
             .padding(.bottom, 16)
 
-            // 기본 역본 본문
+            // 주 역본 본문
             Text(viewModel.state.result.verse.text)
                 .font(DS.Font.verse(17, .regular))
                 .foregroundStyle(DS.Color.textPrimary)
                 .lineSpacing(6)
                 .padding(.bottom, viewModel.state.result.secondaryVerse != nil ? 12 : 0)
 
-            // 대조역본이 있으면 표시
+            // 비교 역본이 있으면 표시
             if let secondaryVerse = viewModel.state.result.secondaryVerse {
                 Text(secondaryVerse.text)
                     .font(DS.Font.verse(17, .regular))

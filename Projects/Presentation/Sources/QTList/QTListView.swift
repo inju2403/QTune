@@ -358,7 +358,7 @@ private extension QTListView {
         SoftCard {
             VStack(alignment: .leading, spacing: DS.Spacing.l) {
                 HStack(alignment: .top) {
-                    Text(qt.verse.id)
+                    Text(qt.verse.localizedId)
                         .font(.system(size: 21, weight: .bold, design: .serif))
                         .foregroundStyle(DS.Color.deepCocoa)
                         .lineLimit(2)
