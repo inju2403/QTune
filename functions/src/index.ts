@@ -615,8 +615,8 @@ ${englishText}
       const result = JSON.parse(content);
       logger.info("generateKoreanExplanation success");
 
-      // 사용자가 직접 지정한 구절도 이력에 저장 (동기화)
-      await saveRecommendedVerse(callerId, verseRef);
+      // generateKoreanExplanation은 recommendVerse의 후속 작업이므로
+      // 이미 recommendVerse에서 저장한 구절을 중복 저장하지 않음
 
       return result;
     } catch (error: any) {
