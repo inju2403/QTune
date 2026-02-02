@@ -558,7 +558,7 @@ struct ExplanationSheetView: View {
                         .foregroundStyle(DS.Color.mocha)
                 }
                 .frame(maxWidth: .infinity)
-                .padding(.top, 32)
+                .padding(.top, DS.Spacing.xxl)
                 .padding(.bottom, DS.Spacing.l)
 
                 // 구분선
@@ -612,8 +612,8 @@ struct ExplanationSheetView: View {
                         width: contentWidth,
                         font: .systemFont(ofSize: 17)
                     )
-                    // icon(60) + spacing(16) + title(22) + top padding(32) + bottom padding(16) + divider(1) + content padding(16) + content + bottom padding(24) + extra(50)
-                    let totalHeight = 60 + 16 + 22 + 32 + 16 + 1 + 16 + estimatedHeight + 24 + 50
+                    // icon(60) + spacing(16) + title(22) + top padding(32) + bottom padding(16) + divider(1) + content padding(16) + content + bottom padding(24) + extra(60)
+                    let totalHeight = 60 + 16 + 22 + 32 + 16 + 1 + 16 + estimatedHeight + 24 + 60
                     sheetHeight = min(max(totalHeight, 280), UIScreen.main.bounds.height * 0.7)
                 }
             }
