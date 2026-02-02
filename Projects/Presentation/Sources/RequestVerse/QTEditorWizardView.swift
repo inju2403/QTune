@@ -24,7 +24,8 @@ public enum ActsStep: Int, CaseIterable, Equatable {
 }
 
 // MARK: - QTEditorWizardView
-
+/// QT 작성 화면 (새로운 QT를 작성할 때 사용)
+/// 말씀 추천을 받은 후 SOAP/ACTS 템플릿으로 묵상을 기록
 public struct QTEditorWizardView: View {
     // MARK: - ViewModel
     @State private var viewModel: QTEditorWizardViewModel
@@ -35,6 +36,9 @@ public struct QTEditorWizardView: View {
     // MARK: - Focus State
     @FocusState private var soapFocus: SoapStep?
     @FocusState private var actsFocus: ActsStep?
+
+    // MARK: - Sheet State
+    @State private var showExplanationSheet = false
 
     // MARK: - Init
     public init(viewModel: QTEditorWizardViewModel) {
@@ -263,6 +267,9 @@ public struct QTEditorWizardView: View {
         } message: {
             Text("저장에 실패했어요. 다시 시도해 주세요.")
         }
+        .sheet(isPresented: $showExplanationSheet) {
+            ExplanationSheetView(explanation: viewModel.state.explKR)
+        }
         .overlay(alignment: .bottom) {
             if viewModel.state.showSaveSuccessToast {
                 successToast()
@@ -320,60 +327,68 @@ public struct QTEditorWizardView: View {
     @ViewBuilder
     private func verseHeaderContent() -> some View {
         VStack(alignment: .leading, spacing: 0) {
-            // 영어 말씀
-            VStack(alignment: .leading, spacing: 12) {
-                // 성경 구절 참조
-                HStack(spacing: 6) {
-                    Image(systemName: "book.closed.fill")
-                        .foregroundStyle(DS.Color.gold)
-                        .font(.system(size: 14))
-                    Text(viewModel.state.verseRef)
-                        .font(DS.Font.caption(.semibold))
-                        .foregroundStyle(DS.Color.deepCocoa)
-                }
-
-                Text(viewModel.state.verseEN.trimmingCharacters(in: .whitespacesAndNewlines))
-                    .font(DS.Font.verse(16, .regular))
-                    .foregroundStyle(DS.Color.textPrimary)
-                    .lineSpacing(5)
-                    .fixedSize(horizontal: false, vertical: true)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-            }
-            .padding(20)
-            .background(DS.Color.canvas.opacity(0.9))
-            .cornerRadius(DS.Radius.m)
-            .padding(.horizontal, 20)
-            .padding(.top, 12)
-
-            // 한글 해설 (영구 표시)
-            if !viewModel.state.explKR.isEmpty {
-                VStack(alignment: .leading, spacing: 10) {
+            // 영어 말씀 (말씀 카드)
+            ZStack(alignment: .topTrailing) {
+                VStack(alignment: .leading, spacing: 12) {
+                    // 성경 구절 참조
                     HStack(spacing: 6) {
-                        Image(systemName: "lightbulb.fill")
+                        Image(systemName: "book.closed.fill")
                             .foregroundStyle(DS.Color.gold)
-                            .font(.system(size: 12))
-                        Text("해설")
+                            .font(.system(size: 14))
+                        Text(viewModel.state.verseRef)
                             .font(DS.Font.caption(.semibold))
                             .foregroundStyle(DS.Color.deepCocoa)
                     }
 
-                    Text(viewModel.state.explKR.trimmingCharacters(in: .whitespacesAndNewlines))
-                        .font(DS.Font.bodyM())
+                    Text(viewModel.state.verseEN.trimmingCharacters(in: .whitespacesAndNewlines))
+                        .font(DS.Font.verse(16, .regular))
                         .foregroundStyle(DS.Color.textPrimary)
                         .lineSpacing(5)
                         .fixedSize(horizontal: false, vertical: true)
                         .frame(maxWidth: .infinity, alignment: .leading)
                 }
-                .padding(16)
+                .padding(20)
                 .background(DS.Color.canvas.opacity(0.9))
                 .cornerRadius(DS.Radius.m)
-                .padding(.horizontal, 20)
-                .padding(.top, 8)
-                .padding(.bottom, 12)
-            } else {
-                Spacer()
-                    .frame(height: 12)
+
+                // 해설 버튼 (한글 해설이 있을 때만 표시)
+                if !viewModel.state.explKR.isEmpty {
+                    Button {
+                        Haptics.tap()
+                        showExplanationSheet = true
+                    } label: {
+                        HStack(spacing: 4) {
+                            Image(systemName: "book.fill")
+                                .font(.system(size: 12, weight: .semibold))
+                            Text("해설")
+                                .font(.system(size: 14, weight: .semibold, design: .rounded))
+                        }
+                        .foregroundStyle(.white)
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 6)
+                        .background(
+                            Capsule()
+                                .fill(
+                                    LinearGradient(
+                                        colors: [DS.Color.mocha, DS.Color.gold],
+                                        startPoint: .leading,
+                                        endPoint: .trailing
+                                    )
+                                )
+                        )
+                        .overlay(
+                            Capsule()
+                                .stroke(DS.Color.gold.opacity(0.3), lineWidth: 1)
+                        )
+                        .shadow(color: DS.Color.mocha.opacity(0.3), radius: 8, y: 2)
+                    }
+                    .padding(.top, 12)
+                    .padding(.trailing, 12)
+                }
             }
+            .padding(.horizontal, 20)
+            .padding(.top, 12)
+            .padding(.bottom, 12)
         }
     }
 }
@@ -404,8 +419,9 @@ struct StepPager<Content: View>: View {
     }
 }
 
-// MARK: - SingleFieldCard (단일 입력 카드)
-
+// MARK: - SingleFieldCard
+/// QT 작성 화면 전용 단계별 입력 카드
+/// SOAP/ACTS 템플릿에 따라 한 번에 하나씩 입력받는 카드
 struct SingleFieldCard<FocusValue: Hashable>: View {
     let title: String
     let description: String
@@ -489,5 +505,131 @@ struct SingleFieldCard<FocusValue: Hashable>: View {
             RoundedRectangle(cornerRadius: DS.Radius.m)
                 .fill(DS.Color.background)
         )
+    }
+}
+
+
+// MARK: - ExplanationSheetView
+/// QT 작성 화면 전용 해설 시트 뷰
+/// 말씀 해설을 아름답게 표시하는 모달 화면
+struct ExplanationSheetView: View {
+    let explanation: String
+    @Environment(\.dismiss) private var dismiss
+
+    var body: some View {
+        NavigationStack {
+            ZStack {
+                // 배경 그라디언트
+                LinearGradient(
+                    colors: [
+                        Color(hex: "#FFF5E6").opacity(0.3),
+                        Color(hex: "#FFE4B5").opacity(0.2)
+                    ],
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                )
+                .ignoresSafeArea()
+
+                ScrollView(showsIndicators: false) {
+                    VStack(spacing: DS.Spacing.xl) {
+                        // 해설 아이콘
+                        ZStack {
+                            Circle()
+                                .fill(
+                                    LinearGradient(
+                                        colors: [DS.Color.gold.opacity(0.2), DS.Color.mocha.opacity(0.1)],
+                                        startPoint: .topLeading,
+                                        endPoint: .bottomTrailing
+                                    )
+                                )
+                                .frame(width: 80, height: 80)
+                                .overlay(
+                                    Circle()
+                                        .stroke(DS.Color.gold.opacity(0.3), lineWidth: 1)
+                                )
+
+                            Image(systemName: "book.pages.fill")
+                                .font(.system(size: 32, weight: .medium))
+                                .foregroundStyle(DS.Color.mocha)
+                        }
+                        .padding(.top, DS.Spacing.l)
+
+                        // 해설 제목
+                        Text("해설")
+                            .font(.system(size: 24, weight: .bold, design: .serif))
+                            .foregroundStyle(DS.Color.mocha)
+
+                        // 해설 내용
+                        VStack(alignment: .leading, spacing: DS.Spacing.m) {
+                            let lines = explanation.split(separator: "\n", maxSplits: 1, omittingEmptySubsequences: false)
+                            if lines.count == 2 {
+                                // 첫 줄은 강조
+                                Text(String(lines[0]))
+                                    .font(.system(size: 18, weight: .semibold, design: .rounded))
+                                    .foregroundStyle(DS.Color.gold)
+                                    .multilineTextAlignment(.center)
+                                    .padding(.horizontal, DS.Spacing.l)
+
+                                // 나머지 내용
+                                Text(String(lines[1]))
+                                    .font(.system(size: 16, weight: .regular, design: .rounded))
+                                    .foregroundStyle(DS.Color.textPrimary)
+                                    .lineSpacing(6)
+                                    .multilineTextAlignment(.leading)
+                                    .padding(.horizontal, DS.Spacing.xl)
+                                    .padding(.top, DS.Spacing.s)
+                            } else {
+                                Text(explanation)
+                                    .font(.system(size: 16, weight: .regular, design: .rounded))
+                                    .foregroundStyle(DS.Color.textPrimary)
+                                    .lineSpacing(6)
+                                    .multilineTextAlignment(.leading)
+                                    .padding(.horizontal, DS.Spacing.xl)
+                            }
+                        }
+                        .padding(.vertical, DS.Spacing.l)
+                        .frame(maxWidth: .infinity)
+                        .background(
+                            RoundedRectangle(cornerRadius: DS.Radius.xl)
+                                .fill(.white.opacity(0.8))
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: DS.Radius.xl)
+                                        .stroke(DS.Color.gold.opacity(0.2), lineWidth: 1)
+                                )
+                        )
+                        .padding(.horizontal, DS.Spacing.l)
+                        .shadow(color: Color.black.opacity(0.05), radius: 10, y: 5)
+
+                        // 구분선
+                        Rectangle()
+                            .fill(DS.Color.gold.opacity(0.2))
+                            .frame(width: 60, height: 1)
+                            .padding(.vertical, DS.Spacing.m)
+
+                        // 하단 문구
+                        Text("이 말씀이 마음에 와닿기를 기도합니다")
+                            .font(.system(size: 14, weight: .medium, design: .rounded))
+                            .foregroundStyle(DS.Color.textSecondary)
+                            .italic()
+
+                        Spacer(minLength: DS.Spacing.xxl)
+                    }
+                    .padding(.bottom, DS.Spacing.xxl)
+                }
+            }
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button {
+                        Haptics.tap()
+                        dismiss()
+                    } label: {
+                        Image(systemName: "xmark.circle.fill")
+                            .font(.title2)
+                            .foregroundStyle(DS.Color.mocha.opacity(0.6))
+                    }
+                }
+            }
+        }
     }
 }
