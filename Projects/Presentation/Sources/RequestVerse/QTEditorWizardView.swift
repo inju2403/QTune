@@ -276,7 +276,7 @@ public struct QTEditorWizardView: View {
             .presentationDetents([.height(sheetHeight)])
             .presentationDragIndicator(.visible)
             .presentationCornerRadius(DS.Radius.xl)
-            .presentationBackground(.white)
+            .presentationBackground(DS.Color.canvas)
         }
         .overlay(alignment: .bottom) {
             if viewModel.state.showSaveSuccessToast {
@@ -337,14 +337,14 @@ public struct QTEditorWizardView: View {
         VStack(alignment: .leading, spacing: 0) {
             // 영어 말씀 (말씀 카드)
             ZStack(alignment: .topTrailing) {
-                VStack(alignment: .leading, spacing: 16) {
+                VStack(alignment: .leading, spacing: 20) {
                     // 성경 구절 참조
                     HStack(spacing: 6) {
                         Image(systemName: "book.closed.fill")
                             .foregroundStyle(DS.Color.gold)
-                            .font(.system(size: 14))
+                            .font(.system(size: 16))
                         Text(viewModel.state.verseRef)
-                            .font(DS.Font.caption(.semibold))
+                            .font(.system(size: 16, weight: .semibold, design: .rounded))
                             .foregroundStyle(DS.Color.deepCocoa)
                     }
 
@@ -519,7 +519,7 @@ struct SingleFieldCard<FocusValue: Hashable>: View {
 
 // MARK: - ExplanationSheetView
 /// QT 작성 화면 전용 해설 바텀시트
-/// 해설 내용만 간결하게 표시하는 동적 높이 바텀시트
+/// 해설 내용을 아름답게 표시하는 동적 높이 바텀시트
 struct ExplanationSheetView: View {
     let explanation: String
     @Binding var sheetHeight: CGFloat
@@ -527,52 +527,82 @@ struct ExplanationSheetView: View {
     var body: some View {
         GeometryReader { geometry in
             VStack(spacing: 0) {
-                // 상단 핸들 영역
-                HStack {
-                    Text("해설")
-                        .font(.system(size: 18, weight: .bold, design: .serif))
-                        .foregroundStyle(DS.Color.mocha)
+                // 상단 아이콘과 타이틀
+                VStack(spacing: 16) {
+                    // 아이콘
+                    ZStack {
+                        Circle()
+                            .fill(
+                                LinearGradient(
+                                    colors: [DS.Color.gold.opacity(0.2), DS.Color.mocha.opacity(0.1)],
+                                    startPoint: .topLeading,
+                                    endPoint: .bottomTrailing
+                                )
+                            )
+                            .frame(width: 60, height: 60)
 
-                    Spacer()
+                        Image(systemName: "book.pages.fill")
+                            .font(.system(size: 26, weight: .semibold))
+                            .foregroundStyle(
+                                LinearGradient(
+                                    colors: [DS.Color.mocha, DS.Color.gold],
+                                    startPoint: .topLeading,
+                                    endPoint: .bottomTrailing
+                                )
+                            )
+                    }
+
+                    // 타이틀
+                    Text("해설")
+                        .font(.system(size: 22, weight: .bold, design: .rounded))
+                        .foregroundStyle(DS.Color.mocha)
                 }
-                .padding(.horizontal, DS.Spacing.xl)
-                .padding(.top, DS.Spacing.l)
-                .padding(.bottom, DS.Spacing.m)
+                .frame(maxWidth: .infinity)
+                .padding(.top, DS.Spacing.xl)
+                .padding(.bottom, DS.Spacing.l)
+
+                // 구분선
+                Rectangle()
+                    .fill(DS.Color.gold.opacity(0.2))
+                    .frame(height: 1)
+                    .padding(.horizontal, DS.Spacing.xl)
 
                 // 해설 내용
-                VStack(alignment: .leading, spacing: DS.Spacing.m) {
-                    let lines = explanation.split(separator: "\n", maxSplits: 1, omittingEmptySubsequences: false)
-                    if lines.count == 2 {
-                        // 첫 줄은 강조
-                        Text(String(lines[0]))
-                            .font(.system(size: 17, weight: .semibold, design: .rounded))
-                            .foregroundStyle(DS.Color.gold)
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                            .fixedSize(horizontal: false, vertical: true)
+                ScrollView {
+                    VStack(alignment: .leading, spacing: DS.Spacing.l) {
+                        let lines = explanation.split(separator: "\n", maxSplits: 1, omittingEmptySubsequences: false)
+                        if lines.count == 2 {
+                            // 첫 줄은 강조
+                            Text(String(lines[0]))
+                                .font(.system(size: 19, weight: .semibold, design: .rounded))
+                                .foregroundStyle(DS.Color.gold)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .fixedSize(horizontal: false, vertical: true)
 
-                        // 나머지 내용
-                        Text(String(lines[1]))
-                            .font(.system(size: 15, weight: .regular, design: .rounded))
-                            .foregroundStyle(DS.Color.textPrimary)
-                            .lineSpacing(5)
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                            .fixedSize(horizontal: false, vertical: true)
-                    } else {
-                        Text(explanation)
-                            .font(.system(size: 15, weight: .regular, design: .rounded))
-                            .foregroundStyle(DS.Color.textPrimary)
-                            .lineSpacing(5)
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                            .fixedSize(horizontal: false, vertical: true)
+                            // 나머지 내용
+                            Text(String(lines[1]))
+                                .font(.system(size: 17, weight: .regular, design: .rounded))
+                                .foregroundStyle(DS.Color.textPrimary)
+                                .lineSpacing(6)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .fixedSize(horizontal: false, vertical: true)
+                        } else {
+                            Text(explanation)
+                                .font(.system(size: 17, weight: .regular, design: .rounded))
+                                .foregroundStyle(DS.Color.textPrimary)
+                                .lineSpacing(6)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .fixedSize(horizontal: false, vertical: true)
+                        }
                     }
+                    .padding(.horizontal, DS.Spacing.xl)
+                    .padding(.top, DS.Spacing.l)
+                    .padding(.bottom, DS.Spacing.xl)
                 }
-                .padding(.horizontal, DS.Spacing.xl)
-                .padding(.bottom, DS.Spacing.xl)
 
                 Spacer(minLength: 0)
             }
             .frame(maxWidth: .infinity)
-            .background(Color.white)
             .onAppear {
                 // 실제 컨텐츠 높이 측정 후 시트 높이 설정
                 DispatchQueue.main.async {
@@ -580,11 +610,11 @@ struct ExplanationSheetView: View {
                     let estimatedHeight = calculateTextHeight(
                         text: explanation,
                         width: contentWidth,
-                        font: .systemFont(ofSize: 15)
+                        font: .systemFont(ofSize: 17)
                     )
-                    // title(18) + top padding(16) + bottom padding(12) + content + bottom padding(24) + extra space(40)
-                    let totalHeight = 18 + 16 + 12 + estimatedHeight + 24 + 40
-                    sheetHeight = min(max(totalHeight, 180), UIScreen.main.bounds.height * 0.7)
+                    // icon(60) + spacing(16) + title(22) + top padding(24) + bottom padding(16) + divider(1) + content padding(16) + content + bottom padding(24) + extra(50)
+                    let totalHeight = 60 + 16 + 22 + 24 + 16 + 1 + 16 + estimatedHeight + 24 + 50
+                    sheetHeight = min(max(totalHeight, 280), UIScreen.main.bounds.height * 0.7)
                 }
             }
         }
@@ -596,7 +626,7 @@ struct ExplanationSheetView: View {
 
         if lines.count == 2 {
             // 첫 줄 (강조)
-            let firstFont = UIFont.systemFont(ofSize: 17, weight: .semibold)
+            let firstFont = UIFont.systemFont(ofSize: 19, weight: .semibold)
             let firstHeight = String(lines[0]).boundingRect(
                 with: CGSize(width: width, height: .greatestFiniteMagnitude),
                 options: [.usesLineFragmentOrigin, .usesFontLeading],
@@ -612,14 +642,14 @@ struct ExplanationSheetView: View {
                 context: nil
             ).height
 
-            totalHeight = firstHeight + DS.Spacing.m + secondHeight + (5 * 2) // lineSpacing 고려
+            totalHeight = firstHeight + DS.Spacing.l + secondHeight + (6 * 3) // lineSpacing 고려
         } else {
             totalHeight = text.boundingRect(
                 with: CGSize(width: width, height: .greatestFiniteMagnitude),
                 options: [.usesLineFragmentOrigin, .usesFontLeading],
                 attributes: [.font: font],
                 context: nil
-            ).height + (5 * 2) // lineSpacing 고려
+            ).height + (6 * 3) // lineSpacing 고려
         }
 
         return totalHeight
