@@ -563,22 +563,15 @@ struct ExplanationSheetView: View {
             }
             .padding(.horizontal, DS.Spacing.xl)
             .padding(.bottom, DS.Spacing.xl)
+            .background(
+                GeometryReader { geometry in
+                    Color.clear
+                        .preference(key: ContentHeightKey.self, value: geometry.size.height)
+                }
+            )
         }
         .frame(maxWidth: .infinity)
-        .background(
-            GeometryReader { geometry in
-                Color.clear
-                    .preference(key: ContentHeightKey.self, value: geometry.size.height)
-            }
-            .background(
-                RoundedRectangle(cornerRadius: DS.Radius.xl)
-                    .fill(Color.white)
-                    .overlay(
-                        RoundedRectangle(cornerRadius: DS.Radius.xl)
-                            .stroke(DS.Color.gold.opacity(0.1), lineWidth: 1)
-                    )
-            )
-        )
+        .background(Color.white)
         .onPreferenceChange(ContentHeightKey.self) { height in
             // 안전한 최소/최대 높이 설정
             let calculatedHeight = height + 40 // 추가 패딩
