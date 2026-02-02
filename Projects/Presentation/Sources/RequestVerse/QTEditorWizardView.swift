@@ -336,7 +336,7 @@ public struct QTEditorWizardView: View {
         VStack(alignment: .leading, spacing: 0) {
             // 영어 말씀 (말씀 카드)
             ZStack(alignment: .topTrailing) {
-                VStack(alignment: .leading, spacing: 12) {
+                VStack(alignment: .leading, spacing: 16) {
                     // 성경 구절 참조
                     HStack(spacing: 6) {
                         Image(systemName: "book.closed.fill")
