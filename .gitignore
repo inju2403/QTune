@@ -37,7 +37,7 @@ Podfile.lock
 Carthage/
 
 # Firebase
-GoogleService-Info.plist
+GoogleService-Info*.plist
 
 # Env / Secret
 .env
