@@ -129,7 +129,8 @@ public struct QTSearchListView: View {
             .scrollContentBackground(.hidden)
             .scrollPosition(id: $scrollPosition, anchor: .center)
         }
-        .navigationBarHidden(true)
+        .navigationTitle("검색")
+        .navigationBarTitleDisplayMode(.inline)
         .onAppear {
             // 검색 모드로 초기화
             viewModel.send(.updateSearchText(searchText, isSearchMode: true))
