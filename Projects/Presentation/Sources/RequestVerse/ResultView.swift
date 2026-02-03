@@ -94,19 +94,19 @@ private extension ResultView {
             }
             .padding(.bottom, 16)
 
-            // 주 역본 본문
-            Text(viewModel.state.result.verse.text)
-                .font(DS.Font.verse(17, .regular))
-                .foregroundStyle(DS.Color.textPrimary)
-                .lineSpacing(6)
-                .padding(.bottom, viewModel.state.result.secondaryVerse != nil ? 12 : 0)
-
-            // 비교 역본이 있으면 표시
+            // 주 역본 + 비교 역본 (통합 복사 가능)
             if let secondaryVerse = viewModel.state.result.secondaryVerse {
-                Text(secondaryVerse.text)
+                Text("\(viewModel.state.result.verse.text)\n\n\(secondaryVerse.text)")
                     .font(DS.Font.verse(17, .regular))
                     .foregroundStyle(DS.Color.textPrimary)
                     .lineSpacing(6)
+                    .textSelection(.enabled)
+            } else {
+                Text(viewModel.state.result.verse.text)
+                    .font(DS.Font.verse(17, .regular))
+                    .foregroundStyle(DS.Color.textPrimary)
+                    .lineSpacing(6)
+                    .textSelection(.enabled)
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -133,6 +133,7 @@ private extension ResultView {
                 .font(DS.Font.bodyM())
                 .foregroundStyle(DS.Color.textPrimary)
                 .lineSpacing(6)
+                .textSelection(.enabled)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(20)
@@ -158,6 +159,7 @@ private extension ResultView {
                 .font(DS.Font.bodyM())
                 .foregroundStyle(DS.Color.textPrimary)
                 .lineSpacing(6)
+                .textSelection(.enabled)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(20)
