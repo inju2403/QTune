@@ -95,6 +95,7 @@ private extension QTEditorView {
                 VStack(alignment: .leading, spacing: DS.Spacing.s) {
                     Text(draft.verse.text)
                         .lineSpacing(4)
+                        .textSelection(.enabled)
 
                     Text("\(draft.verse.translation) (Public Domain)")
                         .font(DS.Font.caption())
@@ -111,13 +112,16 @@ private extension QTEditorView {
                             Text(String(lines[0]))
                                 .font(DS.Font.bodyM(.semibold))
                                 .foregroundStyle(DS.Color.gold)
+                                .textSelection(.enabled)
 
                             Text(String(lines[1]))
                                 .lineSpacing(4)
+                                .textSelection(.enabled)
                         }
                     } else {
                         Text(korean)
                             .lineSpacing(4)
+                            .textSelection(.enabled)
                     }
                 }
             }
@@ -127,6 +131,7 @@ private extension QTEditorView {
                 VerseCardView(title: "이 말씀이 주어진 이유") {
                     Text(rationale)
                         .lineSpacing(4)
+                        .textSelection(.enabled)
                 }
             }
         }

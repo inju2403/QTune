@@ -354,6 +354,7 @@ public struct QTEditorWizardView: View {
                         .lineSpacing(5)
                         .fixedSize(horizontal: false, vertical: true)
                         .frame(maxWidth: .infinity, alignment: .leading)
+                        .textSelection(.enabled)
                 }
                 .padding(20)
                 .background(DS.Color.canvas.opacity(0.9))
@@ -578,6 +579,7 @@ struct ExplanationSheetView: View {
                                 .foregroundStyle(DS.Color.gold)
                                 .frame(maxWidth: .infinity, alignment: .leading)
                                 .fixedSize(horizontal: false, vertical: true)
+                                .textSelection(.enabled)
 
                             // 나머지 내용
                             Text(String(lines[1]))
@@ -586,6 +588,7 @@ struct ExplanationSheetView: View {
                                 .lineSpacing(6)
                                 .frame(maxWidth: .infinity, alignment: .leading)
                                 .fixedSize(horizontal: false, vertical: true)
+                                .textSelection(.enabled)
                         } else {
                             Text(explanation)
                                 .font(.system(size: 17, weight: .regular, design: .rounded))
@@ -593,6 +596,7 @@ struct ExplanationSheetView: View {
                                 .lineSpacing(6)
                                 .frame(maxWidth: .infinity, alignment: .leading)
                                 .fixedSize(horizontal: false, vertical: true)
+                                .textSelection(.enabled)
                         }
                     }
                     .padding(.horizontal, DS.Spacing.xl)
