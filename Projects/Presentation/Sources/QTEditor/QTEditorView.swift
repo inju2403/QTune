@@ -9,7 +9,8 @@ import SwiftUI
 import Domain
 
 // MARK: - QTEditorView
-
+/// QT 편집 화면 (기존 QT를 수정할 때 사용)
+/// 이미 작성된 QT 내용을 수정하고 저장하는 화면
 public struct QTEditorView: View {
     public let draft: QuietTime
     @State private var viewModel: QTEditorViewModel
@@ -49,7 +50,7 @@ public struct QTEditorView: View {
                 saveButton()
             }
         }
-        .navigationTitle("QT 편집")
+        .navigationTitle("QT 수정")
         .navigationBarTitleDisplayMode(.inline)
         .onTapGesture {
             self.endTextEditing()
@@ -94,6 +95,7 @@ private extension QTEditorView {
                 VStack(alignment: .leading, spacing: DS.Spacing.s) {
                     Text(draft.verse.text)
                         .lineSpacing(4)
+                        .textSelection(.enabled)
 
                     Text("\(draft.verse.translation) (Public Domain)")
                         .font(DS.Font.caption())
@@ -110,13 +112,16 @@ private extension QTEditorView {
                             Text(String(lines[0]))
                                 .font(DS.Font.bodyM(.semibold))
                                 .foregroundStyle(DS.Color.gold)
+                                .textSelection(.enabled)
 
                             Text(String(lines[1]))
                                 .lineSpacing(4)
+                                .textSelection(.enabled)
                         }
                     } else {
                         Text(korean)
                             .lineSpacing(4)
+                            .textSelection(.enabled)
                     }
                 }
             }
@@ -126,6 +131,7 @@ private extension QTEditorView {
                 VerseCardView(title: "이 말씀이 주어진 이유") {
                     Text(rationale)
                         .lineSpacing(4)
+                        .textSelection(.enabled)
                 }
             }
         }
@@ -218,7 +224,8 @@ private extension QTEditorView {
 }
 
 // MARK: - Editable Verse Card
-
+/// QT 편집 화면 전용 편집 가능한 카드
+/// 묵상/기도 내용을 수정할 수 있는 텍스트 편집 카드
 struct EditableVerseCard: View {
     let title: String
     @Binding var text: String

@@ -167,11 +167,13 @@ private extension QTDetailView {
                     // 주 역본
                     Text(viewModel.state.qt.verse.text)
                         .lineSpacing(4)
+                        .textSelection(.enabled)
 
                     // 비교 역본이 있으면 표시
                     if let secondaryVerse = viewModel.state.qt.secondaryVerse {
                         Text(secondaryVerse.text)
                             .lineSpacing(4)
+                            .textSelection(.enabled)
                     }
                 }
             }
@@ -181,6 +183,7 @@ private extension QTDetailView {
                 VerseCardView(title: "해설") {
                     Text(korean)
                         .lineSpacing(4)
+                        .textSelection(.enabled)
                 }
             }
 
@@ -189,6 +192,7 @@ private extension QTDetailView {
                 VerseCardView(title: "이 말씀이 주어진 이유") {
                     Text(rationale)
                         .lineSpacing(4)
+                        .textSelection(.enabled)
                 }
             }
         }
@@ -203,6 +207,7 @@ private extension QTDetailView {
                 VerseCardView(title: "Observation · 관찰") {
                     Text(observation)
                         .lineSpacing(4)
+                        .textSelection(.enabled)
                 }
             }
 
@@ -210,6 +215,7 @@ private extension QTDetailView {
                 VerseCardView(title: "Application · 적용") {
                     Text(application)
                         .lineSpacing(4)
+                        .textSelection(.enabled)
                 }
             }
 
@@ -217,6 +223,7 @@ private extension QTDetailView {
                 VerseCardView(title: "Prayer · 기도") {
                     Text(prayer)
                         .lineSpacing(4)
+                        .textSelection(.enabled)
                 }
             }
         }
@@ -231,6 +238,7 @@ private extension QTDetailView {
                 VerseCardView(title: "Adoration · 경배") {
                     Text(adoration)
                         .lineSpacing(4)
+                        .textSelection(.enabled)
                 }
             }
 
@@ -238,6 +246,7 @@ private extension QTDetailView {
                 VerseCardView(title: "Confession · 고백") {
                     Text(confession)
                         .lineSpacing(4)
+                        .textSelection(.enabled)
                 }
             }
 
@@ -245,6 +254,7 @@ private extension QTDetailView {
                 VerseCardView(title: "Thanksgiving · 감사") {
                     Text(thanksgiving)
                         .lineSpacing(4)
+                        .textSelection(.enabled)
                 }
             }
 
@@ -252,6 +262,7 @@ private extension QTDetailView {
                 VerseCardView(title: "Supplication · 간구") {
                     Text(supplication)
                         .lineSpacing(4)
+                        .textSelection(.enabled)
                 }
             }
         }

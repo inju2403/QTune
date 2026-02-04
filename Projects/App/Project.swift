@@ -16,14 +16,14 @@ let project = Project(
   targets: [
     .target(
       name: "App",
-      destinations: [.iPhone],
+      destinations: [.iPhone, .iPad],
       product: .app,
       bundleId: "com.inju.qtune",
       deploymentTargets: .iOS("17.0"),
       infoPlist: .extendingDefault(with: [
         "CFBundleDisplayName": "$(PRODUCT_NAME)",
-        "CFBundleShortVersionString": "1.5.2",
-        "CFBundleVersion": "152",
+        "CFBundleShortVersionString": "1.6.0",
+        "CFBundleVersion": "160",
         "UILaunchStoryboardName": "LaunchScreen",
         "UIViewControllerBasedStatusBarAppearance": true,
         "UIUserInterfaceStyle": "Light"
@@ -124,14 +124,14 @@ let project = Project(
     // Sandbox 전용 타겟 (선택사항)
     .target(
       name: "App-Sandbox",
-      destinations: [.iPhone],
+      destinations: [.iPhone, .iPad],
       product: .app,
       bundleId: "com.inju.qtune.sandbox",
       deploymentTargets: .iOS("17.0"),
       infoPlist: .extendingDefault(with: [
         "CFBundleDisplayName": "QTune Sandbox",
-        "CFBundleShortVersionString": "1.5.2",
-        "CFBundleVersion": "152",
+        "CFBundleShortVersionString": "1.6.0",
+        "CFBundleVersion": "160",
         "UILaunchStoryboardName": "LaunchScreen",
         "UIViewControllerBasedStatusBarAppearance": true,
         "UIUserInterfaceStyle": "Light"

@@ -56,9 +56,14 @@ public struct SearchTabNavigationView: View {
                 profileEditViewModelFactory: profileEditViewModelFactory,
                 getUserProfileUseCase: getUserProfileUseCase
             )
-            .searchable(text: $searchText, isPresented: $isSearchPresented, placement: .automatic, prompt: "QT 기록을 검색해보세요.")
-            .autocorrectionDisabled()
-            .textInputAutocapitalization(.never)
         }
+        .searchable(
+            text: $searchText,
+            isPresented: $isSearchPresented,
+            placement: .automatic,
+            prompt: "QT 기록을 검색해보세요."
+        )
+        .autocorrectionDisabled()
+        .textInputAutocapitalization(.never)
     }
 }
