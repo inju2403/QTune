@@ -13,7 +13,7 @@ public struct QTShareImageView: View {
     let qt: QuietTime
 
     @State private var shareImage: Image?
-    @State private var uiImage: UIImage?
+    @State private var imageURL: URL?
     @Environment(\.dismiss) private var dismiss
 
     public init(qt: QuietTime) {
@@ -21,11 +21,13 @@ public struct QTShareImageView: View {
     }
 
     public var body: some View {
-        if let uiImage {
-            // ShareLink는 iOS 16+, UIImage를 직접 전달
+        if let imageURL {
+            // 파일 URL을 전달 (iOS 18 호환성 향상)
             UIActivityViewControllerRepresentable(
-                activityItems: [uiImage],
+                activityItems: [imageURL],
                 onComplete: {
+                    // 임시 파일 삭제
+                    try? FileManager.default.removeItem(at: imageURL)
                     dismiss()
                 }
             )
@@ -49,9 +51,19 @@ public struct QTShareImageView: View {
             let renderer = ImageRenderer(content: shareCard)
             renderer.scale = UIScreen.main.scale
 
-            if let renderedUIImage = renderer.uiImage {
-                self.uiImage = renderedUIImage
-                self.shareImage = Image(uiImage: renderedUIImage)
+            if let renderedUIImage = renderer.uiImage,
+               let imageData = renderedUIImage.pngData() {
+                // 임시 파일로 저장
+                let tempURL = FileManager.default.temporaryDirectory
+                    .appendingPathComponent("QTune_Share_\(UUID().uuidString).png")
+
+                do {
+                    try imageData.write(to: tempURL)
+                    self.imageURL = tempURL
+                    self.shareImage = Image(uiImage: renderedUIImage)
+                } catch {
+                    print("Failed to save image to temp file: \(error)")
+                }
             }
         }
     }
