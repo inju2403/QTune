@@ -10,11 +10,17 @@ import SwiftData
 import Domain
 
 /// QT 저장소 기본 구현체 (SwiftData 기반)
+///
+/// @MainActor: SwiftData의 ModelContext는 thread-safe하지 않으므로
+/// 모든 작업을 메인 스레드에서 실행하여 동시성 문제 방지
 @available(iOS 17, *)
+@MainActor
 public final class DefaultQTRepository: QTRepository {
     private let modelContext: ModelContext
 
-    public init(modelContext: ModelContext) {
+    /// nonisolated: 어느 스레드에서든 Repository 생성 가능
+    /// 실제 메서드 호출 시 자동으로 메인 스레드로 전환됨
+    nonisolated public init(modelContext: ModelContext) {
         self.modelContext = modelContext
     }
 

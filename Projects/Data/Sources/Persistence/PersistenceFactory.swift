@@ -16,13 +16,31 @@ import Domain
 @available(iOS 17, *)
 public enum PersistenceFactory {
 
+    /// 앱 전체에서 공유되는 ModelContainer (싱글톤)
+    ///
+    /// SwiftData의 ModelContainer는 앱당 하나만 존재해야 합니다.
+    /// 여러 개 생성 시 iPad 멀티태스킹 환경에서 메모리 충돌 발생 가능.
+    private static var _sharedContainer: ModelContainer?
+
+    /// Container 생성 시 thread-safety 보장
+    private static let lock = NSLock()
+
     /// QTRepository 구현체를 생성합니다.
     ///
     /// - Returns: QTRepository (Domain 프로토콜)
     /// - Throws: ModelContainer 생성 실패 시 에러
     public static func makeQTRepository() throws -> QTRepository {
-        let container = try ModelContainer(for: QTEntryModel.self)
-        let context = ModelContext(container)
+        lock.lock()
+        defer { lock.unlock() }
+
+        // Container가 없으면 생성 (첫 호출 시 1회만)
+        if _sharedContainer == nil {
+            print("📦 [PersistenceFactory] Creating shared ModelContainer")
+            _sharedContainer = try ModelContainer(for: QTEntryModel.self)
+        }
+
+        // 매번 새로운 ModelContext 생성 (권장 사항)
+        let context = ModelContext(_sharedContainer!)
         return DefaultQTRepository(modelContext: context)
     }
 }
