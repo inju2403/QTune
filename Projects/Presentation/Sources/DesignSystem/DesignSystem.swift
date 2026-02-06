@@ -192,8 +192,13 @@ extension EnvironmentValues {
 // MARK: - Dynamic Line Spacing View Extension
 extension View {
     /// 동적 행간을 적용합니다
-    public func dynamicLineSpacing(_ fontSize: CGFloat, lineSpacing: LineSpacing) -> some View {
-        let spacing = fontSize * (lineSpacing.multiplier - 1.0)
+    /// - Parameters:
+    ///   - baseSpacing: 기본 행간 (보통 설정 시 적용될 고정값)
+    ///   - lineSpacing: 사용자의 행간 설정
+    /// - Note: 공식 = baseSpacing * (lineSpacing.multiplier / 1.235)
+    ///         1.235는 "보통" 설정의 multiplier로, 보통 설정 시 원래 baseSpacing을 유지
+    public func dynamicLineSpacing(_ baseSpacing: CGFloat, lineSpacing: LineSpacing) -> some View {
+        let spacing = baseSpacing * (lineSpacing.multiplier / 1.235)
         return self.lineSpacing(spacing)
     }
 }
