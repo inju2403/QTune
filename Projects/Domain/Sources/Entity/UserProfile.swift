@@ -13,19 +13,25 @@ public struct UserProfile: Equatable {
     public let profileImageData: Data?
     public let preferredTranslation: Translation
     public let secondaryTranslation: Translation?
+    public let fontScale: FontScale
+    public let lineSpacing: LineSpacing
 
     public init(
         nickname: String,
         gender: Gender,
         profileImageData: Data? = nil,
         preferredTranslation: Translation = .koreanRevisedVersion,
-        secondaryTranslation: Translation? = nil
+        secondaryTranslation: Translation? = nil,
+        fontScale: FontScale = .medium,
+        lineSpacing: LineSpacing = .normal
     ) {
         self.nickname = nickname
         self.gender = gender
         self.profileImageData = profileImageData
         self.preferredTranslation = preferredTranslation
         self.secondaryTranslation = secondaryTranslation
+        self.fontScale = fontScale
+        self.lineSpacing = lineSpacing
     }
 
     public enum Gender: String, Codable {

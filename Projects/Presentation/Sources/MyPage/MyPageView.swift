@@ -12,21 +12,28 @@ public struct MyPageView: View {
     @State private var viewModel: MyPageViewModel
     @Binding var userProfile: UserProfile?
     @State private var showProfileEdit = false
+    @State private var showFontSettings = false
     @Environment(\.openURL) private var openURL
 
     let profileEditViewModelFactory: (UserProfile?) -> ProfileEditViewModel
+    let fontSettingsViewModelFactory: (FontScale, LineSpacing) -> FontSettingsViewModel
     let getUserProfileUseCase: GetUserProfileUseCase
+    let saveUserProfileUseCase: SaveUserProfileUseCase
 
     public init(
         viewModel: MyPageViewModel,
         userProfile: Binding<UserProfile?>,
         profileEditViewModelFactory: @escaping (UserProfile?) -> ProfileEditViewModel,
-        getUserProfileUseCase: GetUserProfileUseCase
+        fontSettingsViewModelFactory: @escaping (FontScale, LineSpacing) -> FontSettingsViewModel,
+        getUserProfileUseCase: GetUserProfileUseCase,
+        saveUserProfileUseCase: SaveUserProfileUseCase
     ) {
         _viewModel = State(wrappedValue: viewModel)
         _userProfile = userProfile
         self.profileEditViewModelFactory = profileEditViewModelFactory
+        self.fontSettingsViewModelFactory = fontSettingsViewModelFactory
         self.getUserProfileUseCase = getUserProfileUseCase
+        self.saveUserProfileUseCase = saveUserProfileUseCase
     }
 
     public var body: some View {
@@ -52,6 +59,9 @@ public struct MyPageView: View {
 
                         // 역본 선택
                         translationRow()
+
+                        // 폰트 설정
+                        fontSettingsRow()
                     }
 
                     // 큐튠 이야기
@@ -127,6 +137,42 @@ public struct MyPageView: View {
                 .presentationDetents([.height(520), .large])
                 .presentationDragIndicator(.visible)
             }
+            .sheet(isPresented: $showFontSettings, onDismiss: {
+                Task {
+                    if let profile = try? await getUserProfileUseCase.execute() {
+                        await MainActor.run {
+                            userProfile = profile
+                        }
+                    }
+                }
+            }) {
+                if let profile = userProfile {
+                    FontSettingsView(
+                        viewModel: fontSettingsViewModelFactory(
+                            profile.fontScale,
+                            profile.lineSpacing
+                        ),
+                        userProfile: $userProfile,
+                        onSave: { fontScale, lineSpacing in
+                            Task {
+                                let updatedProfile = UserProfile(
+                                    nickname: profile.nickname,
+                                    gender: profile.gender,
+                                    profileImageData: profile.profileImageData,
+                                    preferredTranslation: profile.preferredTranslation,
+                                    secondaryTranslation: profile.secondaryTranslation,
+                                    fontScale: fontScale,
+                                    lineSpacing: lineSpacing
+                                )
+                                try? await saveUserProfileUseCase.execute(profile: updatedProfile)
+                                await MainActor.run {
+                                    userProfile = updatedProfile
+                                }
+                            }
+                        }
+                    )
+                }
+            }
         }
     }
 }
@@ -199,6 +245,45 @@ private extension MyPageView {
                     .foregroundStyle(DS.Color.textPrimary)
 
                 Spacer()
+
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundStyle(DS.Color.textSecondary)
+            }
+        }
+    }
+
+    @ViewBuilder
+    func fontSettingsRow() -> some View {
+        Button(action: {
+            Haptics.tap()
+            showFontSettings = true
+        }) {
+            HStack(spacing: 12) {
+                Image(systemName: "textformat.size")
+                    .font(.system(size: 20))
+                    .foregroundStyle(DS.Color.gold)
+                    .frame(width: 24)
+
+                Text("폰트 설정")
+                    .font(DS.Font.bodyL())
+                    .foregroundStyle(DS.Color.textPrimary)
+
+                Spacer()
+
+                HStack(spacing: 4) {
+                    Text(userProfile?.fontScale.displayName ?? "보통")
+                        .font(DS.Font.caption())
+                        .foregroundStyle(DS.Color.textSecondary)
+
+                    Text("·")
+                        .font(DS.Font.caption())
+                        .foregroundStyle(DS.Color.textSecondary)
+
+                    Text(userProfile?.lineSpacing.displayName ?? "보통")
+                        .font(DS.Font.caption())
+                        .foregroundStyle(DS.Color.textSecondary)
+                }
 
                 Image(systemName: "chevron.right")
                     .font(.system(size: 14, weight: .semibold))

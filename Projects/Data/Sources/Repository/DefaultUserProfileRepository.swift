@@ -25,6 +25,8 @@ public final class DefaultUserProfileRepository: UserProfileRepository {
         try dataSource.saveProfileImage(profile.profileImageData)
         try dataSource.savePreferredTranslation(profile.preferredTranslation.code)
         try dataSource.saveSecondaryTranslation(profile.secondaryTranslation?.code)
+        try dataSource.saveFontScale(profile.fontScale.rawValue)
+        try dataSource.saveLineSpacing(profile.lineSpacing.rawValue)
         dataSource.setOnboardingCompleted(true)
     }
 
@@ -42,12 +44,20 @@ public final class DefaultUserProfileRepository: UserProfileRepository {
         let secondaryTranslationCode = dataSource.getSecondaryTranslation()
         let secondaryTranslation = secondaryTranslationCode.flatMap { Translation.from(code: $0) }
 
+        let fontScaleString = dataSource.getFontScale() ?? "보통"
+        let fontScale = FontScale(rawValue: fontScaleString) ?? .medium
+
+        let lineSpacingString = dataSource.getLineSpacing() ?? "보통"
+        let lineSpacing = LineSpacing(rawValue: lineSpacingString) ?? .normal
+
         return UserProfile(
             nickname: nickname,
             gender: gender,
             profileImageData: profileImageData,
             preferredTranslation: translation,
-            secondaryTranslation: secondaryTranslation
+            secondaryTranslation: secondaryTranslation,
+            fontScale: fontScale,
+            lineSpacing: lineSpacing
         )
     }
 
