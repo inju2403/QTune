@@ -12,6 +12,7 @@ import Domain
 public struct ResultView: View {
     // MARK: - ViewModel
     @State private var viewModel: ResultViewModel
+    @Environment(\.fontScale) private var fontScale
 
     // MARK: - Init
     public init(viewModel: ResultViewModel) {
@@ -27,7 +28,7 @@ public struct ResultView: View {
                 VStack(alignment: .leading, spacing: 12) {
                     // Title
                     Text("오늘의 말씀")
-                        .font(.system(size: 32, weight: .semibold, design: .rounded))
+                        .font(.system(size: 32 * fontScale.multiplier, weight: .semibold, design: .rounded))
                         .foregroundStyle(DS.Color.deepCocoa)
                         .shimmer()
                         .padding(.top, 16)
@@ -87,7 +88,7 @@ private extension ResultView {
             HStack(spacing: 8) {
                 Image(systemName: "book.closed.fill")
                     .foregroundStyle(DS.Color.gold)
-                    .font(.system(size: 20))
+                    .font(.system(size: 20 * fontScale.multiplier))
                 Text(viewModel.state.result.verseRef)
                     .dsTitleM(.semibold)
                     .foregroundStyle(DS.Color.deepCocoa)

@@ -96,7 +96,8 @@ private extension QTEditorView {
             VerseCardView(title: "본문") {
                 VStack(alignment: .leading, spacing: DS.Spacing.s) {
                     Text(draft.verse.text)
-                        .lineSpacing(4)
+                        .font(.system(size: 16 * fontScale.multiplier))
+                        .lineSpacing(4 * lineSpacing.multiplier)
                         .textSelection(.enabled)
 
                     Text("\(draft.verse.translation) (Public Domain)")
@@ -117,12 +118,14 @@ private extension QTEditorView {
                                 .textSelection(.enabled)
 
                             Text(String(lines[1]))
-                                .lineSpacing(4)
+                                .font(.system(size: 16 * fontScale.multiplier))
+                                .lineSpacing(4 * lineSpacing.multiplier)
                                 .textSelection(.enabled)
                         }
                     } else {
                         Text(korean)
-                            .lineSpacing(4)
+                            .font(.system(size: 16 * fontScale.multiplier))
+                            .lineSpacing(4 * lineSpacing.multiplier)
                             .textSelection(.enabled)
                     }
                 }
@@ -132,7 +135,8 @@ private extension QTEditorView {
             if let rationale = draft.rationale, !rationale.isEmpty {
                 VerseCardView(title: "이 말씀이 주어진 이유") {
                     Text(rationale)
-                        .lineSpacing(4)
+                        .font(.system(size: 16 * fontScale.multiplier))
+                        .lineSpacing(4 * lineSpacing.multiplier)
                         .textSelection(.enabled)
                 }
             }

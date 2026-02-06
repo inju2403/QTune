@@ -214,10 +214,10 @@ public struct QTEditorWizardView: View {
                     } label: {
                         HStack(spacing: 6) {
                             Text(viewModel.nextTitle)
-                                .font(.system(size: 17, weight: .bold))
+                                .font(.system(size: 17 * fontScale.multiplier, weight: .bold))
                             if !viewModel.isLastStep {
                                 Image(systemName: "chevron.right")
-                                    .font(.system(size: 14, weight: .semibold))
+                                    .font(.system(size: 14 * fontScale.multiplier, weight: .semibold))
                             }
                         }
                         .foregroundStyle(.white)
@@ -344,9 +344,9 @@ public struct QTEditorWizardView: View {
                     HStack(spacing: 6) {
                         Image(systemName: "book.closed.fill")
                             .foregroundStyle(DS.Color.gold)
-                            .font(.system(size: 16))
+                            .font(.system(size: 16 * fontScale.multiplier))
                         Text(viewModel.state.verseRef)
-                            .font(.system(size: 16, weight: .semibold, design: .rounded))
+                            .font(.system(size: 16 * fontScale.multiplier, weight: .semibold, design: .rounded))
                             .foregroundStyle(DS.Color.deepCocoa)
                     }
 
@@ -370,9 +370,9 @@ public struct QTEditorWizardView: View {
                     } label: {
                         HStack(spacing: 4) {
                             Image(systemName: "book.fill")
-                                .font(.system(size: 12, weight: .semibold))
+                                .font(.system(size: 12 * fontScale.multiplier, weight: .semibold))
                             Text("해설")
-                                .font(.system(size: 14, weight: .semibold, design: .rounded))
+                                .font(.system(size: 14 * fontScale.multiplier, weight: .semibold, design: .rounded))
                         }
                         .foregroundStyle(.white)
                         .padding(.horizontal, 12)

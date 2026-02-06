@@ -24,6 +24,7 @@ public struct QTListView: View {
     @SceneStorage("qt.list.scrollPosition") private var persistedScrollId: String?
 
     @FocusState private var isSearchFocused: Bool
+    @Environment(\.fontScale) private var fontScale
     @State private var cancelSlotWidth: CGFloat = 0
     @State private var showCancelButton: Bool = false
     @State private var cancelButtonWorkItem: DispatchWorkItem?
@@ -398,7 +399,7 @@ private extension QTListView {
                     } label: {
                         Image(systemName: qt.isFavorite ? "star.fill" : "star")
                             .foregroundStyle(qt.isFavorite ? DS.Color.gold : DS.Color.textSecondary)
-                            .font(.system(size: 20))
+                            .font(.system(size: 20 * fontScale.multiplier))
                             .padding(8)
                     }
                     .buttonStyle(.plain)
@@ -421,7 +422,7 @@ private extension QTListView {
                     .blur(radius: 20)
 
                 Image(systemName: "book.closed")
-                    .font(.system(size: 60))
+                    .font(.system(size: 60 * fontScale.multiplier))
                     .foregroundStyle(DS.Color.gold)
             }
 

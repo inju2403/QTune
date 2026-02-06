@@ -11,6 +11,7 @@ import Domain
 public struct QTDetailView: View {
     @State private var viewModel: QTDetailViewModel
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.fontScale) private var fontScale
 
     let editorViewModelFactory: () -> QTEditorViewModel
 
@@ -279,6 +280,7 @@ private extension QTDetailView {
 // MARK: - Share Format Selection Sheet
 struct ShareFormatSelectionSheet: View {
     let viewModel: QTDetailViewModel
+    @Environment(\.fontScale) private var fontScale
 
     var body: some View {
         VStack(spacing: 0) {
@@ -334,7 +336,7 @@ struct ShareFormatSelectionSheet: View {
                         .frame(width: 48, height: 48)
 
                     Image(systemName: icon)
-                        .font(.system(size: 20, weight: .semibold))
+                        .font(.system(size: 20 * fontScale.multiplier, weight: .semibold))
                         .foregroundStyle(color)
                 }
 
@@ -351,7 +353,7 @@ struct ShareFormatSelectionSheet: View {
                 Spacer()
 
                 Image(systemName: "chevron.right")
-                    .font(.system(size: 14, weight: .semibold))
+                    .font(.system(size: 14 * fontScale.multiplier, weight: .semibold))
                     .foregroundStyle(DS.Color.textSecondary)
             }
             .padding(DS.Spacing.m)
@@ -371,6 +373,7 @@ struct ShareFormatSelectionSheet: View {
 // MARK: - Share Type Selection Sheet
 struct ShareTypeSelectionSheet: View {
     let viewModel: QTDetailViewModel
+    @Environment(\.fontScale) private var fontScale
 
     var body: some View {
         VStack(spacing: 0) {
@@ -426,7 +429,7 @@ struct ShareTypeSelectionSheet: View {
                         .frame(width: 48, height: 48)
 
                     Image(systemName: icon)
-                        .font(.system(size: 20, weight: .semibold))
+                        .font(.system(size: 20 * fontScale.multiplier, weight: .semibold))
                         .foregroundStyle(color)
                 }
 
@@ -443,7 +446,7 @@ struct ShareTypeSelectionSheet: View {
                 Spacer()
 
                 Image(systemName: "chevron.right")
-                    .font(.system(size: 14, weight: .semibold))
+                    .font(.system(size: 14 * fontScale.multiplier, weight: .semibold))
                     .foregroundStyle(DS.Color.textSecondary)
             }
             .padding(DS.Spacing.m)
@@ -463,6 +466,7 @@ struct ShareTypeSelectionSheet: View {
 // MARK: - Field Selection Sheet
 struct FieldSelectionSheet: View {
     let viewModel: QTDetailViewModel
+    @Environment(\.fontScale) private var fontScale
 
     var body: some View {
         VStack(spacing: 0) {
@@ -545,7 +549,7 @@ struct FieldSelectionSheet: View {
                         .frame(width: 44, height: 44)
 
                     Image(systemName: icon)
-                        .font(.system(size: 18, weight: .semibold))
+                        .font(.system(size: 18 * fontScale.multiplier, weight: .semibold))
                         .foregroundStyle(color)
                 }
 
@@ -562,7 +566,7 @@ struct FieldSelectionSheet: View {
                 Spacer()
 
                 Image(systemName: "chevron.right")
-                    .font(.system(size: 14, weight: .semibold))
+                    .font(.system(size: 14 * fontScale.multiplier, weight: .semibold))
                     .foregroundStyle(DS.Color.textSecondary)
             }
             .padding(DS.Spacing.m)

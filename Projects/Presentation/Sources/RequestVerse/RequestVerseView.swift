@@ -209,7 +209,7 @@ private extension RequestVerseView {
                 HStack(spacing: 12) {
                     Image(systemName: "doc.text")
                         .foregroundStyle(DS.Color.gold)
-                        .font(.system(size: 20))
+                        .font(.system(size: 20 * fontScale.multiplier))
 
                     VStack(alignment: .leading, spacing: 4) {
                         Text("오늘 작성 중인 QT가 있어요")
@@ -258,7 +258,7 @@ private extension RequestVerseView {
 
             VStack(spacing: 8) {
                 Text("\(nickname) \(gender)님")
-                    .font(.system(size: 32, weight: .bold, design: .serif))
+                    .font(.system(size: 32 * fontScale.multiplier, weight: .bold, design: .serif))
                     .foregroundStyle(DS.Color.deepCocoa)
 
                 // 부제
@@ -457,7 +457,7 @@ private extension RequestVerseView {
 
         HStack(spacing: 8) {
             Image(systemName: "sparkles")
-                .font(.system(size: 16))
+                .font(.system(size: 16 * fontScale.multiplier))
             Text("오늘의 말씀 추천받기")
                 .dsBodyL(.semibold)
         }
