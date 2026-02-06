@@ -10,6 +10,30 @@ import Domain
 
 // MARK: - Font Style ViewModifiers
 
+/// Hero 스타일 (40pt, rounded, 행간 없음) - 온보딩용 대형 타이틀
+struct DSHeroModifier: ViewModifier {
+    @Environment(\.fontScale) var fontScale
+
+    let weight: Font.Weight
+
+    func body(content: Content) -> some View {
+        content
+            .font(.system(size: 40 * fontScale.multiplier, weight: weight, design: .rounded))
+    }
+}
+
+/// Page Title 스타일 (32pt, rounded, 행간 없음) - 페이지 타이틀
+struct DSPageTitleModifier: ViewModifier {
+    @Environment(\.fontScale) var fontScale
+
+    let weight: Font.Weight
+
+    func body(content: Content) -> some View {
+        content
+            .font(.system(size: 32 * fontScale.multiplier, weight: weight, design: .rounded))
+    }
+}
+
 /// Title XL 스타일 (34pt, serif, 행간 없음)
 struct DSTitleXLModifier: ViewModifier {
     @Environment(\.fontScale) var fontScale
@@ -98,6 +122,42 @@ struct DSBodyMModifier: ViewModifier {
     }
 }
 
+/// Label 스타일 (18pt, default, 행간 없음) - 버튼, 라벨
+struct DSLabelModifier: ViewModifier {
+    @Environment(\.fontScale) var fontScale
+
+    let weight: Font.Weight
+
+    func body(content: Content) -> some View {
+        content
+            .font(.system(size: 18 * fontScale.multiplier, weight: weight, design: .default))
+    }
+}
+
+/// Medium 스타일 (16pt, default, 행간 없음) - 중간 크기 라벨
+struct DSMediumModifier: ViewModifier {
+    @Environment(\.fontScale) var fontScale
+
+    let weight: Font.Weight
+
+    func body(content: Content) -> some View {
+        content
+            .font(.system(size: 16 * fontScale.multiplier, weight: weight, design: .default))
+    }
+}
+
+/// Small 스타일 (14pt, default, 행간 없음) - 작은 라벨
+struct DSSmallModifier: ViewModifier {
+    @Environment(\.fontScale) var fontScale
+
+    let weight: Font.Weight
+
+    func body(content: Content) -> some View {
+        content
+            .font(.system(size: 14 * fontScale.multiplier, weight: weight, design: .default))
+    }
+}
+
 /// Caption 스타일 (13pt, default, 행간 3pt)
 struct DSCaptionModifier: ViewModifier {
     @Environment(\.fontScale) var fontScale
@@ -166,6 +226,16 @@ struct DSShareTextModifier: ViewModifier {
 // MARK: - Text Extensions
 
 extension Text {
+    /// Hero 스타일 적용 (40pt, rounded, 행간 없음) - 온보딩용 대형 타이틀
+    public func dsHero(_ weight: Font.Weight = .bold) -> some View {
+        modifier(DSHeroModifier(weight: weight))
+    }
+
+    /// Page Title 스타일 적용 (32pt, rounded, 행간 없음) - 페이지 타이틀
+    public func dsPageTitle(_ weight: Font.Weight = .semibold) -> some View {
+        modifier(DSPageTitleModifier(weight: weight))
+    }
+
     /// Title XL 스타일 적용 (34pt, serif)
     public func dsTitleXL(_ weight: Font.Weight = .semibold) -> some View {
         modifier(DSTitleXLModifier(weight: weight))
@@ -194,6 +264,21 @@ extension Text {
     /// Body M 스타일 적용 (15pt, default)
     public func dsBodyM(_ weight: Font.Weight = .regular) -> some View {
         modifier(DSBodyMModifier(weight: weight))
+    }
+
+    /// Label 스타일 적용 (18pt, default) - 버튼, 라벨
+    public func dsLabel(_ weight: Font.Weight = .regular) -> some View {
+        modifier(DSLabelModifier(weight: weight))
+    }
+
+    /// Medium 스타일 적용 (16pt, default) - 중간 크기 라벨
+    public func dsMedium(_ weight: Font.Weight = .regular) -> some View {
+        modifier(DSMediumModifier(weight: weight))
+    }
+
+    /// Small 스타일 적용 (14pt, default) - 작은 라벨
+    public func dsSmall(_ weight: Font.Weight = .medium) -> some View {
+        modifier(DSSmallModifier(weight: weight))
     }
 
     /// Caption 스타일 적용 (13pt, default)

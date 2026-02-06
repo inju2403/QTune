@@ -33,7 +33,7 @@ public struct ProfileEditView: View {
                     // 헤더
                     VStack(spacing: 12) {
                         Text("프로필 수정")
-                            .font(.system(size: 32, weight: .semibold, design: .rounded))
+                            .dsPageTitle()
                             .foregroundStyle(DS.Color.deepCocoa)
 
                         Text("프로필 정보를 변경할 수 있어요")
@@ -150,7 +150,7 @@ private extension ProfileEditView {
                         .frame(width: 36, height: 36)
                         .overlay(
                             Image(systemName: "camera.fill")
-                                .font(.system(size: 16))
+                                .dsMedium()
                                 .foregroundStyle(.white)
                         )
                         .shadow(color: .black.opacity(0.1), radius: 4, y: 2)
@@ -168,9 +168,9 @@ private extension ProfileEditView {
                 } label: {
                     HStack(spacing: 6) {
                         Image(systemName: "arrow.counterclockwise")
-                            .font(.system(size: 13))
+                            .dsCaption()
                         Text("기본 이미지로 변경")
-                            .font(.system(size: 14, weight: .medium))
+                            .dsSmall()
                     }
                     .foregroundStyle(DS.Color.textSecondary)
                 }
@@ -186,7 +186,7 @@ private extension ProfileEditView {
                 HStack(spacing: 6) {
                     Image(systemName: "person.text.rectangle")
                         .foregroundStyle(DS.Color.gold)
-                        .font(.system(size: 18))
+                        .dsLabel()
                     Text("이름")
                         .dsTitleM(.semibold)
                         .foregroundStyle(DS.Color.deepCocoa)
@@ -214,7 +214,7 @@ private extension ProfileEditView {
                 HStack(spacing: 6) {
                     Image(systemName: "person.2")
                         .foregroundStyle(DS.Color.gold)
-                        .font(.system(size: 18))
+                        .dsLabel()
                     Text("구분")
                         .dsTitleM(.semibold)
                         .foregroundStyle(DS.Color.deepCocoa)
@@ -275,7 +275,7 @@ private extension ProfileEditView {
             viewModel.send(.saveProfile)
         } label: {
             Text("저장")
-                .font(.system(size: 17, weight: .bold))
+                .dsBodyL(.bold)
                 .foregroundStyle(.white)
                 .frame(maxWidth: .infinity)
                 .frame(height: 50)
