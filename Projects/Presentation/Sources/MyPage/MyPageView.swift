@@ -213,7 +213,7 @@ private extension MyPageView {
             // 이름 + 성별
             if let profile = userProfile {
                 Text("\(profile.nickname) \(profile.gender.rawValue)님")
-                    .font(DS.Font.titleL(.bold))
+                    .dsTitleL(.bold)
                     .foregroundStyle(DS.Color.deepCocoa)
             }
         }
@@ -224,7 +224,7 @@ private extension MyPageView {
     @ViewBuilder
     func sectionHeader(_ title: String) -> some View {
         Text(title)
-            .font(DS.Font.caption(.semibold))
+            .dsCaption(.semibold)
             .foregroundStyle(DS.Color.textSecondary)
     }
 
@@ -241,7 +241,7 @@ private extension MyPageView {
                     .frame(width: 24)
 
                 Text(title)
-                    .font(DS.Font.bodyL())
+                    .dsBodyL()
                     .foregroundStyle(DS.Color.textPrimary)
 
                 Spacer()
@@ -266,22 +266,22 @@ private extension MyPageView {
                     .frame(width: 24)
 
                 Text("폰트 설정")
-                    .font(DS.Font.bodyL())
+                    .dsBodyL()
                     .foregroundStyle(DS.Color.textPrimary)
 
                 Spacer()
 
                 HStack(spacing: 4) {
                     Text(userProfile?.fontScale.displayName ?? "보통")
-                        .font(DS.Font.caption())
+                        .dsCaption()
                         .foregroundStyle(DS.Color.textSecondary)
 
                     Text("·")
-                        .font(DS.Font.caption())
+                        .dsCaption()
                         .foregroundStyle(DS.Color.textSecondary)
 
                     Text(userProfile?.lineSpacing.displayName ?? "보통")
-                        .font(DS.Font.caption())
+                        .dsCaption()
                         .foregroundStyle(DS.Color.textSecondary)
                 }
 
@@ -310,23 +310,23 @@ private extension MyPageView {
                     .frame(width: 24)
 
                 Text("역본")
-                    .font(DS.Font.bodyL())
+                    .dsBodyL()
                     .foregroundStyle(DS.Color.textPrimary)
 
                 Spacer()
 
                 HStack(spacing: 4) {
                     Text(userProfile?.preferredTranslation.displayName ?? "개역한글")
-                        .font(DS.Font.caption())
+                        .dsCaption()
                         .foregroundStyle(DS.Color.textSecondary)
 
                     if let secondary = userProfile?.secondaryTranslation {
                         Text("·")
-                            .font(DS.Font.caption())
+                            .dsCaption()
                             .foregroundStyle(DS.Color.textSecondary)
 
                         Text(secondary.displayName)
-                            .font(DS.Font.caption())
+                            .dsCaption()
                             .foregroundStyle(DS.Color.textSecondary)
                     }
                 }
@@ -375,11 +375,11 @@ struct DualTranslationSelectionSheet: View {
             // 타이틀
             VStack(spacing: DS.Spacing.xs) {
                 Text("역본 선택")
-                    .font(DS.Font.titleL(.bold))
+                    .dsTitleL(.bold)
                     .foregroundStyle(DS.Color.deepCocoa)
 
                 Text("주 역본과 비교 역본을 선택하세요")
-                    .font(DS.Font.bodyM())
+                    .dsBodyM()
                     .foregroundStyle(DS.Color.textSecondary)
             }
             .padding(.top, DS.Spacing.xl)
@@ -390,7 +390,7 @@ struct DualTranslationSelectionSheet: View {
                 // 주 역본 컬럼
                 VStack(spacing: DS.Spacing.xs) {
                     Text("주 역본")
-                        .font(DS.Font.bodyM(.semibold))
+                        .dsBodyM(.semibold)
                         .foregroundStyle(DS.Color.textPrimary)
                         .frame(maxWidth: .infinity, alignment: .leading)
 
@@ -407,7 +407,7 @@ struct DualTranslationSelectionSheet: View {
                 // 비교 역본 컬럼
                 VStack(spacing: DS.Spacing.xs) {
                     Text("비교 역본")
-                        .font(DS.Font.bodyM(.semibold))
+                        .dsBodyM(.semibold)
                         .foregroundStyle(DS.Color.textPrimary)
                         .frame(maxWidth: .infinity, alignment: .leading)
 
@@ -442,7 +442,7 @@ struct DualTranslationSelectionSheet: View {
                 onDone()
             } label: {
                 Text("저장")
-                    .font(DS.Font.bodyL(.semibold))
+                    .dsBodyL(.semibold)
                     .foregroundStyle(.white)
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, DS.Spacing.m)
@@ -468,7 +468,7 @@ struct DualTranslationSelectionSheet: View {
             HStack(spacing: 8) {
                 VStack(alignment: .leading, spacing: 2) {
                     Text(translation?.displayName ?? "선택 안 함")
-                        .font(DS.Font.bodyM(.semibold))
+                        .dsBodyM(.semibold)
                         .foregroundStyle(
                             isDisabled ? DS.Color.textSecondary.opacity(0.3) :
                             isSelected ? DS.Color.deepCocoa : DS.Color.textPrimary
@@ -476,7 +476,7 @@ struct DualTranslationSelectionSheet: View {
 
                     if let translation = translation {
                         Text(translation.language == "ko" ? "한국어" : "English")
-                            .font(DS.Font.caption())
+                            .dsCaption()
                             .foregroundStyle(
                                 isDisabled ? DS.Color.textSecondary.opacity(0.3) : DS.Color.textSecondary
                             )

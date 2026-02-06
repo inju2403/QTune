@@ -70,12 +70,10 @@ private extension FontSettingsView {
                 .foregroundStyle(DS.Color.deepCocoa)
 
             Text("하나님이 세상을 이처럼 사랑하사\n독생자를 주셨으니 이는 그를 믿는 자마다\n멸망하지 않고 영생을 얻게 하려 하심이라")
-                .font(DS.Font.bodyL(scale: viewModel.state.selectedFontScale))
+                .modifier(DSBodyLModifier(weight: .regular))
+                .environment(\.fontScale, viewModel.state.selectedFontScale)
+                .environment(\.lineSpacing, viewModel.state.selectedLineSpacing)
                 .foregroundStyle(DS.Color.textPrimary)
-                .dynamicLineSpacing(
-                    17 * viewModel.state.selectedFontScale.multiplier,
-                    lineSpacing: viewModel.state.selectedLineSpacing
-                )
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(DS.Spacing.m)
                 .background(

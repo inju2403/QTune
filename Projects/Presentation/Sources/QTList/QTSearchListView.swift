@@ -191,7 +191,7 @@ private extension QTSearchListView {
                     Spacer()
 
                     Text(formattedDate(qt.date))
-                        .font(DS.Font.caption())
+                        .dsCaption()
                         .foregroundStyle(DS.Color.textSecondary)
                 }
 
@@ -205,7 +205,7 @@ private extension QTSearchListView {
 
                 HStack(spacing: DS.Spacing.s) {
                     Text(qt.template)
-                        .font(DS.Font.caption(.medium))
+                        .dsCaption(.medium)
                         .foregroundStyle(qt.template == "SOAP" ? DS.Color.olive : DS.Color.gold)
                         .padding(.horizontal, DS.Spacing.m)
                         .padding(.vertical, DS.Spacing.s)
@@ -253,7 +253,7 @@ private extension QTSearchListView {
 
             VStack(spacing: DS.Spacing.s) {
                 Text(searchText.isEmpty ? "검색어를 입력해 주세요" : "검색된 내용이 없어요")
-                    .font(DS.Font.titleM(.semibold))
+                    .dsTitleM(.semibold)
                     .foregroundStyle(DS.Color.textPrimary)
             }
 

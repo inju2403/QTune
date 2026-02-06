@@ -236,7 +236,7 @@ private extension QTListView {
                 isSearchFocused = false
             } label: {
                 Text("취소")
-                    .font(DS.Font.bodyM(.medium))
+                    .dsBodyM(.medium)
                     .foregroundStyle(DS.Color.gold)
             }
             .frame(width: cancelWidth, alignment: .trailing)
@@ -322,7 +322,7 @@ private extension QTListView {
 
             HStack(spacing: DS.Spacing.xs) {
                 Text(text)
-                    .font(DS.Font.bodyM(.medium))
+                    .dsBodyM(.medium)
                     .foregroundStyle(DS.Color.textPrimary)
 
                 Image(systemName: "chevron.down")
@@ -342,7 +342,7 @@ private extension QTListView {
 
             HStack(spacing: DS.Spacing.xs) {
                 Text(text)
-                    .font(DS.Font.bodyM(.medium))
+                    .dsBodyM(.medium)
                     .foregroundStyle(DS.Color.textPrimary)
 
                 Image(systemName: "chevron.down")
@@ -366,7 +366,7 @@ private extension QTListView {
                     Spacer()
 
                     Text(formattedDate(qt.date))
-                        .font(DS.Font.caption())
+                        .dsCaption()
                         .foregroundStyle(DS.Color.textSecondary)
                 }
 
@@ -380,7 +380,7 @@ private extension QTListView {
 
                 HStack(spacing: DS.Spacing.s) {
                     Text(qt.template)
-                        .font(DS.Font.caption(.medium))
+                        .dsCaption(.medium)
                         .foregroundStyle(qt.template == "SOAP" ? DS.Color.olive : DS.Color.gold)
                         .padding(.horizontal, DS.Spacing.m)
                         .padding(.vertical, DS.Spacing.s)
@@ -428,11 +428,11 @@ private extension QTListView {
 
             VStack(spacing: DS.Spacing.s) {
                 Text("아직 기록이 없어요")
-                    .font(DS.Font.titleM(.semibold))
+                    .dsTitleM(.semibold)
                     .foregroundStyle(DS.Color.textPrimary)
 
                 Text("오늘의 말씀에서 시작해 보세요")
-                    .font(DS.Font.bodyM())
+                    .dsBodyM()
                     .foregroundStyle(DS.Color.textSecondary)
             }
 

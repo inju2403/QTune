@@ -98,7 +98,7 @@ private extension QTEditorView {
                         .textSelection(.enabled)
 
                     Text("\(draft.verse.translation) (Public Domain)")
-                        .font(DS.Font.caption())
+                        .dsCaption()
                         .foregroundStyle(DS.Color.textSecondary)
                 }
             }
@@ -110,7 +110,7 @@ private extension QTEditorView {
                     if lines.count == 2 {
                         VStack(alignment: .leading, spacing: DS.Spacing.s) {
                             Text(String(lines[0]))
-                                .font(DS.Font.bodyM(.semibold))
+                                .dsBodyM(.semibold)
                                 .foregroundStyle(DS.Color.gold)
                                 .textSelection(.enabled)
 
@@ -234,7 +234,7 @@ struct EditableVerseCard: View {
     var body: some View {
         VStack(alignment: .leading, spacing: DS.Spacing.m) {
             Text(title)
-                .font(DS.Font.bodyM(.semibold))
+                .dsBodyM(.semibold)
                 .foregroundStyle(DS.Color.textSecondary)
 
             // 회색 박스 안에 TextEditor (1탭 스타일, 대비 강화)
@@ -310,7 +310,7 @@ private extension QTEditorView {
                 }
 
                 Text("기록이 저장되었습니다")
-                    .font(DS.Font.bodyM(.semibold))
+                    .dsBodyM(.semibold)
                     .foregroundStyle(DS.Color.textPrimary)
             }
         }

@@ -37,7 +37,7 @@ public struct ProfileEditView: View {
                             .foregroundStyle(DS.Color.deepCocoa)
 
                         Text("프로필 정보를 변경할 수 있어요")
-                            .font(DS.Font.bodyM())
+                            .dsBodyM()
                             .foregroundStyle(DS.Color.textSecondary)
                     }
 
@@ -188,7 +188,7 @@ private extension ProfileEditView {
                         .foregroundStyle(DS.Color.gold)
                         .font(.system(size: 18))
                     Text("이름")
-                        .font(DS.Font.titleM(.semibold))
+                        .dsTitleM(.semibold)
                         .foregroundStyle(DS.Color.deepCocoa)
                 }
 
@@ -216,7 +216,7 @@ private extension ProfileEditView {
                         .foregroundStyle(DS.Color.gold)
                         .font(.system(size: 18))
                     Text("구분")
-                        .font(DS.Font.titleM(.semibold))
+                        .dsTitleM(.semibold)
                         .foregroundStyle(DS.Color.deepCocoa)
                 }
 
@@ -247,7 +247,7 @@ private extension ProfileEditView {
                     .font(.system(size: 20))
 
                 Text(gender.rawValue)
-                    .font(DS.Font.bodyL(.medium))
+                    .dsBodyL(.medium)
                     .foregroundStyle(viewModel.state.selectedGender == gender ? DS.Color.deepCocoa : DS.Color.textSecondary)
             }
             .frame(maxWidth: .infinity)
@@ -314,7 +314,7 @@ private extension ProfileEditView {
                 }
 
                 Text("저장되었습니다")
-                    .font(DS.Font.bodyM(.semibold))
+                    .dsBodyM(.semibold)
                     .foregroundStyle(DS.Color.textPrimary)
             }
         }

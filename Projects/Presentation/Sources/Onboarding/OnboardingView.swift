@@ -45,7 +45,7 @@ public struct OnboardingView: View {
                             Image(systemName: "person.fill")
                                 .foregroundStyle(DS.Color.gold)
                             Text("이름")
-                                .font(DS.Font.titleM(.semibold))
+                                .dsTitleM(.semibold)
                                 .foregroundStyle(DS.Color.deepCocoa)
                         }
 
@@ -70,7 +70,7 @@ public struct OnboardingView: View {
                             Image(systemName: "heart.fill")
                                 .foregroundStyle(DS.Color.gold)
                             Text("구분")
-                                .font(DS.Font.titleM(.semibold))
+                                .dsTitleM(.semibold)
                                 .foregroundStyle(DS.Color.deepCocoa)
                         }
 
@@ -81,7 +81,7 @@ public struct OnboardingView: View {
                                 viewModel.send(.selectGender(.brother))
                             } label: {
                                 Text("형제")
-                                    .font(DS.Font.bodyL(.semibold))
+                                    .dsBodyL(.semibold)
                                     .foregroundStyle(
                                         viewModel.state.selectedGender == .brother
                                             ? .white
@@ -119,7 +119,7 @@ public struct OnboardingView: View {
                                 viewModel.send(.selectGender(.sister))
                             } label: {
                                 Text("자매")
-                                    .font(DS.Font.bodyL(.semibold))
+                                    .dsBodyL(.semibold)
                                     .foregroundStyle(
                                         viewModel.state.selectedGender == .sister
                                             ? .white

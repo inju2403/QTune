@@ -21,13 +21,11 @@ public struct VerseCardView<Content: View>: View {
         VStack(alignment: .leading, spacing: DS.Spacing.m) {
             if let title {
                 Text(title)
-                    .font(DS.Font.bodyM(.semibold))
+                    .dsBodyM(.semibold)
                     .foregroundStyle(DS.Color.textSecondary)
             }
 
             content
-                .font(DS.Font.bodyM())
-                .foregroundStyle(DS.Color.textPrimary)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(DS.Spacing.xl)

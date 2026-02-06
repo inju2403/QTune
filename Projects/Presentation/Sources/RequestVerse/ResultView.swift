@@ -89,7 +89,7 @@ private extension ResultView {
                     .foregroundStyle(DS.Color.gold)
                     .font(.system(size: 20))
                 Text(viewModel.state.result.verseRef)
-                    .font(DS.Font.titleM(.semibold))
+                    .dsTitleM(.semibold)
                     .foregroundStyle(DS.Color.deepCocoa)
             }
             .padding(.bottom, 16)
@@ -97,13 +97,13 @@ private extension ResultView {
             // 주 역본 + 비교 역본 (통합 복사 가능)
             if let secondaryVerse = viewModel.state.result.secondaryVerse {
                 Text("\(viewModel.state.result.verse.text)\n\n\(secondaryVerse.text)")
-                    .font(DS.Font.verse(17, .regular))
+                    .dsVerse(17, .regular)
                     .foregroundStyle(DS.Color.textPrimary)
                     .lineSpacing(6)
                     .textSelection(.enabled)
             } else {
                 Text(viewModel.state.result.verse.text)
-                    .font(DS.Font.verse(17, .regular))
+                    .dsVerse(17, .regular)
                     .foregroundStyle(DS.Color.textPrimary)
                     .lineSpacing(6)
                     .textSelection(.enabled)
@@ -125,12 +125,12 @@ private extension ResultView {
                 Image(systemName: "lightbulb.fill")
                     .foregroundStyle(DS.Color.gold)
                 Text("해설")
-                    .font(DS.Font.titleM(.semibold))
+                    .dsTitleM(.semibold)
                     .foregroundStyle(DS.Color.deepCocoa)
             }
 
             Text(viewModel.state.result.korean)
-                .font(DS.Font.bodyM())
+                .dsBodyM()
                 .foregroundStyle(DS.Color.textPrimary)
                 .lineSpacing(6)
                 .textSelection(.enabled)
@@ -151,12 +151,12 @@ private extension ResultView {
                 Image(systemName: "sparkles")
                     .foregroundStyle(DS.Color.gold)
                 Text("이 말씀이 주어진 이유")
-                    .font(DS.Font.titleS(.semibold))
+                    .dsTitleS(.semibold)
                     .foregroundStyle(DS.Color.deepCocoa)
             }
 
             Text(viewModel.state.result.rationale)
-                .font(DS.Font.bodyM())
+                .dsBodyM()
                 .foregroundStyle(DS.Color.textPrimary)
                 .lineSpacing(6)
                 .textSelection(.enabled)

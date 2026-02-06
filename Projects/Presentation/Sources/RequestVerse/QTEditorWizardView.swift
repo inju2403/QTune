@@ -322,7 +322,7 @@ public struct QTEditorWizardView: View {
                 }
 
                 Text("기록이 저장되었습니다")
-                    .font(DS.Font.bodyM(.semibold))
+                    .dsBodyM(.semibold)
                     .foregroundStyle(DS.Color.textPrimary)
             }
         }
@@ -349,7 +349,7 @@ public struct QTEditorWizardView: View {
                     }
 
                     Text(viewModel.state.verseEN.trimmingCharacters(in: .whitespacesAndNewlines))
-                        .font(DS.Font.verse(16, .regular))
+                        .dsVerse(16, .regular)
                         .foregroundStyle(DS.Color.textPrimary)
                         .lineSpacing(5)
                         .fixedSize(horizontal: false, vertical: true)
@@ -447,20 +447,20 @@ struct SingleFieldCard<FocusValue: Hashable>: View {
                 Image(systemName: "pencil")
                     .foregroundStyle(DS.Color.gold)
                 Text(title)
-                    .font(DS.Font.titleM(.semibold))
+                    .dsTitleM(.semibold)
                     .foregroundStyle(DS.Color.deepCocoa)
 
                 Spacer()
 
                 // 글자 수 카운터
                 Text("\(text.count)/\(maxLength)")
-                    .font(DS.Font.caption())
+                    .dsCaption()
                     .foregroundStyle(text.count > maxLength ? .red : DS.Color.textSecondary)
             }
 
             // Description
             Text(description)
-                .font(DS.Font.bodyM())
+                .dsBodyM()
                 .foregroundStyle(DS.Color.textSecondary)
                 .padding(.top, 4)
 
@@ -475,7 +475,7 @@ struct SingleFieldCard<FocusValue: Hashable>: View {
                     // Placeholder
                     if text.isEmpty {
                         Text(placeholder)
-                            .font(DS.Font.bodyM())
+                            .dsBodyM()
                             .foregroundStyle(DS.Color.placeholder)
                             .padding(.top, 20)
                             .padding(.horizontal, 16)
@@ -484,7 +484,7 @@ struct SingleFieldCard<FocusValue: Hashable>: View {
 
                     // Text 표시 (읽기 전용처럼 보이지만 편집 가능)
                     Text(text.isEmpty ? " " : text)
-                        .font(DS.Font.bodyM())
+                        .dsBodyM()
                         .foregroundStyle(DS.Color.textPrimary)
                         .padding(16)
                         .frame(maxWidth: .infinity, minHeight: 180, alignment: .topLeading)
