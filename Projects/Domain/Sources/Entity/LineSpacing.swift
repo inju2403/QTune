@@ -16,9 +16,9 @@ public enum LineSpacing: String, Codable, CaseIterable, Equatable {
     /// 폰트 크기에 곱할 행간 배율 (line height)
     public var multiplier: CGFloat {
         switch self {
-        case .compact: return 1.15   // 115% (타이트)
+        case .compact: return 1.0    // 100% (타이트 - 거의 행간 없음)
         case .normal: return 1.235   // 123.5% (원래 앱 기본값)
-        case .relaxed: return 1.4    // 140% (여유)
+        case .relaxed: return 1.6    // 160% (넓게 - 명확한 여유)
         }
     }
 
