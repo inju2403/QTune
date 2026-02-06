@@ -96,8 +96,8 @@ private extension QTEditorView {
             VerseCardView(title: "본문") {
                 VStack(alignment: .leading, spacing: DS.Spacing.s) {
                     Text(draft.verse.text)
-                        .font(.system(size: 16 * fontScale.multiplier))
-                        .lineSpacing(4 * lineSpacing.multiplier)
+                        .font(.system(size: 15 * fontScale.multiplier))
+                        .lineSpacing(4 * (lineSpacing.multiplier / 1.235))
                         .textSelection(.enabled)
 
                     Text("\(draft.verse.translation) (Public Domain)")
@@ -118,14 +118,14 @@ private extension QTEditorView {
                                 .textSelection(.enabled)
 
                             Text(String(lines[1]))
-                                .font(.system(size: 16 * fontScale.multiplier))
-                                .lineSpacing(4 * lineSpacing.multiplier)
+                                .font(.system(size: 15 * fontScale.multiplier))
+                                .lineSpacing(4 * (lineSpacing.multiplier / 1.235))
                                 .textSelection(.enabled)
                         }
                     } else {
                         Text(korean)
-                            .font(.system(size: 16 * fontScale.multiplier))
-                            .lineSpacing(4 * lineSpacing.multiplier)
+                            .font(.system(size: 15 * fontScale.multiplier))
+                            .lineSpacing(4 * (lineSpacing.multiplier / 1.235))
                             .textSelection(.enabled)
                     }
                 }
@@ -135,8 +135,8 @@ private extension QTEditorView {
             if let rationale = draft.rationale, !rationale.isEmpty {
                 VerseCardView(title: "이 말씀이 주어진 이유") {
                     Text(rationale)
-                        .font(.system(size: 16 * fontScale.multiplier))
-                        .lineSpacing(4 * lineSpacing.multiplier)
+                        .font(.system(size: 15 * fontScale.multiplier))
+                        .lineSpacing(4 * (lineSpacing.multiplier / 1.235))
                         .textSelection(.enabled)
                 }
             }
@@ -256,7 +256,7 @@ struct EditableVerseCard: View {
                 }
 
                 TextEditor(text: $text)
-                    .font(.system(size: 17 * fontScale.multiplier))
+                    .font(.system(size: 16 * fontScale.multiplier))
                     .foregroundStyle(Color(hex: "#1A1A1A"))
                     .frame(minHeight: 100)
                     .scrollContentBackground(.hidden)

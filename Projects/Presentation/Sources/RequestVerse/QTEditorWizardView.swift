@@ -217,7 +217,7 @@ public struct QTEditorWizardView: View {
                                 .font(.system(size: 17 * fontScale.multiplier, weight: .bold))
                             if !viewModel.isLastStep {
                                 Image(systemName: "chevron.right")
-                                    .font(.system(size: 14 * fontScale.multiplier, weight: .semibold))
+                                    .font(.system(size: 12 * fontScale.multiplier, weight: .semibold))
                             }
                         }
                         .foregroundStyle(.white)
@@ -351,9 +351,9 @@ public struct QTEditorWizardView: View {
                     }
 
                     Text(viewModel.state.verseEN.trimmingCharacters(in: .whitespacesAndNewlines))
-                        .dsVerse(16, .regular)
+                        .font(.system(size: 16 * fontScale.multiplier, design: .serif))
                         .foregroundStyle(DS.Color.textPrimary)
-                        .lineSpacing(5)
+                        .lineSpacing(5 * (lineSpacing.multiplier / 1.235))
                         .fixedSize(horizontal: false, vertical: true)
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .textSelection(.enabled)
@@ -479,7 +479,7 @@ struct SingleFieldCard<FocusValue: Hashable>: View {
                     // Placeholder
                     if text.isEmpty {
                         Text(placeholder)
-                            .font(.system(size: 16 * fontScale.multiplier))
+                            .font(.system(size: 15 * fontScale.multiplier))
                             .foregroundStyle(DS.Color.placeholder)
                             .padding(.top, 20)
                             .padding(.horizontal, 16)
@@ -488,7 +488,7 @@ struct SingleFieldCard<FocusValue: Hashable>: View {
 
                     // Text 표시 (읽기 전용처럼 보이지만 편집 가능)
                     Text(text.isEmpty ? " " : text)
-                        .font(.system(size: 16 * fontScale.multiplier))
+                        .font(.system(size: 15 * fontScale.multiplier))
                         .foregroundStyle(DS.Color.textPrimary)
                         .padding(16)
                         .frame(maxWidth: .infinity, minHeight: 180, alignment: .topLeading)
@@ -496,7 +496,7 @@ struct SingleFieldCard<FocusValue: Hashable>: View {
 
                     // 실제 TextEditor (내부 스크롤 비활성화)
                     TextEditor(text: $text)
-                        .font(.system(size: 16 * fontScale.multiplier))
+                        .font(.system(size: 15 * fontScale.multiplier))
                         .foregroundStyle(DS.Color.textPrimary)
                         .padding(8)
                         .scrollContentBackground(.hidden)
@@ -529,6 +529,9 @@ struct ExplanationSheetView: View {
     let explanation: String
     @Binding var sheetHeight: CGFloat
 
+    @Environment(\.fontScale) private var fontScale
+    @Environment(\.lineSpacing) private var lineSpacing
+
     var body: some View {
         GeometryReader { geometry in
             VStack(spacing: 0) {
@@ -544,10 +547,10 @@ struct ExplanationSheetView: View {
                                     endPoint: .bottomTrailing
                                 )
                             )
-                            .frame(width: 60, height: 60)
+                            .frame(width: 60 * fontScale.multiplier, height: 60 * fontScale.multiplier)
 
                         Image(systemName: "book.pages.fill")
-                            .font(.system(size: 26, weight: .semibold))
+                            .font(.system(size: 26 * fontScale.multiplier, weight: .semibold))
                             .foregroundStyle(
                                 LinearGradient(
                                     colors: [DS.Color.mocha, DS.Color.gold],
@@ -559,7 +562,7 @@ struct ExplanationSheetView: View {
 
                     // 타이틀
                     Text("해설")
-                        .font(.system(size: 22, weight: .bold, design: .rounded))
+                        .font(.system(size: 22 * fontScale.multiplier, weight: .bold, design: .rounded))
                         .foregroundStyle(DS.Color.mocha)
                 }
                 .frame(maxWidth: .infinity)
@@ -579,7 +582,7 @@ struct ExplanationSheetView: View {
                         if lines.count == 2 {
                             // 첫 줄은 강조
                             Text(String(lines[0]))
-                                .font(.system(size: 19, weight: .semibold, design: .rounded))
+                                .font(.system(size: 19 * fontScale.multiplier, weight: .semibold, design: .rounded))
                                 .foregroundStyle(DS.Color.gold)
                                 .frame(maxWidth: .infinity, alignment: .leading)
                                 .fixedSize(horizontal: false, vertical: true)
@@ -587,17 +590,17 @@ struct ExplanationSheetView: View {
 
                             // 나머지 내용
                             Text(String(lines[1]))
-                                .font(.system(size: 17, weight: .regular, design: .rounded))
+                                .font(.system(size: 17 * fontScale.multiplier, weight: .regular, design: .rounded))
                                 .foregroundStyle(DS.Color.textPrimary)
-                                .lineSpacing(6)
+                                .lineSpacing(6 * (lineSpacing.multiplier / 1.235))
                                 .frame(maxWidth: .infinity, alignment: .leading)
                                 .fixedSize(horizontal: false, vertical: true)
                                 .textSelection(.enabled)
                         } else {
                             Text(explanation)
-                                .font(.system(size: 17, weight: .regular, design: .rounded))
+                                .font(.system(size: 17 * fontScale.multiplier, weight: .regular, design: .rounded))
                                 .foregroundStyle(DS.Color.textPrimary)
-                                .lineSpacing(6)
+                                .lineSpacing(6 * (lineSpacing.multiplier / 1.235))
                                 .frame(maxWidth: .infinity, alignment: .leading)
                                 .fixedSize(horizontal: false, vertical: true)
                                 .textSelection(.enabled)
@@ -618,10 +621,12 @@ struct ExplanationSheetView: View {
                     let estimatedHeight = calculateTextHeight(
                         text: explanation,
                         width: contentWidth,
-                        font: .systemFont(ofSize: 17)
+                        font: .systemFont(ofSize: 17 * fontScale.multiplier)
                     )
                     // icon(60) + spacing(16) + title(22) + top padding(32) + bottom padding(16) + divider(1) + content padding(16) + content + bottom padding(24) + extra(60)
-                    let totalHeight = 60 + 16 + 22 + 32 + 16 + 1 + 16 + estimatedHeight + 24 + 60
+                    let iconSize = 60 * fontScale.multiplier
+                    let titleSize = 22 * fontScale.multiplier
+                    let totalHeight = iconSize + 16 + titleSize + 32 + 16 + 1 + 16 + estimatedHeight + 24 + 60
                     sheetHeight = min(max(totalHeight, 280), UIScreen.main.bounds.height * 0.7)
                 }
             }
@@ -634,7 +639,7 @@ struct ExplanationSheetView: View {
 
         if lines.count == 2 {
             // 첫 줄 (강조)
-            let firstFont = UIFont.systemFont(ofSize: 19, weight: .semibold)
+            let firstFont = UIFont.systemFont(ofSize: 19 * fontScale.multiplier, weight: .semibold)
             let firstHeight = String(lines[0]).boundingRect(
                 with: CGSize(width: width, height: .greatestFiniteMagnitude),
                 options: [.usesLineFragmentOrigin, .usesFontLeading],
@@ -650,14 +655,14 @@ struct ExplanationSheetView: View {
                 context: nil
             ).height
 
-            totalHeight = firstHeight + DS.Spacing.l + secondHeight + (6 * 3) // lineSpacing 고려
+            totalHeight = firstHeight + DS.Spacing.l + secondHeight + (6 * (lineSpacing.multiplier / 1.235) * 3) // lineSpacing 고려
         } else {
             totalHeight = text.boundingRect(
                 with: CGSize(width: width, height: .greatestFiniteMagnitude),
                 options: [.usesLineFragmentOrigin, .usesFontLeading],
                 attributes: [.font: font],
                 context: nil
-            ).height + (6 * 3) // lineSpacing 고려
+            ).height + (6 * (lineSpacing.multiplier / 1.235) * 3) // lineSpacing 고려
         }
 
         return totalHeight

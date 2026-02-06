@@ -12,6 +12,7 @@ public struct QTDetailView: View {
     @State private var viewModel: QTDetailViewModel
     @Environment(\.dismiss) private var dismiss
     @Environment(\.fontScale) private var fontScale
+    @Environment(\.lineSpacing) private var lineSpacing
 
     let editorViewModelFactory: () -> QTEditorViewModel
 
@@ -167,13 +168,15 @@ private extension QTDetailView {
                 VStack(alignment: .leading, spacing: DS.Spacing.m) {
                     // 주 역본
                     Text(viewModel.state.qt.verse.text)
-                        .dsBodyL()
+                        .font(.system(size: 15 * fontScale.multiplier))
+                        .lineSpacing(4 * (lineSpacing.multiplier / 1.235))
                         .textSelection(.enabled)
 
                     // 비교 역본이 있으면 표시
                     if let secondaryVerse = viewModel.state.qt.secondaryVerse {
                         Text(secondaryVerse.text)
-                            .dsBodyL()
+                            .font(.system(size: 15 * fontScale.multiplier))
+                            .lineSpacing(4 * (lineSpacing.multiplier / 1.235))
                             .textSelection(.enabled)
                     }
                 }
@@ -183,7 +186,8 @@ private extension QTDetailView {
             if let korean = viewModel.state.qt.korean, !korean.isEmpty {
                 VerseCardView(title: "해설") {
                     Text(korean)
-                        .dsBodyL()
+                        .font(.system(size: 15 * fontScale.multiplier))
+                        .lineSpacing(4 * (lineSpacing.multiplier / 1.235))
                         .textSelection(.enabled)
                 }
             }
@@ -192,7 +196,8 @@ private extension QTDetailView {
             if let rationale = viewModel.state.qt.rationale, !rationale.isEmpty {
                 VerseCardView(title: "이 말씀이 주어진 이유") {
                     Text(rationale)
-                        .dsBodyL()
+                        .font(.system(size: 15 * fontScale.multiplier))
+                        .lineSpacing(4 * (lineSpacing.multiplier / 1.235))
                         .textSelection(.enabled)
                 }
             }
@@ -207,7 +212,8 @@ private extension QTDetailView {
             if let observation = viewModel.state.qt.soapObservation, !observation.isEmpty {
                 VerseCardView(title: "Observation · 관찰") {
                     Text(observation)
-                        .dsBodyL()
+                        .font(.system(size: 15 * fontScale.multiplier))
+                        .lineSpacing(4 * (lineSpacing.multiplier / 1.235))
                         .textSelection(.enabled)
                 }
             }
@@ -215,7 +221,8 @@ private extension QTDetailView {
             if let application = viewModel.state.qt.soapApplication, !application.isEmpty {
                 VerseCardView(title: "Application · 적용") {
                     Text(application)
-                        .dsBodyL()
+                        .font(.system(size: 15 * fontScale.multiplier))
+                        .lineSpacing(4 * (lineSpacing.multiplier / 1.235))
                         .textSelection(.enabled)
                 }
             }
@@ -223,7 +230,8 @@ private extension QTDetailView {
             if let prayer = viewModel.state.qt.soapPrayer, !prayer.isEmpty {
                 VerseCardView(title: "Prayer · 기도") {
                     Text(prayer)
-                        .dsBodyL()
+                        .font(.system(size: 15 * fontScale.multiplier))
+                        .lineSpacing(4 * (lineSpacing.multiplier / 1.235))
                         .textSelection(.enabled)
                 }
             }
@@ -238,7 +246,8 @@ private extension QTDetailView {
             if let adoration = viewModel.state.qt.actsAdoration, !adoration.isEmpty {
                 VerseCardView(title: "Adoration · 경배") {
                     Text(adoration)
-                        .dsBodyL()
+                        .font(.system(size: 15 * fontScale.multiplier))
+                        .lineSpacing(4 * (lineSpacing.multiplier / 1.235))
                         .textSelection(.enabled)
                 }
             }
@@ -246,7 +255,8 @@ private extension QTDetailView {
             if let confession = viewModel.state.qt.actsConfession, !confession.isEmpty {
                 VerseCardView(title: "Confession · 고백") {
                     Text(confession)
-                        .dsBodyL()
+                        .font(.system(size: 15 * fontScale.multiplier))
+                        .lineSpacing(4 * (lineSpacing.multiplier / 1.235))
                         .textSelection(.enabled)
                 }
             }
@@ -254,7 +264,8 @@ private extension QTDetailView {
             if let thanksgiving = viewModel.state.qt.actsThanksgiving, !thanksgiving.isEmpty {
                 VerseCardView(title: "Thanksgiving · 감사") {
                     Text(thanksgiving)
-                        .dsBodyL()
+                        .font(.system(size: 15 * fontScale.multiplier))
+                        .lineSpacing(4 * (lineSpacing.multiplier / 1.235))
                         .textSelection(.enabled)
                 }
             }
@@ -262,7 +273,8 @@ private extension QTDetailView {
             if let supplication = viewModel.state.qt.actsSupplication, !supplication.isEmpty {
                 VerseCardView(title: "Supplication · 간구") {
                     Text(supplication)
-                        .dsBodyL()
+                        .font(.system(size: 15 * fontScale.multiplier))
+                        .lineSpacing(4 * (lineSpacing.multiplier / 1.235))
                         .textSelection(.enabled)
                 }
             }
@@ -336,7 +348,7 @@ struct ShareFormatSelectionSheet: View {
                         .frame(width: 48, height: 48)
 
                     Image(systemName: icon)
-                        .font(.system(size: 20 * fontScale.multiplier, weight: .semibold))
+                        .font(.system(size: 16 * fontScale.multiplier, weight: .semibold))
                         .foregroundStyle(color)
                 }
 
@@ -429,7 +441,7 @@ struct ShareTypeSelectionSheet: View {
                         .frame(width: 48, height: 48)
 
                     Image(systemName: icon)
-                        .font(.system(size: 20 * fontScale.multiplier, weight: .semibold))
+                        .font(.system(size: 16 * fontScale.multiplier, weight: .semibold))
                         .foregroundStyle(color)
                 }
 
@@ -549,7 +561,7 @@ struct FieldSelectionSheet: View {
                         .frame(width: 44, height: 44)
 
                     Image(systemName: icon)
-                        .font(.system(size: 18 * fontScale.multiplier, weight: .semibold))
+                        .font(.system(size: 16 * fontScale.multiplier, weight: .semibold))
                         .foregroundStyle(color)
                 }
 

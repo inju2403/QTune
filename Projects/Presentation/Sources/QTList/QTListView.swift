@@ -360,7 +360,7 @@ private extension QTListView {
             VStack(alignment: .leading, spacing: DS.Spacing.l) {
                 HStack(alignment: .top) {
                     Text(qt.verse.localizedId)
-                        .dsTitleS(.bold)
+                        .font(.system(size: 21 * fontScale.multiplier, weight: .bold, design: .serif))
                         .foregroundStyle(DS.Color.deepCocoa)
                         .lineLimit(2)
 

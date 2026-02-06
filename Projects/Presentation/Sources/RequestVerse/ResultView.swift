@@ -13,6 +13,7 @@ public struct ResultView: View {
     // MARK: - ViewModel
     @State private var viewModel: ResultViewModel
     @Environment(\.fontScale) private var fontScale
+    @Environment(\.lineSpacing) private var lineSpacing
 
     // MARK: - Init
     public init(viewModel: ResultViewModel) {
@@ -73,7 +74,7 @@ public struct ResultView: View {
                 Haptics.tap()
                 viewModel.send(.selectTemplate(template))
             }
-            .presentationDetents([.height(605)])
+            .presentationDetents([.height(max(605, 605 * fontScale.multiplier))])
         }
     }
 }
@@ -98,15 +99,15 @@ private extension ResultView {
             // 주 역본 + 비교 역본 (통합 복사 가능)
             if let secondaryVerse = viewModel.state.result.secondaryVerse {
                 Text("\(viewModel.state.result.verse.text)\n\n\(secondaryVerse.text)")
-                    .dsVerse(17, .regular)
+                    .font(.system(size: 17 * fontScale.multiplier, design: .serif))
                     .foregroundStyle(DS.Color.textPrimary)
-                    .lineSpacing(6)
+                    .lineSpacing(6 * (lineSpacing.multiplier / 1.235))
                     .textSelection(.enabled)
             } else {
                 Text(viewModel.state.result.verse.text)
-                    .dsVerse(17, .regular)
+                    .font(.system(size: 17 * fontScale.multiplier, design: .serif))
                     .foregroundStyle(DS.Color.textPrimary)
-                    .lineSpacing(6)
+                    .lineSpacing(6 * (lineSpacing.multiplier / 1.235))
                     .textSelection(.enabled)
             }
         }
@@ -131,9 +132,9 @@ private extension ResultView {
             }
 
             Text(viewModel.state.result.korean)
-                .dsBodyM()
+                .font(.system(size: 15 * fontScale.multiplier))
                 .foregroundStyle(DS.Color.textPrimary)
-                .lineSpacing(6)
+                .lineSpacing(6 * (lineSpacing.multiplier / 1.235))
                 .textSelection(.enabled)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -157,9 +158,9 @@ private extension ResultView {
             }
 
             Text(viewModel.state.result.rationale)
-                .dsBodyM()
+                .font(.system(size: 15 * fontScale.multiplier))
                 .foregroundStyle(DS.Color.textPrimary)
-                .lineSpacing(6)
+                .lineSpacing(6 * (lineSpacing.multiplier / 1.235))
                 .textSelection(.enabled)
         }
         .frame(maxWidth: .infinity, alignment: .leading)

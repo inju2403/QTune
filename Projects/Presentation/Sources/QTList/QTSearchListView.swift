@@ -19,6 +19,7 @@ public struct QTSearchListView: View {
     @Binding var isSearchPresented: Bool
 
     @State private var scrollPosition: UUID?
+    @Environment(\.fontScale) private var fontScale
 
     // MARK: - Dependencies
     let detailViewModelFactory: (QuietTime) -> QTDetailViewModel
@@ -184,7 +185,7 @@ private extension QTSearchListView {
             VStack(alignment: .leading, spacing: DS.Spacing.l) {
                 HStack(alignment: .top) {
                     Text(qt.verse.localizedId)
-                        .dsTitleS(.bold)
+                        .font(.system(size: 21 * fontScale.multiplier, weight: .bold, design: .serif))
                         .foregroundStyle(DS.Color.deepCocoa)
                         .lineLimit(2)
 

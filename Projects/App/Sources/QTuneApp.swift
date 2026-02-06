@@ -58,6 +58,8 @@ struct QTuneApp: App {
             .animation(.easeInOut(duration: 0.5), value: isAuthReady)
             .animation(.easeInOut(duration: 0.5), value: isProfileLoaded)
             .animation(.easeInOut(duration: 0.5), value: hasCompletedOnboarding)
+            .animation(.easeInOut(duration: 0.3), value: userProfile?.fontScale)
+            .animation(.easeInOut(duration: 0.3), value: userProfile?.lineSpacing)
         }
     }
 
