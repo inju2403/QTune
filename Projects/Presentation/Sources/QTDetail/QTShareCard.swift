@@ -11,9 +11,13 @@ import Domain
 /// 실제 공유될 카드 내용 (말씀 + 해설 + Prayer/Thanksgiving 고정)
 public struct QTShareCard: View {
     let qt: QuietTime
+    let fontScale: FontScale
+    let lineSpacing: LineSpacing
 
-    public init(qt: QuietTime) {
+    public init(qt: QuietTime, fontScale: FontScale = .medium, lineSpacing: LineSpacing = .normal) {
         self.qt = qt
+        self.fontScale = fontScale
+        self.lineSpacing = lineSpacing
     }
 
     public var body: some View {
@@ -23,7 +27,7 @@ public struct QTShareCard: View {
 
                 // 날짜 (베이지 배경 위)
                 Text(formattedDate(qt.date))
-                    .font(.system(size: 40, weight: .regular))
+                    .font(.system(size: 40 * fontScale.multiplier, weight: .regular))
                     .foregroundStyle(Color(red: 0.42, green: 0.36, blue: 0.34))
                     .padding(.bottom, 60)
 
@@ -39,31 +43,31 @@ public struct QTShareCard: View {
 
                     // 구절 참조 (왼쪽 정렬)
                     Text(formatVerseRef(verse))
-                        .font(.system(size: 36, weight: .semibold))
+                        .font(.system(size: 36 * fontScale.multiplier, weight: .semibold))
                         .foregroundStyle(Color.black.opacity(0.9))
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .padding(.bottom, 44)
 
                     // 말씀 본문 (왼쪽 정렬)
                     Text(getVerseText(verse))
-                        .font(.system(size: 38, weight: .regular))
+                        .font(.system(size: 38 * fontScale.multiplier, weight: .regular))
                         .foregroundStyle(Color.black.opacity(0.85))
-                        .lineSpacing(18)
+                        .lineSpacing(18 * lineSpacing.multiplier)
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .padding(.bottom, 70)
 
                     // 해설
                     if let korean = qt.korean, !korean.isEmpty {
                         Text("해설")
-                            .font(.system(size: 32, weight: .semibold))
+                            .font(.system(size: 32 * fontScale.multiplier, weight: .semibold))
                             .foregroundStyle(Color.black.opacity(0.6))
                             .frame(maxWidth: .infinity, alignment: .leading)
                             .padding(.bottom, 14)
 
                         Text(korean)
-                            .font(.system(size: 36, weight: .regular))
+                            .font(.system(size: 36 * fontScale.multiplier, weight: .regular))
                             .foregroundStyle(Color.black.opacity(0.8))
-                            .lineSpacing(18)
+                            .lineSpacing(18 * lineSpacing.multiplier)
                             .frame(maxWidth: .infinity, alignment: .leading)
                             .padding(.bottom, 70)
                     }
@@ -72,29 +76,29 @@ public struct QTShareCard: View {
                     if qt.template == "SOAP" {
                         if let prayer = qt.soapPrayer, !prayer.isEmpty {
                             Text("기도")
-                                .font(.system(size: 32, weight: .semibold))
+                                .font(.system(size: 32 * fontScale.multiplier, weight: .semibold))
                                 .foregroundStyle(Color.black.opacity(0.6))
                                 .frame(maxWidth: .infinity, alignment: .leading)
                                 .padding(.bottom, 14)
 
                             Text(prayer)
-                                .font(.system(size: 36, weight: .regular))
+                                .font(.system(size: 36 * fontScale.multiplier, weight: .regular))
                                 .foregroundStyle(Color.black.opacity(0.85))
-                                .lineSpacing(18)
+                                .lineSpacing(18 * lineSpacing.multiplier)
                                 .frame(maxWidth: .infinity, alignment: .leading)
                         }
                     } else {
                         if let thanksgiving = qt.actsThanksgiving, !thanksgiving.isEmpty {
                             Text("감사")
-                                .font(.system(size: 32, weight: .semibold))
+                                .font(.system(size: 32 * fontScale.multiplier, weight: .semibold))
                                 .foregroundStyle(Color.black.opacity(0.6))
                                 .frame(maxWidth: .infinity, alignment: .leading)
                                 .padding(.bottom, 14)
 
                             Text(thanksgiving)
-                                .font(.system(size: 36, weight: .regular))
+                                .font(.system(size: 36 * fontScale.multiplier, weight: .regular))
                                 .foregroundStyle(Color.black.opacity(0.85))
-                                .lineSpacing(18)
+                                .lineSpacing(18 * lineSpacing.multiplier)
                                 .frame(maxWidth: .infinity, alignment: .leading)
                         }
                     }
@@ -110,7 +114,7 @@ public struct QTShareCard: View {
 
                 // QTune 로고
                 Text("QTune")
-                    .font(.system(size: 36, weight: .regular))
+                    .font(.system(size: 36 * fontScale.multiplier, weight: .regular))
                     .foregroundStyle(Color.black.opacity(0.3))
 
                 // QTune 아래 구분선

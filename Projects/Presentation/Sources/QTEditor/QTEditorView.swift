@@ -15,6 +15,8 @@ public struct QTEditorView: View {
     public let draft: QuietTime
     @State private var viewModel: QTEditorViewModel
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.fontScale) private var fontScale
+    @Environment(\.lineSpacing) private var lineSpacing
 
     public init(
         draft: QuietTime,
@@ -231,6 +233,8 @@ struct EditableVerseCard: View {
     @Binding var text: String
     let placeholder: String
 
+    @Environment(\.fontScale) private var fontScale
+
     var body: some View {
         VStack(alignment: .leading, spacing: DS.Spacing.m) {
             Text(title)
@@ -241,14 +245,14 @@ struct EditableVerseCard: View {
             ZStack(alignment: .topLeading) {
                 if text.isEmpty {
                     Text(placeholder)
-                        .font(.system(size: 16, design: .rounded))
+                        .font(.system(size: 16 * fontScale.multiplier, design: .rounded))
                         .foregroundStyle(Color(hex: "#B8B8B8"))
                         .padding(.horizontal, 8)
                         .padding(.vertical, 12)
                 }
 
                 TextEditor(text: $text)
-                    .font(DS.Font.bodyL())
+                    .font(.system(size: 17 * fontScale.multiplier))
                     .foregroundStyle(Color(hex: "#1A1A1A"))
                     .frame(minHeight: 100)
                     .scrollContentBackground(.hidden)

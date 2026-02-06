@@ -15,6 +15,8 @@ public struct QTShareImageView: View {
     @State private var shareImage: Image?
     @State private var imageURL: URL?
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.fontScale) private var fontScale
+    @Environment(\.lineSpacing) private var lineSpacing
 
     public init(qt: QuietTime) {
         self.qt = qt
@@ -44,7 +46,7 @@ public struct QTShareImageView: View {
 
     @MainActor
     private func renderImage() async {
-        let shareCard = QTShareCard(qt: qt)
+        let shareCard = QTShareCard(qt: qt, fontScale: fontScale, lineSpacing: lineSpacing)
 
         // iOS 16+ ImageRenderer 사용
         if #available(iOS 16.0, *) {

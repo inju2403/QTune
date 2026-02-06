@@ -17,6 +17,8 @@ public struct RequestVerseView: View {
     @Binding var path: NavigationPath
     @Binding var isLoading: Bool
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.fontScale) private var fontScale
+    @Environment(\.lineSpacing) private var lineSpacing
     @FocusState private var isTextEditorFocused: Bool
     @State private var pendingScrollToCTA = false
 
@@ -315,14 +317,14 @@ private extension RequestVerseView {
         return ZStack(alignment: .topLeading) {
             if viewModel.state.moodText.isEmpty {
                 Text("내용을 입력하세요...")
-                    .dsBodyL()
+                    .font(.system(size: 17 * fontScale.multiplier))
                     .foregroundStyle(Color(hex: "#D4D4D4"))
                     .padding(.horizontal, 4)
                     .padding(.vertical, 8)
             }
 
             TextEditor(text: binding)
-                .font(DS.Font.bodyL())
+                .font(.system(size: 17 * fontScale.multiplier))
                 .foregroundStyle(Color(hex: "#3A3A3A"))
                 .frame(minHeight: 128)
                 .scrollContentBackground(.hidden)

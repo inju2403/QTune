@@ -32,6 +32,8 @@ public struct QTEditorWizardView: View {
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.fontScale) private var fontScale
+    @Environment(\.lineSpacing) private var lineSpacing
 
     // MARK: - Focus State
     @FocusState private var soapFocus: SoapStep?
@@ -439,6 +441,8 @@ struct SingleFieldCard<FocusValue: Hashable>: View {
     var focused: FocusState<FocusValue?>.Binding
     var focusValue: FocusValue
 
+    @Environment(\.fontScale) private var fontScale
+
     private let maxLength = 500
 
     var body: some View {
@@ -475,7 +479,7 @@ struct SingleFieldCard<FocusValue: Hashable>: View {
                     // Placeholder
                     if text.isEmpty {
                         Text(placeholder)
-                            .dsBodyM()
+                            .font(.system(size: 16 * fontScale.multiplier))
                             .foregroundStyle(DS.Color.placeholder)
                             .padding(.top, 20)
                             .padding(.horizontal, 16)
@@ -484,7 +488,7 @@ struct SingleFieldCard<FocusValue: Hashable>: View {
 
                     // Text 표시 (읽기 전용처럼 보이지만 편집 가능)
                     Text(text.isEmpty ? " " : text)
-                        .dsBodyM()
+                        .font(.system(size: 16 * fontScale.multiplier))
                         .foregroundStyle(DS.Color.textPrimary)
                         .padding(16)
                         .frame(maxWidth: .infinity, minHeight: 180, alignment: .topLeading)
@@ -492,7 +496,7 @@ struct SingleFieldCard<FocusValue: Hashable>: View {
 
                     // 실제 TextEditor (내부 스크롤 비활성화)
                     TextEditor(text: $text)
-                        .font(DS.Font.bodyM())
+                        .font(.system(size: 16 * fontScale.multiplier))
                         .foregroundStyle(DS.Color.textPrimary)
                         .padding(8)
                         .scrollContentBackground(.hidden)
