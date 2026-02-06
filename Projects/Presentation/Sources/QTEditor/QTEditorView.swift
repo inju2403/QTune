@@ -248,7 +248,7 @@ struct EditableVerseCard: View {
                 }
 
                 TextEditor(text: $text)
-                    .font(.system(size: 16, design: .rounded))
+                    .font(DS.Font.bodyL())
                     .foregroundStyle(Color(hex: "#1A1A1A"))
                     .frame(minHeight: 100)
                     .scrollContentBackground(.hidden)

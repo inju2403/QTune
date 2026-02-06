@@ -43,7 +43,7 @@ public struct PrimaryCTAButton: View {
             HStack(spacing: 10) {
                 Image(systemName: icon)
                 Text(title)
-                    .font(.system(size: 18, weight: .semibold, design: .rounded))
+                    .dsBodyL(.semibold)
             }
             .foregroundStyle(.white)
             .padding(.vertical, 16)

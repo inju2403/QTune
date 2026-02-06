@@ -28,10 +28,10 @@ public struct TemplatePickerSheet: View {
             // Main question
             VStack(spacing: 8) {
                 Text("오늘 어떤 방식으로")
-                    .font(.system(size: 24, weight: .semibold, design: .rounded))
+                    .dsTitleM(.semibold)
                     .foregroundStyle(DS.Color.deepCocoa)
                 Text("말씀을 묵상하고 싶으신가요?")
-                    .font(.system(size: 24, weight: .semibold, design: .rounded))
+                    .dsTitleM(.semibold)
                     .foregroundStyle(DS.Color.deepCocoa)
             }
             .multilineTextAlignment(.center)
@@ -92,19 +92,18 @@ private struct TemplateCard: View {
 
                 VStack(alignment: .leading, spacing: 4) {
                     Text(title)
-                        .font(.system(size: 22, weight: .bold, design: .rounded))
+                        .dsTitleM(.bold)
                         .foregroundStyle(DS.Color.deepCocoa)
                     Text(subtitle)
-                        .font(.system(size: 15, weight: .medium))
+                        .dsBodyM(.medium)
                         .foregroundStyle(DS.Color.textSecondary)
                 }
             }
 
             // Description
             Text(description)
-                .font(.system(size: 14, weight: .regular))
+                .dsBodyM()
                 .foregroundStyle(DS.Color.textSecondary)
-                .lineSpacing(4)
                 .fixedSize(horizontal: false, vertical: true)
                 .padding(.leading, 4)
                 .padding(.bottom, 6)
@@ -112,7 +111,7 @@ private struct TemplateCard: View {
             // Button
             Button(action: action) {
                 Text(buttonTitle)
-                    .font(.system(size: 16, weight: .semibold, design: .rounded))
+                    .dsBodyL(.semibold)
                     .foregroundStyle(.white)
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 16)

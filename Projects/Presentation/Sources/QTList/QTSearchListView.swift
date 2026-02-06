@@ -184,7 +184,7 @@ private extension QTSearchListView {
             VStack(alignment: .leading, spacing: DS.Spacing.l) {
                 HStack(alignment: .top) {
                     Text(qt.verse.localizedId)
-                        .font(.system(size: 21, weight: .bold, design: .serif))
+                        .dsTitleS(.bold)
                         .foregroundStyle(DS.Color.deepCocoa)
                         .lineLimit(2)
 
@@ -197,10 +197,9 @@ private extension QTSearchListView {
 
                 if let summary = summaryText(qt), !summary.isEmpty {
                     Text(summary)
-                        .font(.system(size: 15, weight: .regular, design: .default))
+                        .dsBodyM()
                         .foregroundStyle(DS.Color.textPrimary)
                         .lineLimit(4)
-                        .lineSpacing(5)
                 }
 
                 HStack(spacing: DS.Spacing.s) {
