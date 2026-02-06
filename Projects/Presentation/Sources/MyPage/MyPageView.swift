@@ -248,7 +248,7 @@ private extension MyPageView {
             showFontSettings = true
         }) {
             HStack(spacing: 12) {
-                Image(systemName: "textformat.size")
+                Image(systemName: "textformat")
                     .font(.system(size: 20))
                     .foregroundStyle(DS.Color.gold)
                     .frame(width: 24)
@@ -343,6 +343,7 @@ private extension MyPageView {
             Text(appVersion)
                 .dsBodyL()
                 .foregroundStyle(DS.Color.textSecondary)
+                .padding(.trailing, 8)
         }
     }
 

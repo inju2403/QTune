@@ -26,20 +26,12 @@ public struct ProfileEditView: View {
             CrossSunsetBackground()
 
             ScrollView {
-                VStack(spacing: 32) {
-                    Spacer()
-                        .frame(height: 20)
-
-                    // 헤더
-                    VStack(spacing: 12) {
-                        Text("프로필 수정")
-                            .dsPageTitle()
-                            .foregroundStyle(DS.Color.deepCocoa)
-
-                        Text("프로필 정보를 변경할 수 있어요")
-                            .dsBodyM()
-                            .foregroundStyle(DS.Color.textSecondary)
-                    }
+                VStack(spacing: 48) {
+                    // 안내 문구
+                    Text("프로필 정보를 변경할 수 있어요")
+                        .dsBodyM()
+                        .foregroundStyle(DS.Color.textSecondary)
+                        .padding(.top, 12)
 
                     // 프로필 이미지
                     profileImageSection()
@@ -49,7 +41,7 @@ public struct ProfileEditView: View {
 
                     // 저장 버튼
                     saveButton()
-                    .padding(.top, 20)
+                        .padding(.top, -24)
 
                     Spacer()
                         .frame(height: 40)
@@ -60,6 +52,12 @@ public struct ProfileEditView: View {
         .navigationTitle("")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
+            ToolbarItem(placement: .principal) {
+                Text("프로필 수정")
+                    .font(.system(size: 24, weight: .semibold))
+                    .foregroundStyle(DS.Color.deepCocoa)
+            }
+
             ToolbarItem(placement: .navigationBarLeading) {
                 Button {
                     Haptics.tap()
