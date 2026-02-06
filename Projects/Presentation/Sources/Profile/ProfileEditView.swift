@@ -150,7 +150,7 @@ private extension ProfileEditView {
                         .frame(width: 36, height: 36)
                         .overlay(
                             Image(systemName: "camera.fill")
-                                .dsMedium()
+                                .font(.system(size: 16))
                                 .foregroundStyle(.white)
                         )
                         .shadow(color: .black.opacity(0.1), radius: 4, y: 2)
@@ -168,7 +168,7 @@ private extension ProfileEditView {
                 } label: {
                     HStack(spacing: 6) {
                         Image(systemName: "arrow.counterclockwise")
-                            .dsCaption()
+                            .font(.system(size: 13))
                         Text("기본 이미지로 변경")
                             .dsSmall()
                     }
@@ -186,7 +186,7 @@ private extension ProfileEditView {
                 HStack(spacing: 6) {
                     Image(systemName: "person.text.rectangle")
                         .foregroundStyle(DS.Color.gold)
-                        .dsLabel()
+                        .font(.system(size: 18))
                     Text("이름")
                         .dsTitleM(.semibold)
                         .foregroundStyle(DS.Color.deepCocoa)
@@ -214,7 +214,7 @@ private extension ProfileEditView {
                 HStack(spacing: 6) {
                     Image(systemName: "person.2")
                         .foregroundStyle(DS.Color.gold)
-                        .dsLabel()
+                        .font(.system(size: 18))
                     Text("구분")
                         .dsTitleM(.semibold)
                         .foregroundStyle(DS.Color.deepCocoa)
