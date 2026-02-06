@@ -47,6 +47,17 @@ public struct FontSettingsView: View {
             .navigationTitle("폰트 설정")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Button {
+                        Haptics.tap()
+                        dismiss()
+                    } label: {
+                        Image(systemName: "xmark")
+                            .font(.system(size: 16, weight: .semibold))
+                            .foregroundStyle(DS.Color.textSecondary)
+                    }
+                }
+
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button("저장") {
                         Haptics.tap()

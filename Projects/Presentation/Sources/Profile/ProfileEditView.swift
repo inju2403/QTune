@@ -59,6 +59,18 @@ public struct ProfileEditView: View {
         }
         .navigationTitle("")
         .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .navigationBarLeading) {
+                Button {
+                    Haptics.tap()
+                    dismiss()
+                } label: {
+                    Image(systemName: "xmark")
+                        .font(.system(size: 16, weight: .semibold))
+                        .foregroundStyle(DS.Color.textSecondary)
+                }
+            }
+        }
         .overlay(alignment: .bottom) {
             if viewModel.state.showSaveSuccessToast {
                 successToast()
