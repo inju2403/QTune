@@ -33,7 +33,6 @@ public struct QTEditorWizardView: View {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(\.dismiss) private var dismiss
     @Environment(\.fontScale) private var fontScale
-    @Environment(\.lineSpacing) private var lineSpacing
 
     // MARK: - Focus State
     @FocusState private var soapFocus: SoapStep?
@@ -351,9 +350,8 @@ public struct QTEditorWizardView: View {
                     }
 
                     Text(viewModel.state.verseEN.trimmingCharacters(in: .whitespacesAndNewlines))
-                        .font(.system(size: 16 * fontScale.multiplier, design: .serif))
+                        .dsVerse(16)
                         .foregroundStyle(DS.Color.textPrimary)
-                        .lineSpacing(5 * (lineSpacing.multiplier / 1.235))
                         .fixedSize(horizontal: false, vertical: true)
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .textSelection(.enabled)
@@ -494,9 +492,8 @@ struct SingleFieldCard<FocusValue: Hashable>: View {
                         .frame(maxWidth: .infinity, minHeight: 180, alignment: .topLeading)
                         .opacity(0) // 투명하게 (높이 계산용)
 
-                    // 실제 TextEditor (내부 스크롤 비활성화)
-                    TextEditor(text: $text)
-                        .font(.system(size: 15 * fontScale.multiplier))
+                    // 실제 ScaledTextEditor (내부 스크롤 비활성화)
+                    ScaledTextEditor(text: $text, size: 15)
                         .foregroundStyle(DS.Color.textPrimary)
                         .padding(8)
                         .scrollContentBackground(.hidden)
@@ -530,7 +527,6 @@ struct ExplanationSheetView: View {
     @Binding var sheetHeight: CGFloat
 
     @Environment(\.fontScale) private var fontScale
-    @Environment(\.lineSpacing) private var lineSpacing
 
     var body: some View {
         GeometryReader { geometry in
@@ -590,17 +586,15 @@ struct ExplanationSheetView: View {
 
                             // 나머지 내용
                             Text(String(lines[1]))
-                                .font(.system(size: 17 * fontScale.multiplier, weight: .regular, design: .rounded))
+                                .dsBodyL()
                                 .foregroundStyle(DS.Color.textPrimary)
-                                .lineSpacing(6 * (lineSpacing.multiplier / 1.235))
                                 .frame(maxWidth: .infinity, alignment: .leading)
                                 .fixedSize(horizontal: false, vertical: true)
                                 .textSelection(.enabled)
                         } else {
                             Text(explanation)
-                                .font(.system(size: 17 * fontScale.multiplier, weight: .regular, design: .rounded))
+                                .dsBodyL()
                                 .foregroundStyle(DS.Color.textPrimary)
-                                .lineSpacing(6 * (lineSpacing.multiplier / 1.235))
                                 .frame(maxWidth: .infinity, alignment: .leading)
                                 .fixedSize(horizontal: false, vertical: true)
                                 .textSelection(.enabled)
@@ -647,7 +641,7 @@ struct ExplanationSheetView: View {
                 context: nil
             ).height
 
-            // 두 번째 줄 (본문)
+            // 두 번째 줄 (본문) - dsBodyL 기본 행간 6pt 사용
             let secondHeight = String(lines[1]).boundingRect(
                 with: CGSize(width: width, height: .greatestFiniteMagnitude),
                 options: [.usesLineFragmentOrigin, .usesFontLeading],
@@ -655,14 +649,14 @@ struct ExplanationSheetView: View {
                 context: nil
             ).height
 
-            totalHeight = firstHeight + DS.Spacing.l + secondHeight + (6 * (lineSpacing.multiplier / 1.235) * 3) // lineSpacing 고려
+            totalHeight = firstHeight + DS.Spacing.l + secondHeight + (6 * 3) // dsBodyL의 기본 행간 6pt 고려
         } else {
             totalHeight = text.boundingRect(
                 with: CGSize(width: width, height: .greatestFiniteMagnitude),
                 options: [.usesLineFragmentOrigin, .usesFontLeading],
                 attributes: [.font: font],
                 context: nil
-            ).height + (6 * (lineSpacing.multiplier / 1.235) * 3) // lineSpacing 고려
+            ).height + (6 * 3) // dsBodyL의 기본 행간 6pt 고려
         }
 
         return totalHeight

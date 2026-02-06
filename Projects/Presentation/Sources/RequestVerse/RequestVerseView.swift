@@ -17,8 +17,6 @@ public struct RequestVerseView: View {
     @Binding var path: NavigationPath
     @Binding var isLoading: Bool
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
-    @Environment(\.fontScale) private var fontScale
-    @Environment(\.lineSpacing) private var lineSpacing
     @FocusState private var isTextEditorFocused: Bool
     @State private var pendingScrollToCTA = false
 
@@ -209,7 +207,7 @@ private extension RequestVerseView {
                 HStack(spacing: 12) {
                     Image(systemName: "doc.text")
                         .foregroundStyle(DS.Color.gold)
-                        .font(.system(size: 20 * fontScale.multiplier))
+                        .font(.system(size: 20))
 
                     VStack(alignment: .leading, spacing: 4) {
                         Text("오늘 작성 중인 QT가 있어요")
@@ -258,21 +256,19 @@ private extension RequestVerseView {
 
             VStack(spacing: 8) {
                 Text("\(nickname) \(gender)님")
-                    .font(.system(size: 32 * fontScale.multiplier, weight: .bold, design: .serif))
+                    .dsTitleXL(.bold)
                     .foregroundStyle(DS.Color.deepCocoa)
 
                 // 부제
                 Text("오늘 어떤 일이 있으셨나요?")
-                    .font(.system(size: 16 * fontScale.multiplier, weight: .light, design: .rounded))
+                    .dsBodyL(.light)
                     .foregroundStyle(DS.Color.textSecondary)
                     .multilineTextAlignment(.center)
-                    .lineSpacing(4)
 
                 Text("글로 알려주시면 \(nickname) \(gender)님에게\n오늘의 말씀을 추천해드릴게요")
-                    .font(.system(size: 14 * fontScale.multiplier, weight: .regular, design: .rounded))
+                    .dsBodyM()
                     .foregroundStyle(DS.Color.textSecondary.opacity(0.8))
                     .multilineTextAlignment(.center)
-                    .lineSpacing(4)
             }
         }
         .frame(maxWidth: .infinity)
@@ -284,10 +280,9 @@ private extension RequestVerseView {
         VStack(alignment: .leading, spacing: 8) {
             // 제목
             Text("어떤 내용이든 좋아요.\n오늘 느낀 감정, 생각 등을 공유해주세요.")
-                .font(.system(size: 15 * fontScale.multiplier, weight: .medium, design: .rounded))
+                .dsBodyM(.medium)
                 .foregroundStyle(Color(hex: "#6B6B6B"))
                 .multilineTextAlignment(.leading)
-                .lineSpacing(4)
 
             // 입력 영역
             unifiedInputArea()
@@ -317,24 +312,18 @@ private extension RequestVerseView {
             }
         )
 
-        return ZStack(alignment: .topLeading) {
-            if viewModel.state.moodText.isEmpty {
-                Text("내용을 입력하세요...")
-                    .font(.system(size: 16 * fontScale.multiplier, design: .rounded))
-                    .foregroundStyle(Color(hex: "#D4D4D4"))
-                    .padding(.horizontal, 4)
-                    .padding(.vertical, 8)
-            }
-
-            TextEditor(text: binding)
-                .font(.system(size: 16 * fontScale.multiplier, design: .rounded))
-                .foregroundStyle(Color(hex: "#3A3A3A"))
-                .frame(minHeight: 128)
-                .scrollContentBackground(.hidden)
-                .textInputAutocapitalization(.sentences)
-                .disableAutocorrection(false)
-                .focused($isTextEditorFocused)
-        }
+        return ScaledTextEditor(
+            text: binding,
+            size: 16,
+            design: .rounded,
+            placeholder: "내용을 입력하세요..."
+        )
+        .foregroundStyle(Color(hex: "#3A3A3A"))
+        .frame(minHeight: 128)
+        .scrollContentBackground(.hidden)
+        .textInputAutocapitalization(.sentences)
+        .disableAutocorrection(false)
+        .focused($isTextEditorFocused)
         .padding(12)
         .background(Color(hex: "#F8F8F8"))
         .clipShape(RoundedRectangle(cornerRadius: 12))
@@ -460,7 +449,7 @@ private extension RequestVerseView {
 
         HStack(spacing: 8) {
             Image(systemName: "sparkles")
-                .font(.system(size: 16 * fontScale.multiplier))
+                .font(.system(size: 16))
             Text("오늘의 말씀 추천받기")
                 .dsBodyL(.semibold)
         }

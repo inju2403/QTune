@@ -13,7 +13,6 @@ public struct ResultView: View {
     // MARK: - ViewModel
     @State private var viewModel: ResultViewModel
     @Environment(\.fontScale) private var fontScale
-    @Environment(\.lineSpacing) private var lineSpacing
 
     // MARK: - Init
     public init(viewModel: ResultViewModel) {
@@ -101,13 +100,13 @@ private extension ResultView {
                 Text("\(viewModel.state.result.verse.text)\n\n\(secondaryVerse.text)")
                     .font(.system(size: 17 * fontScale.multiplier, design: .serif))
                     .foregroundStyle(DS.Color.textPrimary)
-                    .lineSpacing(6 * (lineSpacing.multiplier / 1.235))
+                    .dsBodyL()
                     .textSelection(.enabled)
             } else {
                 Text(viewModel.state.result.verse.text)
                     .font(.system(size: 17 * fontScale.multiplier, design: .serif))
                     .foregroundStyle(DS.Color.textPrimary)
-                    .lineSpacing(6 * (lineSpacing.multiplier / 1.235))
+                    .dsBodyL()
                     .textSelection(.enabled)
             }
         }
@@ -132,9 +131,8 @@ private extension ResultView {
             }
 
             Text(viewModel.state.result.korean)
-                .font(.system(size: 15 * fontScale.multiplier))
                 .foregroundStyle(DS.Color.textPrimary)
-                .lineSpacing(6 * (lineSpacing.multiplier / 1.235))
+                .dsBodyL()
                 .textSelection(.enabled)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -158,9 +156,8 @@ private extension ResultView {
             }
 
             Text(viewModel.state.result.rationale)
-                .font(.system(size: 15 * fontScale.multiplier))
                 .foregroundStyle(DS.Color.textPrimary)
-                .lineSpacing(6 * (lineSpacing.multiplier / 1.235))
+                .dsBodyL()
                 .textSelection(.enabled)
         }
         .frame(maxWidth: .infinity, alignment: .leading)

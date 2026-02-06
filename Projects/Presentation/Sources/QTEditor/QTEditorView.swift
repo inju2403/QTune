@@ -15,8 +15,6 @@ public struct QTEditorView: View {
     public let draft: QuietTime
     @State private var viewModel: QTEditorViewModel
     @Environment(\.dismiss) private var dismiss
-    @Environment(\.fontScale) private var fontScale
-    @Environment(\.lineSpacing) private var lineSpacing
 
     public init(
         draft: QuietTime,
@@ -96,8 +94,7 @@ private extension QTEditorView {
             VerseCardView(title: "본문") {
                 VStack(alignment: .leading, spacing: DS.Spacing.s) {
                     Text(draft.verse.text)
-                        .font(.system(size: 15 * fontScale.multiplier))
-                        .lineSpacing(4 * (lineSpacing.multiplier / 1.235))
+                        .dsBodyM()
                         .textSelection(.enabled)
 
                     Text("\(draft.verse.translation) (Public Domain)")
@@ -118,14 +115,12 @@ private extension QTEditorView {
                                 .textSelection(.enabled)
 
                             Text(String(lines[1]))
-                                .font(.system(size: 15 * fontScale.multiplier))
-                                .lineSpacing(4 * (lineSpacing.multiplier / 1.235))
+                                .dsBodyM()
                                 .textSelection(.enabled)
                         }
                     } else {
                         Text(korean)
-                            .font(.system(size: 15 * fontScale.multiplier))
-                            .lineSpacing(4 * (lineSpacing.multiplier / 1.235))
+                            .dsBodyM()
                             .textSelection(.enabled)
                     }
                 }
@@ -135,8 +130,7 @@ private extension QTEditorView {
             if let rationale = draft.rationale, !rationale.isEmpty {
                 VerseCardView(title: "이 말씀이 주어진 이유") {
                     Text(rationale)
-                        .font(.system(size: 15 * fontScale.multiplier))
-                        .lineSpacing(4 * (lineSpacing.multiplier / 1.235))
+                        .dsBodyM()
                         .textSelection(.enabled)
                 }
             }
@@ -237,8 +231,6 @@ struct EditableVerseCard: View {
     @Binding var text: String
     let placeholder: String
 
-    @Environment(\.fontScale) private var fontScale
-
     var body: some View {
         VStack(alignment: .leading, spacing: DS.Spacing.m) {
             Text(title)
@@ -246,23 +238,16 @@ struct EditableVerseCard: View {
                 .foregroundStyle(DS.Color.textSecondary)
 
             // 회색 박스 안에 TextEditor (1탭 스타일, 대비 강화)
-            ZStack(alignment: .topLeading) {
-                if text.isEmpty {
-                    Text(placeholder)
-                        .font(.system(size: 16 * fontScale.multiplier, design: .rounded))
-                        .foregroundStyle(Color(hex: "#B8B8B8"))
-                        .padding(.horizontal, 8)
-                        .padding(.vertical, 12)
-                }
-
-                TextEditor(text: $text)
-                    .font(.system(size: 16 * fontScale.multiplier))
-                    .foregroundStyle(Color(hex: "#1A1A1A"))
-                    .frame(minHeight: 100)
-                    .scrollContentBackground(.hidden)
-                    .textInputAutocapitalization(.sentences)
-                    .disableAutocorrection(false)
-            }
+            ScaledTextEditor(
+                text: $text,
+                size: 16,
+                placeholder: placeholder
+            )
+            .foregroundStyle(Color(hex: "#1A1A1A"))
+            .frame(minHeight: 100)
+            .scrollContentBackground(.hidden)
+            .textInputAutocapitalization(.sentences)
+            .disableAutocorrection(false)
             .padding(.horizontal, 12)
             .padding(.vertical, 12)
             .frame(maxWidth: .infinity)

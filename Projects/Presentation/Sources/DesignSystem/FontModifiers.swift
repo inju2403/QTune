@@ -230,11 +230,13 @@ extension Text {
 ///   - size: 기본 폰트 크기
 ///   - weight: 폰트 두께
 ///   - design: 폰트 디자인 (.default, .rounded, .serif)
+///   - placeholder: 플레이스홀더 텍스트 (옵션)
 public struct ScaledTextEditor: View {
     @Binding var text: String
     let size: CGFloat
     let weight: Font.Weight
     let design: Font.Design
+    let placeholder: String?
 
     @Environment(\.fontScale) private var fontScale
 
@@ -242,20 +244,38 @@ public struct ScaledTextEditor: View {
         text: Binding<String>,
         size: CGFloat = 16,
         weight: Font.Weight = .regular,
-        design: Font.Design = .default
+        design: Font.Design = .default,
+        placeholder: String? = nil
     ) {
         self._text = text
         self.size = size
         self.weight = weight
         self.design = design
+        self.placeholder = placeholder
     }
 
     public var body: some View {
-        TextEditor(text: $text)
-            .font(.system(
-                size: size * fontScale.multiplier,
-                weight: weight,
-                design: design
-            ))
+        ZStack(alignment: .topLeading) {
+            // Placeholder
+            if let placeholder = placeholder, text.isEmpty {
+                Text(placeholder)
+                    .font(.system(
+                        size: size * fontScale.multiplier,
+                        weight: weight,
+                        design: design
+                    ))
+                    .foregroundStyle(Color(hex: "#B8B8B8"))
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 12)
+            }
+
+            // TextEditor
+            TextEditor(text: $text)
+                .font(.system(
+                    size: size * fontScale.multiplier,
+                    weight: weight,
+                    design: design
+                ))
+        }
     }
 }
