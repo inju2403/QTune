@@ -80,11 +80,7 @@ public struct MyPageView: View {
 
                     // 앱 정보
                     Section(header: sectionHeader("앱 정보")) {
-                        menuRow(
-                            icon: "info.circle",
-                            title: "버전 정보",
-                            action: { viewModel.send(.tapVersionInfo) }
-                        )
+                        versionInfoRow()
                     }
                 }
                 .listStyle(.insetGrouped)
@@ -106,14 +102,6 @@ public struct MyPageView: View {
                         viewModel: profileEditViewModelFactory(userProfile)
                     )
                 }
-            }
-            .alert("버전 정보", isPresented: Binding(
-                get: { viewModel.state.showVersionAlert },
-                set: { if !$0 { viewModel.send(.dismissVersionAlert) } }
-            )) {
-                Button("확인", role: .cancel) {}
-            } message: {
-                Text("현재 버전: \(appVersion)")
             }
             .sheet(isPresented: Binding(
                 get: { viewModel.state.showTranslationSelection },
@@ -260,7 +248,7 @@ private extension MyPageView {
             showFontSettings = true
         }) {
             HStack(spacing: 12) {
-                Image(systemName: "textformat.size")
+                Image(systemName: "textformat")
                     .font(.system(size: 20))
                     .foregroundStyle(DS.Color.gold)
                     .frame(width: 24)
@@ -335,6 +323,27 @@ private extension MyPageView {
                     .font(.system(size: 14, weight: .semibold))
                     .foregroundStyle(DS.Color.textSecondary)
             }
+        }
+    }
+
+    @ViewBuilder
+    func versionInfoRow() -> some View {
+        HStack(spacing: 12) {
+            Image(systemName: "info.circle")
+                .font(.system(size: 20))
+                .foregroundStyle(DS.Color.gold)
+                .frame(width: 24)
+
+            Text("버전 정보")
+                .dsBodyL()
+                .foregroundStyle(DS.Color.textPrimary)
+
+            Spacer()
+
+            Text(appVersion)
+                .dsBodyL()
+                .foregroundStyle(DS.Color.textSecondary)
+                .padding(.trailing, 8)
         }
     }
 

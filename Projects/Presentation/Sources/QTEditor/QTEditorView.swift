@@ -92,15 +92,9 @@ private extension QTEditorView {
         VStack(alignment: .leading, spacing: 12) {
             // 영문 본문
             VerseCardView(title: "본문") {
-                VStack(alignment: .leading, spacing: DS.Spacing.s) {
-                    Text(draft.verse.text)
-                        .dsBodyM()
-                        .textSelection(.enabled)
-
-                    Text("\(draft.verse.translation) (Public Domain)")
-                        .dsCaption()
-                        .foregroundStyle(DS.Color.textSecondary)
-                }
+                Text(draft.verse.text)
+                    .dsBodyM()
+                    .textSelection(.enabled)
             }
 
             // 한글 해설
