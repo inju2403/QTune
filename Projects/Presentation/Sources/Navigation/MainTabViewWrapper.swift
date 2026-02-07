@@ -14,6 +14,7 @@ public struct MainTabViewWrapper: View {
     let detailViewModelFactory: (QuietTime) -> QTDetailViewModel
     let editorViewModelFactory: () -> QTEditorViewModel
     let profileEditViewModelFactory: (UserProfile?) -> ProfileEditViewModel
+    let fontSettingsViewModelFactory: (FontScale, LineSpacing) -> FontSettingsViewModel
     let generateVerseUseCase: GenerateVerseUseCase
     let commitQTUseCase: CommitQTUseCase
     let getUserProfileUseCase: GetUserProfileUseCase
@@ -32,6 +33,7 @@ public struct MainTabViewWrapper: View {
         detailViewModelFactory: @escaping (QuietTime) -> QTDetailViewModel,
         editorViewModelFactory: @escaping () -> QTEditorViewModel,
         profileEditViewModelFactory: @escaping (UserProfile?) -> ProfileEditViewModel,
+        fontSettingsViewModelFactory: @escaping (FontScale, LineSpacing) -> FontSettingsViewModel,
         generateVerseUseCase: GenerateVerseUseCase,
         commitQTUseCase: CommitQTUseCase,
         getUserProfileUseCase: GetUserProfileUseCase,
@@ -43,6 +45,7 @@ public struct MainTabViewWrapper: View {
         self.detailViewModelFactory = detailViewModelFactory
         self.editorViewModelFactory = editorViewModelFactory
         self.profileEditViewModelFactory = profileEditViewModelFactory
+        self.fontSettingsViewModelFactory = fontSettingsViewModelFactory
         self.generateVerseUseCase = generateVerseUseCase
         self.commitQTUseCase = commitQTUseCase
         self.getUserProfileUseCase = getUserProfileUseCase
@@ -147,7 +150,9 @@ public struct MainTabViewWrapper: View {
                     viewModel: myPageViewModel(),
                     userProfile: $userProfile,
                     profileEditViewModelFactory: profileEditViewModelFactory,
-                    getUserProfileUseCase: getUserProfileUseCase
+                    fontSettingsViewModelFactory: fontSettingsViewModelFactory,
+                    getUserProfileUseCase: getUserProfileUseCase,
+                    saveUserProfileUseCase: saveUserProfileUseCase
                 )
             }
 
@@ -256,7 +261,9 @@ public struct MainTabViewWrapper: View {
                 viewModel: myPageViewModel(),
                 userProfile: $userProfile,
                 profileEditViewModelFactory: profileEditViewModelFactory,
-                getUserProfileUseCase: getUserProfileUseCase
+                fontSettingsViewModelFactory: fontSettingsViewModelFactory,
+                getUserProfileUseCase: getUserProfileUseCase,
+                saveUserProfileUseCase: saveUserProfileUseCase
             )
             .tabItem {
                 Label("마이페이지", systemImage: "person.circle")

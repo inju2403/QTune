@@ -211,10 +211,10 @@ private extension RequestVerseView {
 
                     VStack(alignment: .leading, spacing: 4) {
                         Text("오늘 작성 중인 QT가 있어요")
-                            .font(.system(size: 15, weight: .semibold))
+                            .dsBodyM(.semibold)
                             .foregroundStyle(.white.opacity(0.95))
                         Text("이어 쓰거나 삭제할 수 있어요")
-                            .font(.system(size: 13))
+                            .dsCaption()
                             .foregroundStyle(DS.Color.textSec)
                     }
                     Spacer()
@@ -225,14 +225,14 @@ private extension RequestVerseView {
                         Haptics.tap()
                         viewModel.send(.tapResumeDraft)
                     }
-                    .font(.system(size: 15, weight: .semibold))
+                    .font(DS.Font.bodyM(.semibold))
                     .foregroundStyle(DS.Color.accent)
 
                     Button("삭제") {
                         Haptics.tap()
                         viewModel.send(.tapDiscardDraft)
                     }
-                    .font(.system(size: 15, weight: .semibold))
+                    .font(DS.Font.bodyM(.semibold))
                     .foregroundStyle(DS.Color.textSec)
                 }
             }
@@ -256,21 +256,19 @@ private extension RequestVerseView {
 
             VStack(spacing: 8) {
                 Text("\(nickname) \(gender)님")
-                    .font(.system(size: 32, weight: .bold, design: .serif))
+                    .dsTitleXL(.bold)
                     .foregroundStyle(DS.Color.deepCocoa)
 
-                // 부제 (SF Rounded Light)
+                // 부제
                 Text("오늘 어떤 일이 있으셨나요?")
-                    .font(.system(size: 16, weight: .light, design: .rounded))
+                    .dsBodyL(.light)
                     .foregroundStyle(DS.Color.textSecondary)
                     .multilineTextAlignment(.center)
-                    .lineSpacing(4)
 
                 Text("글로 알려주시면 \(nickname) \(gender)님에게\n오늘의 말씀을 추천해드릴게요")
-                    .font(.system(size: 14, weight: .regular, design: .rounded))
+                    .dsBodyM()
                     .foregroundStyle(DS.Color.textSecondary.opacity(0.8))
                     .multilineTextAlignment(.center)
-                    .lineSpacing(4)
             }
         }
         .frame(maxWidth: .infinity)
@@ -282,10 +280,9 @@ private extension RequestVerseView {
         VStack(alignment: .leading, spacing: 8) {
             // 제목
             Text("어떤 내용이든 좋아요.\n오늘 느낀 감정, 생각 등을 공유해주세요.")
-                .font(.system(size: 15, weight: .medium, design: .rounded))
+                .dsBodyM(.medium)
                 .foregroundStyle(Color(hex: "#6B6B6B"))
                 .multilineTextAlignment(.leading)
-                .lineSpacing(4)
 
             // 입력 영역
             unifiedInputArea()
@@ -294,7 +291,7 @@ private extension RequestVerseView {
             HStack {
                 Spacer()
                 Text("\(viewModel.state.moodText.count)/700")
-                    .font(.system(size: 13, weight: .regular))
+                    .dsCaption()
                     .foregroundStyle(viewModel.state.moodText.count > 700 ? Color.red.opacity(0.7) : Color(hex: "#AFAFAF"))
             }
         }
@@ -315,24 +312,18 @@ private extension RequestVerseView {
             }
         )
 
-        return ZStack(alignment: .topLeading) {
-            if viewModel.state.moodText.isEmpty {
-                Text("내용을 입력하세요...")
-                    .font(.system(size: 16, design: .rounded))
-                    .foregroundStyle(Color(hex: "#D4D4D4"))
-                    .padding(.horizontal, 4)
-                    .padding(.vertical, 8)
-            }
-
-            TextEditor(text: binding)
-                .font(.system(size: 16, design: .rounded))
-                .foregroundStyle(Color(hex: "#3A3A3A"))
-                .frame(minHeight: 128)
-                .scrollContentBackground(.hidden)
-                .textInputAutocapitalization(.sentences)
-                .disableAutocorrection(false)
-                .focused($isTextEditorFocused)
-        }
+        return ScaledTextEditor(
+            text: binding,
+            size: 16,
+            design: .rounded,
+            placeholder: "내용을 입력하세요..."
+        )
+        .foregroundStyle(Color(hex: "#3A3A3A"))
+        .frame(minHeight: 128)
+        .scrollContentBackground(.hidden)
+        .textInputAutocapitalization(.sentences)
+        .disableAutocorrection(false)
+        .focused($isTextEditorFocused)
         .padding(12)
         .background(Color(hex: "#F8F8F8"))
         .clipShape(RoundedRectangle(cornerRadius: 12))
@@ -346,7 +337,7 @@ private extension RequestVerseView {
                     .foregroundStyle(.orange)
 
                 Text(errorMessage)
-                    .font(.system(size: 15))
+                    .dsBodyM()
                     .foregroundStyle(.white.opacity(0.95))
 
                 Spacer()
@@ -397,11 +388,11 @@ private extension RequestVerseView {
                     if lines.count == 2 {
                         VStack(alignment: .leading, spacing: 8) {
                             Text(String(lines[0]))
-                                .font(.system(size: 17, weight: .semibold))
+                                .dsBodyL(.semibold)
                                 .foregroundStyle(DS.Color.gold)
 
                             Text(String(lines[1]))
-                                .lineSpacing(4)
+                                .dsBodyM()
                         }
                     } else {
                         Text(result.korean)
@@ -430,7 +421,7 @@ private extension RequestVerseView {
             Image(systemName: icon)
                 .foregroundStyle(DS.Color.gold)
             Text(title)
-                .font(.system(size: 20, weight: .semibold))
+                .dsTitleS(.semibold)
                 .foregroundStyle(.white.opacity(0.95))
             Spacer()
         }
@@ -460,7 +451,7 @@ private extension RequestVerseView {
             Image(systemName: "sparkles")
                 .font(.system(size: 16))
             Text("오늘의 말씀 추천받기")
-                .font(.system(size: 17, weight: .semibold, design: .rounded))
+                .dsBodyL(.semibold)
         }
         .foregroundStyle(.white)
         .frame(maxWidth: .infinity)

@@ -19,6 +19,7 @@ public struct QTSearchListView: View {
     @Binding var isSearchPresented: Bool
 
     @State private var scrollPosition: UUID?
+    @Environment(\.fontScale) private var fontScale
 
     // MARK: - Dependencies
     let detailViewModelFactory: (QuietTime) -> QTDetailViewModel
@@ -184,28 +185,27 @@ private extension QTSearchListView {
             VStack(alignment: .leading, spacing: DS.Spacing.l) {
                 HStack(alignment: .top) {
                     Text(qt.verse.localizedId)
-                        .font(.system(size: 21, weight: .bold, design: .serif))
+                        .font(.system(size: 21 * fontScale.multiplier, weight: .bold, design: .serif))
                         .foregroundStyle(DS.Color.deepCocoa)
                         .lineLimit(2)
 
                     Spacer()
 
                     Text(formattedDate(qt.date))
-                        .font(DS.Font.caption())
+                        .dsCaption()
                         .foregroundStyle(DS.Color.textSecondary)
                 }
 
                 if let summary = summaryText(qt), !summary.isEmpty {
                     Text(summary)
-                        .font(.system(size: 15, weight: .regular, design: .default))
+                        .dsBodyM()
                         .foregroundStyle(DS.Color.textPrimary)
                         .lineLimit(4)
-                        .lineSpacing(5)
                 }
 
                 HStack(spacing: DS.Spacing.s) {
                     Text(qt.template)
-                        .font(DS.Font.caption(.medium))
+                        .dsCaption(.medium)
                         .foregroundStyle(qt.template == "SOAP" ? DS.Color.olive : DS.Color.gold)
                         .padding(.horizontal, DS.Spacing.m)
                         .padding(.vertical, DS.Spacing.s)
@@ -253,7 +253,7 @@ private extension QTSearchListView {
 
             VStack(spacing: DS.Spacing.s) {
                 Text(searchText.isEmpty ? "검색어를 입력해 주세요" : "검색된 내용이 없어요")
-                    .font(DS.Font.titleM(.semibold))
+                    .dsTitleM(.semibold)
                     .foregroundStyle(DS.Color.textPrimary)
             }
 

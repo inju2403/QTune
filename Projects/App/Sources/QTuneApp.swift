@@ -53,9 +53,13 @@ struct QTuneApp: App {
                         .transition(.opacity)
                 }
             }
+            .environment(\.fontScale, userProfile?.fontScale ?? .medium)
+            .environment(\.lineSpacing, userProfile?.lineSpacing ?? .normal)
             .animation(.easeInOut(duration: 0.5), value: isAuthReady)
             .animation(.easeInOut(duration: 0.5), value: isProfileLoaded)
             .animation(.easeInOut(duration: 0.5), value: hasCompletedOnboarding)
+            .animation(.easeInOut(duration: 0.3), value: userProfile?.fontScale)
+            .animation(.easeInOut(duration: 0.3), value: userProfile?.lineSpacing)
         }
     }
 
@@ -185,6 +189,13 @@ struct QTuneApp: App {
                     ProfileEditViewModel(
                         currentProfile: currentProfile,
                         saveUserProfileUseCase: container.makeSaveUserProfileUseCase()
+                    )
+                },
+                fontSettingsViewModelFactory: { fontScale, lineSpacing in
+                    FontSettingsViewModel(
+                        initialFontScale: fontScale,
+                        initialLineSpacing: lineSpacing,
+                        saveProfileUseCase: container.makeSaveUserProfileUseCase()
                     )
                 },
                 generateVerseUseCase: generateVerseUseCase,

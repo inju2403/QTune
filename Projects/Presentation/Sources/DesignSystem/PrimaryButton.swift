@@ -32,7 +32,7 @@ public struct PrimaryButton: View {
                     Image(systemName: icon)
                 }
                 Text(title)
-                    .font(DS.Font.titleM())
+                    .dsTitleM()
             }
             .padding(.vertical, DS.Spacing.m)
             .padding(.horizontal, DS.Spacing.xl)

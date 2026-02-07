@@ -26,11 +26,11 @@ public struct OnboardingView: View {
                 // 타이틀
                 VStack(spacing: 12) {
                     Text("환영합니다!")
-                        .font(.system(size: 40, weight: .bold, design: .rounded))
+                        .dsHero()
                         .foregroundStyle(DS.Color.deepCocoa)
 
                     Text("큐튠과 함께 QT 여정을 시작하기 전에\n간단한 정보를 알려주세요")
-                        .font(.system(size: 17))
+                        .dsBodyL()
                         .foregroundStyle(DS.Color.textSecondary)
                         .multilineTextAlignment(.center)
                         .lineSpacing(4)
@@ -45,7 +45,7 @@ public struct OnboardingView: View {
                             Image(systemName: "person.fill")
                                 .foregroundStyle(DS.Color.gold)
                             Text("이름")
-                                .font(DS.Font.titleM(.semibold))
+                                .dsTitleM(.semibold)
                                 .foregroundStyle(DS.Color.deepCocoa)
                         }
 
@@ -70,7 +70,7 @@ public struct OnboardingView: View {
                             Image(systemName: "heart.fill")
                                 .foregroundStyle(DS.Color.gold)
                             Text("구분")
-                                .font(DS.Font.titleM(.semibold))
+                                .dsTitleM(.semibold)
                                 .foregroundStyle(DS.Color.deepCocoa)
                         }
 
@@ -81,7 +81,7 @@ public struct OnboardingView: View {
                                 viewModel.send(.selectGender(.brother))
                             } label: {
                                 Text("형제")
-                                    .font(DS.Font.bodyL(.semibold))
+                                    .dsBodyL(.semibold)
                                     .foregroundStyle(
                                         viewModel.state.selectedGender == .brother
                                             ? .white
@@ -119,7 +119,7 @@ public struct OnboardingView: View {
                                 viewModel.send(.selectGender(.sister))
                             } label: {
                                 Text("자매")
-                                    .font(DS.Font.bodyL(.semibold))
+                                    .dsBodyL(.semibold)
                                     .foregroundStyle(
                                         viewModel.state.selectedGender == .sister
                                             ? .white
@@ -174,7 +174,7 @@ public struct OnboardingView: View {
                                 .tint(.white)
                         } else {
                             Text("시작하기")
-                                .font(.system(size: 17, weight: .bold))
+                                .dsBodyL(.bold)
                         }
                     }
                     .foregroundStyle(.white)

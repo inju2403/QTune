@@ -25,12 +25,10 @@ public struct ExpandableCard<Content: View>: View {
     public var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             Text(title)
-                .font(.system(size: 14, weight: .semibold))
+                .dsBodyM(.semibold)
                 .foregroundStyle(.secondary)
 
             content
-                .font(.system(size: 17))
-                .foregroundStyle(DS.Color.textPri)
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(16)
                 .background(

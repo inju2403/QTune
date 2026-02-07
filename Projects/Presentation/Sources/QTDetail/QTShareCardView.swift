@@ -14,6 +14,8 @@ public struct QTShareCardView: View {
     let onShare: () -> Void
 
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.fontScale) private var fontScale
+    @Environment(\.lineSpacing) private var lineSpacing
     @State private var renderedImage: Image?
 
     public init(
@@ -63,7 +65,7 @@ public struct QTShareCardView: View {
                 onShare()
             } label: {
                 Text("공유하기")
-                    .font(.system(size: 15, weight: .light))
+                    .font(.system(size: 15 * fontScale.multiplier, weight: .light))
                     .foregroundStyle(DS.Color.textPrimary)
                     .padding(.horizontal, 32)
                     .padding(.vertical, 12)
@@ -91,7 +93,7 @@ public struct QTShareCardView: View {
 
     @MainActor
     private func renderImage() async {
-        let shareCard = QTShareCard(qt: qt)
+        let shareCard = QTShareCard(qt: qt, fontScale: fontScale, lineSpacing: lineSpacing)
 
         // iOS 16+ ImageRenderer 사용
         if #available(iOS 16.0, *) {

@@ -23,7 +23,7 @@ public struct SectionHeader: View {
                 .foregroundStyle(DS.Color.gold)
 
             Text(title)
-                .font(DS.Font.titleM())
+                .dsTitleM()
                 .foregroundStyle(DS.Color.textPrimary)
 
             Spacer()

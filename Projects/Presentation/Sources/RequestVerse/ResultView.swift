@@ -12,6 +12,7 @@ import Domain
 public struct ResultView: View {
     // MARK: - ViewModel
     @State private var viewModel: ResultViewModel
+    @Environment(\.fontScale) private var fontScale
 
     // MARK: - Init
     public init(viewModel: ResultViewModel) {
@@ -27,7 +28,7 @@ public struct ResultView: View {
                 VStack(alignment: .leading, spacing: 12) {
                     // Title
                     Text("오늘의 말씀")
-                        .font(.system(size: 32, weight: .semibold, design: .rounded))
+                        .font(.system(size: 32 * fontScale.multiplier, weight: .semibold, design: .rounded))
                         .foregroundStyle(DS.Color.deepCocoa)
                         .shimmer()
                         .padding(.top, 16)
@@ -72,7 +73,7 @@ public struct ResultView: View {
                 Haptics.tap()
                 viewModel.send(.selectTemplate(template))
             }
-            .presentationDetents([.height(605)])
+            .presentationDetents([.height(max(605, 605 * fontScale.multiplier))])
         }
     }
 }
@@ -87,9 +88,9 @@ private extension ResultView {
             HStack(spacing: 8) {
                 Image(systemName: "book.closed.fill")
                     .foregroundStyle(DS.Color.gold)
-                    .font(.system(size: 20))
+                    .font(.system(size: 20 * fontScale.multiplier))
                 Text(viewModel.state.result.verseRef)
-                    .font(DS.Font.titleM(.semibold))
+                    .dsTitleM(.semibold)
                     .foregroundStyle(DS.Color.deepCocoa)
             }
             .padding(.bottom, 16)
@@ -97,15 +98,15 @@ private extension ResultView {
             // 주 역본 + 비교 역본 (통합 복사 가능)
             if let secondaryVerse = viewModel.state.result.secondaryVerse {
                 Text("\(viewModel.state.result.verse.text)\n\n\(secondaryVerse.text)")
-                    .font(DS.Font.verse(17, .regular))
+                    .font(.system(size: 17 * fontScale.multiplier, design: .serif))
                     .foregroundStyle(DS.Color.textPrimary)
-                    .lineSpacing(6)
+                    .dsBodyL()
                     .textSelection(.enabled)
             } else {
                 Text(viewModel.state.result.verse.text)
-                    .font(DS.Font.verse(17, .regular))
+                    .font(.system(size: 17 * fontScale.multiplier, design: .serif))
                     .foregroundStyle(DS.Color.textPrimary)
-                    .lineSpacing(6)
+                    .dsBodyL()
                     .textSelection(.enabled)
             }
         }
@@ -125,14 +126,13 @@ private extension ResultView {
                 Image(systemName: "lightbulb.fill")
                     .foregroundStyle(DS.Color.gold)
                 Text("해설")
-                    .font(DS.Font.titleM(.semibold))
+                    .dsTitleM(.semibold)
                     .foregroundStyle(DS.Color.deepCocoa)
             }
 
             Text(viewModel.state.result.korean)
-                .font(DS.Font.bodyM())
                 .foregroundStyle(DS.Color.textPrimary)
-                .lineSpacing(6)
+                .dsBodyL()
                 .textSelection(.enabled)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -151,14 +151,13 @@ private extension ResultView {
                 Image(systemName: "sparkles")
                     .foregroundStyle(DS.Color.gold)
                 Text("이 말씀이 주어진 이유")
-                    .font(DS.Font.titleS(.semibold))
+                    .dsTitleS(.semibold)
                     .foregroundStyle(DS.Color.deepCocoa)
             }
 
             Text(viewModel.state.result.rationale)
-                .font(DS.Font.bodyM())
                 .foregroundStyle(DS.Color.textPrimary)
-                .lineSpacing(6)
+                .dsBodyL()
                 .textSelection(.enabled)
         }
         .frame(maxWidth: .infinity, alignment: .leading)

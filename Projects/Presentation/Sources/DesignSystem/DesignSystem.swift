@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import Domain
 
 /// QTune Design System - 은혜로운 베이지/브라운 톤
 public enum DS {
@@ -81,37 +82,37 @@ public enum DS {
 
     // MARK: - Typography
     public enum Font {
-        public static func titleXL(_ weight: SwiftUI.Font.Weight = .semibold) -> SwiftUI.Font {
-            .system(size: 34, weight: weight, design: .serif)  // 세리프로 변경
+        public static func titleXL(_ weight: SwiftUI.Font.Weight = .semibold, scale: FontScale = .medium) -> SwiftUI.Font {
+            .system(size: 34 * scale.multiplier, weight: weight, design: .serif)
         }
 
-        public static func titleL(_ weight: SwiftUI.Font.Weight = .semibold) -> SwiftUI.Font {
-            .system(size: 28, weight: weight, design: .serif)  // 세리프로 변경
+        public static func titleL(_ weight: SwiftUI.Font.Weight = .semibold, scale: FontScale = .medium) -> SwiftUI.Font {
+            .system(size: 28 * scale.multiplier, weight: weight, design: .serif)
         }
 
-        public static func titleM(_ weight: SwiftUI.Font.Weight = .semibold) -> SwiftUI.Font {
-            .system(size: 22, weight: weight, design: .serif)  // 세리프로 변경
+        public static func titleM(_ weight: SwiftUI.Font.Weight = .semibold, scale: FontScale = .medium) -> SwiftUI.Font {
+            .system(size: 22 * scale.multiplier, weight: weight, design: .serif)
         }
 
-        public static func titleS(_ weight: SwiftUI.Font.Weight = .semibold) -> SwiftUI.Font {
-            .system(size: 19, weight: weight, design: .serif)  // 세리프로 변경
+        public static func titleS(_ weight: SwiftUI.Font.Weight = .semibold, scale: FontScale = .medium) -> SwiftUI.Font {
+            .system(size: 19 * scale.multiplier, weight: weight, design: .serif)
         }
 
-        public static func bodyL(_ weight: SwiftUI.Font.Weight = .regular) -> SwiftUI.Font {
-            .system(size: 17, weight: weight, design: .default)  // 본문은 기본 산세리프
+        public static func bodyL(_ weight: SwiftUI.Font.Weight = .regular, scale: FontScale = .medium) -> SwiftUI.Font {
+            .system(size: 17 * scale.multiplier, weight: weight, design: .default)
         }
 
-        public static func bodyM(_ weight: SwiftUI.Font.Weight = .regular) -> SwiftUI.Font {
-            .system(size: 15, weight: weight, design: .default)  // 본문은 기본 산세리프
+        public static func bodyM(_ weight: SwiftUI.Font.Weight = .regular, scale: FontScale = .medium) -> SwiftUI.Font {
+            .system(size: 15 * scale.multiplier, weight: weight, design: .default)
         }
 
-        public static func caption(_ weight: SwiftUI.Font.Weight = .medium) -> SwiftUI.Font {
-            .system(size: 13, weight: weight, design: .default)  // 캡션은 기본 산세리프
+        public static func caption(_ weight: SwiftUI.Font.Weight = .medium, scale: FontScale = .medium) -> SwiftUI.Font {
+            .system(size: 13 * scale.multiplier, weight: weight, design: .default)
         }
 
         // 영문 구절용 세리프 폰트
-        public static func verse(_ size: CGFloat = 17, _ weight: SwiftUI.Font.Weight = .regular) -> SwiftUI.Font {
-            .system(size: size, weight: weight, design: .serif)
+        public static func verse(_ size: CGFloat = 17, _ weight: SwiftUI.Font.Weight = .regular, scale: FontScale = .medium) -> SwiftUI.Font {
+            .system(size: size * scale.multiplier, weight: weight, design: .serif)
         }
     }
 }
@@ -164,5 +165,40 @@ public struct ShadowStyle {
 extension View {
     public func dsShadow(_ style: ShadowStyle) -> some View {
         shadow(color: style.color, radius: style.radius, x: style.x, y: style.y)
+    }
+}
+
+// MARK: - Font Scale Environment
+private struct FontScaleKey: EnvironmentKey {
+    static let defaultValue: FontScale = .medium
+}
+
+private struct LineSpacingKey: EnvironmentKey {
+    static let defaultValue: LineSpacing = .normal
+}
+
+extension EnvironmentValues {
+    public var fontScale: FontScale {
+        get { self[FontScaleKey.self] }
+        set { self[FontScaleKey.self] = newValue }
+    }
+
+    public var lineSpacing: LineSpacing {
+        get { self[LineSpacingKey.self] }
+        set { self[LineSpacingKey.self] = newValue }
+    }
+}
+
+// MARK: - Dynamic Line Spacing View Extension
+extension View {
+    /// 동적 행간을 적용합니다
+    /// - Parameters:
+    ///   - baseSpacing: 기본 행간 (보통 설정 시 적용될 고정값)
+    ///   - lineSpacing: 사용자의 행간 설정
+    /// - Note: 공식 = baseSpacing * (lineSpacing.multiplier / 1.235)
+    ///         1.235는 "보통" 설정의 multiplier로, 보통 설정 시 원래 baseSpacing을 유지
+    public func dynamicLineSpacing(_ baseSpacing: CGFloat, lineSpacing: LineSpacing) -> some View {
+        let spacing = baseSpacing * (lineSpacing.multiplier / 1.235)
+        return self.lineSpacing(spacing)
     }
 }

@@ -92,15 +92,9 @@ private extension QTEditorView {
         VStack(alignment: .leading, spacing: 12) {
             // 영문 본문
             VerseCardView(title: "본문") {
-                VStack(alignment: .leading, spacing: DS.Spacing.s) {
-                    Text(draft.verse.text)
-                        .lineSpacing(4)
-                        .textSelection(.enabled)
-
-                    Text("\(draft.verse.translation) (Public Domain)")
-                        .font(DS.Font.caption())
-                        .foregroundStyle(DS.Color.textSecondary)
-                }
+                Text(draft.verse.text)
+                    .dsBodyM()
+                    .textSelection(.enabled)
             }
 
             // 한글 해설
@@ -110,17 +104,17 @@ private extension QTEditorView {
                     if lines.count == 2 {
                         VStack(alignment: .leading, spacing: DS.Spacing.s) {
                             Text(String(lines[0]))
-                                .font(DS.Font.bodyM(.semibold))
+                                .dsBodyM(.semibold)
                                 .foregroundStyle(DS.Color.gold)
                                 .textSelection(.enabled)
 
                             Text(String(lines[1]))
-                                .lineSpacing(4)
+                                .dsBodyM()
                                 .textSelection(.enabled)
                         }
                     } else {
                         Text(korean)
-                            .lineSpacing(4)
+                            .dsBodyM()
                             .textSelection(.enabled)
                     }
                 }
@@ -130,7 +124,7 @@ private extension QTEditorView {
             if let rationale = draft.rationale, !rationale.isEmpty {
                 VerseCardView(title: "이 말씀이 주어진 이유") {
                     Text(rationale)
-                        .lineSpacing(4)
+                        .dsBodyM()
                         .textSelection(.enabled)
                 }
             }
@@ -234,27 +228,20 @@ struct EditableVerseCard: View {
     var body: some View {
         VStack(alignment: .leading, spacing: DS.Spacing.m) {
             Text(title)
-                .font(DS.Font.bodyM(.semibold))
+                .dsBodyM(.semibold)
                 .foregroundStyle(DS.Color.textSecondary)
 
             // 회색 박스 안에 TextEditor (1탭 스타일, 대비 강화)
-            ZStack(alignment: .topLeading) {
-                if text.isEmpty {
-                    Text(placeholder)
-                        .font(.system(size: 16, design: .rounded))
-                        .foregroundStyle(Color(hex: "#B8B8B8"))
-                        .padding(.horizontal, 8)
-                        .padding(.vertical, 12)
-                }
-
-                TextEditor(text: $text)
-                    .font(.system(size: 16, design: .rounded))
-                    .foregroundStyle(Color(hex: "#1A1A1A"))
-                    .frame(minHeight: 100)
-                    .scrollContentBackground(.hidden)
-                    .textInputAutocapitalization(.sentences)
-                    .disableAutocorrection(false)
-            }
+            ScaledTextEditor(
+                text: $text,
+                size: 16,
+                placeholder: placeholder
+            )
+            .foregroundStyle(Color(hex: "#1A1A1A"))
+            .frame(minHeight: 100)
+            .scrollContentBackground(.hidden)
+            .textInputAutocapitalization(.sentences)
+            .disableAutocorrection(false)
             .padding(.horizontal, 12)
             .padding(.vertical, 12)
             .frame(maxWidth: .infinity)
@@ -310,7 +297,7 @@ private extension QTEditorView {
                 }
 
                 Text("기록이 저장되었습니다")
-                    .font(DS.Font.bodyM(.semibold))
+                    .dsBodyM(.semibold)
                     .foregroundStyle(DS.Color.textPrimary)
             }
         }

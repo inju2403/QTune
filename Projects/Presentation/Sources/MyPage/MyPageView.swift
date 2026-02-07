@@ -12,21 +12,28 @@ public struct MyPageView: View {
     @State private var viewModel: MyPageViewModel
     @Binding var userProfile: UserProfile?
     @State private var showProfileEdit = false
+    @State private var showFontSettings = false
     @Environment(\.openURL) private var openURL
 
     let profileEditViewModelFactory: (UserProfile?) -> ProfileEditViewModel
+    let fontSettingsViewModelFactory: (FontScale, LineSpacing) -> FontSettingsViewModel
     let getUserProfileUseCase: GetUserProfileUseCase
+    let saveUserProfileUseCase: SaveUserProfileUseCase
 
     public init(
         viewModel: MyPageViewModel,
         userProfile: Binding<UserProfile?>,
         profileEditViewModelFactory: @escaping (UserProfile?) -> ProfileEditViewModel,
-        getUserProfileUseCase: GetUserProfileUseCase
+        fontSettingsViewModelFactory: @escaping (FontScale, LineSpacing) -> FontSettingsViewModel,
+        getUserProfileUseCase: GetUserProfileUseCase,
+        saveUserProfileUseCase: SaveUserProfileUseCase
     ) {
         _viewModel = State(wrappedValue: viewModel)
         _userProfile = userProfile
         self.profileEditViewModelFactory = profileEditViewModelFactory
+        self.fontSettingsViewModelFactory = fontSettingsViewModelFactory
         self.getUserProfileUseCase = getUserProfileUseCase
+        self.saveUserProfileUseCase = saveUserProfileUseCase
     }
 
     public var body: some View {
@@ -52,6 +59,9 @@ public struct MyPageView: View {
 
                         // 역본 선택
                         translationRow()
+
+                        // 폰트 설정
+                        fontSettingsRow()
                     }
 
                     // 큐튠 이야기
@@ -70,11 +80,7 @@ public struct MyPageView: View {
 
                     // 앱 정보
                     Section(header: sectionHeader("앱 정보")) {
-                        menuRow(
-                            icon: "info.circle",
-                            title: "버전 정보",
-                            action: { viewModel.send(.tapVersionInfo) }
-                        )
+                        versionInfoRow()
                     }
                 }
                 .listStyle(.insetGrouped)
@@ -97,14 +103,6 @@ public struct MyPageView: View {
                     )
                 }
             }
-            .alert("버전 정보", isPresented: Binding(
-                get: { viewModel.state.showVersionAlert },
-                set: { if !$0 { viewModel.send(.dismissVersionAlert) } }
-            )) {
-                Button("확인", role: .cancel) {}
-            } message: {
-                Text("현재 버전: \(appVersion)")
-            }
             .sheet(isPresented: Binding(
                 get: { viewModel.state.showTranslationSelection },
                 set: { if !$0 { viewModel.send(.dismissTranslationSelection) } }
@@ -126,6 +124,42 @@ public struct MyPageView: View {
                 )
                 .presentationDetents([.height(520), .large])
                 .presentationDragIndicator(.visible)
+            }
+            .sheet(isPresented: $showFontSettings, onDismiss: {
+                Task {
+                    if let profile = try? await getUserProfileUseCase.execute() {
+                        await MainActor.run {
+                            userProfile = profile
+                        }
+                    }
+                }
+            }) {
+                if let profile = userProfile {
+                    FontSettingsView(
+                        viewModel: fontSettingsViewModelFactory(
+                            profile.fontScale,
+                            profile.lineSpacing
+                        ),
+                        userProfile: $userProfile,
+                        onSave: { fontScale, lineSpacing in
+                            Task {
+                                let updatedProfile = UserProfile(
+                                    nickname: profile.nickname,
+                                    gender: profile.gender,
+                                    profileImageData: profile.profileImageData,
+                                    preferredTranslation: profile.preferredTranslation,
+                                    secondaryTranslation: profile.secondaryTranslation,
+                                    fontScale: fontScale,
+                                    lineSpacing: lineSpacing
+                                )
+                                try? await saveUserProfileUseCase.execute(profile: updatedProfile)
+                                await MainActor.run {
+                                    userProfile = updatedProfile
+                                }
+                            }
+                        }
+                    )
+                }
             }
         }
     }
@@ -167,7 +201,7 @@ private extension MyPageView {
             // 이름 + 성별
             if let profile = userProfile {
                 Text("\(profile.nickname) \(profile.gender.rawValue)님")
-                    .font(DS.Font.titleL(.bold))
+                    .dsTitleL(.bold)
                     .foregroundStyle(DS.Color.deepCocoa)
             }
         }
@@ -178,7 +212,7 @@ private extension MyPageView {
     @ViewBuilder
     func sectionHeader(_ title: String) -> some View {
         Text(title)
-            .font(DS.Font.caption(.semibold))
+            .dsCaption(.semibold)
             .foregroundStyle(DS.Color.textSecondary)
     }
 
@@ -195,10 +229,49 @@ private extension MyPageView {
                     .frame(width: 24)
 
                 Text(title)
-                    .font(DS.Font.bodyL())
+                    .dsBodyL()
                     .foregroundStyle(DS.Color.textPrimary)
 
                 Spacer()
+
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundStyle(DS.Color.textSecondary)
+            }
+        }
+    }
+
+    @ViewBuilder
+    func fontSettingsRow() -> some View {
+        Button(action: {
+            Haptics.tap()
+            showFontSettings = true
+        }) {
+            HStack(spacing: 12) {
+                Image(systemName: "textformat")
+                    .font(.system(size: 20))
+                    .foregroundStyle(DS.Color.gold)
+                    .frame(width: 24)
+
+                Text("폰트 설정")
+                    .dsBodyL()
+                    .foregroundStyle(DS.Color.textPrimary)
+
+                Spacer()
+
+                HStack(spacing: 4) {
+                    Text(userProfile?.fontScale.displayName ?? "보통")
+                        .dsCaption()
+                        .foregroundStyle(DS.Color.textSecondary)
+
+                    Text("·")
+                        .dsCaption()
+                        .foregroundStyle(DS.Color.textSecondary)
+
+                    Text(userProfile?.lineSpacing.displayName ?? "보통")
+                        .dsCaption()
+                        .foregroundStyle(DS.Color.textSecondary)
+                }
 
                 Image(systemName: "chevron.right")
                     .font(.system(size: 14, weight: .semibold))
@@ -225,23 +298,23 @@ private extension MyPageView {
                     .frame(width: 24)
 
                 Text("역본")
-                    .font(DS.Font.bodyL())
+                    .dsBodyL()
                     .foregroundStyle(DS.Color.textPrimary)
 
                 Spacer()
 
                 HStack(spacing: 4) {
                     Text(userProfile?.preferredTranslation.displayName ?? "개역한글")
-                        .font(DS.Font.caption())
+                        .dsCaption()
                         .foregroundStyle(DS.Color.textSecondary)
 
                     if let secondary = userProfile?.secondaryTranslation {
                         Text("·")
-                            .font(DS.Font.caption())
+                            .dsCaption()
                             .foregroundStyle(DS.Color.textSecondary)
 
                         Text(secondary.displayName)
-                            .font(DS.Font.caption())
+                            .dsCaption()
                             .foregroundStyle(DS.Color.textSecondary)
                     }
                 }
@@ -250,6 +323,27 @@ private extension MyPageView {
                     .font(.system(size: 14, weight: .semibold))
                     .foregroundStyle(DS.Color.textSecondary)
             }
+        }
+    }
+
+    @ViewBuilder
+    func versionInfoRow() -> some View {
+        HStack(spacing: 12) {
+            Image(systemName: "info.circle")
+                .font(.system(size: 20))
+                .foregroundStyle(DS.Color.gold)
+                .frame(width: 24)
+
+            Text("버전 정보")
+                .dsBodyL()
+                .foregroundStyle(DS.Color.textPrimary)
+
+            Spacer()
+
+            Text(appVersion)
+                .dsBodyL()
+                .foregroundStyle(DS.Color.textSecondary)
+                .padding(.trailing, 8)
         }
     }
 
@@ -290,11 +384,11 @@ struct DualTranslationSelectionSheet: View {
             // 타이틀
             VStack(spacing: DS.Spacing.xs) {
                 Text("역본 선택")
-                    .font(DS.Font.titleL(.bold))
+                    .dsTitleL(.bold)
                     .foregroundStyle(DS.Color.deepCocoa)
 
                 Text("주 역본과 비교 역본을 선택하세요")
-                    .font(DS.Font.bodyM())
+                    .dsBodyM()
                     .foregroundStyle(DS.Color.textSecondary)
             }
             .padding(.top, DS.Spacing.xl)
@@ -305,7 +399,7 @@ struct DualTranslationSelectionSheet: View {
                 // 주 역본 컬럼
                 VStack(spacing: DS.Spacing.xs) {
                     Text("주 역본")
-                        .font(DS.Font.bodyM(.semibold))
+                        .dsBodyM(.semibold)
                         .foregroundStyle(DS.Color.textPrimary)
                         .frame(maxWidth: .infinity, alignment: .leading)
 
@@ -322,7 +416,7 @@ struct DualTranslationSelectionSheet: View {
                 // 비교 역본 컬럼
                 VStack(spacing: DS.Spacing.xs) {
                     Text("비교 역본")
-                        .font(DS.Font.bodyM(.semibold))
+                        .dsBodyM(.semibold)
                         .foregroundStyle(DS.Color.textPrimary)
                         .frame(maxWidth: .infinity, alignment: .leading)
 
@@ -357,7 +451,7 @@ struct DualTranslationSelectionSheet: View {
                 onDone()
             } label: {
                 Text("저장")
-                    .font(DS.Font.bodyL(.semibold))
+                    .dsBodyL(.semibold)
                     .foregroundStyle(.white)
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, DS.Spacing.m)
@@ -383,7 +477,7 @@ struct DualTranslationSelectionSheet: View {
             HStack(spacing: 8) {
                 VStack(alignment: .leading, spacing: 2) {
                     Text(translation?.displayName ?? "선택 안 함")
-                        .font(DS.Font.bodyM(.semibold))
+                        .dsBodyM(.semibold)
                         .foregroundStyle(
                             isDisabled ? DS.Color.textSecondary.opacity(0.3) :
                             isSelected ? DS.Color.deepCocoa : DS.Color.textPrimary
@@ -391,7 +485,7 @@ struct DualTranslationSelectionSheet: View {
 
                     if let translation = translation {
                         Text(translation.language == "ko" ? "한국어" : "English")
-                            .font(DS.Font.caption())
+                            .dsCaption()
                             .foregroundStyle(
                                 isDisabled ? DS.Color.textSecondary.opacity(0.3) : DS.Color.textSecondary
                             )

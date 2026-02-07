@@ -18,6 +18,10 @@ protocol UserDefaultsDataSource {
     func getPreferredTranslation() -> String?
     func saveSecondaryTranslation(_ translationCode: String?) throws
     func getSecondaryTranslation() -> String?
+    func saveFontScale(_ fontScale: String) throws
+    func getFontScale() -> String?
+    func saveLineSpacing(_ lineSpacing: String) throws
+    func getLineSpacing() -> String?
     func setOnboardingCompleted(_ completed: Bool)
     func hasCompletedOnboarding() -> Bool
 }
@@ -31,6 +35,8 @@ final class DefaultUserDefaultsDataSource: UserDefaultsDataSource {
         static let profileImage = "user_profile_image"
         static let preferredTranslation = "user_preferred_translation"
         static let secondaryTranslation = "user_secondary_translation"
+        static let fontScale = "user_font_scale"
+        static let lineSpacing = "user_line_spacing"
         static let onboardingCompleted = "onboarding_completed"
     }
 
@@ -86,6 +92,24 @@ final class DefaultUserDefaultsDataSource: UserDefaultsDataSource {
     func getSecondaryTranslation() -> String? {
         // 기본값: nil (선택 안 함)
         userDefaults.string(forKey: Keys.secondaryTranslation)
+    }
+
+    func saveFontScale(_ fontScale: String) throws {
+        userDefaults.set(fontScale, forKey: Keys.fontScale)
+    }
+
+    func getFontScale() -> String? {
+        // 기본값: medium
+        userDefaults.string(forKey: Keys.fontScale) ?? "보통"
+    }
+
+    func saveLineSpacing(_ lineSpacing: String) throws {
+        userDefaults.set(lineSpacing, forKey: Keys.lineSpacing)
+    }
+
+    func getLineSpacing() -> String? {
+        // 기본값: normal
+        userDefaults.string(forKey: Keys.lineSpacing) ?? "보통"
     }
 
     func setOnboardingCompleted(_ completed: Bool) {

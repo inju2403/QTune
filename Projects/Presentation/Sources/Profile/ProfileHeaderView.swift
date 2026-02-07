@@ -52,7 +52,7 @@ public struct ProfileHeaderView: View {
                 // 이름
                 if let profile = profile {
                     Text(profile.nickname)
-                        .font(DS.Font.bodyM(.semibold))
+                        .dsBodyM(.semibold)
                         .foregroundStyle(DS.Color.deepCocoa)
                 }
             }

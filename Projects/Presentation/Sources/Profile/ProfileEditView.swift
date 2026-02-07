@@ -26,20 +26,12 @@ public struct ProfileEditView: View {
             CrossSunsetBackground()
 
             ScrollView {
-                VStack(spacing: 32) {
-                    Spacer()
-                        .frame(height: 20)
-
-                    // 헤더
-                    VStack(spacing: 12) {
-                        Text("프로필 수정")
-                            .font(.system(size: 32, weight: .semibold, design: .rounded))
-                            .foregroundStyle(DS.Color.deepCocoa)
-
-                        Text("프로필 정보를 변경할 수 있어요")
-                            .font(DS.Font.bodyM())
-                            .foregroundStyle(DS.Color.textSecondary)
-                    }
+                VStack(spacing: 48) {
+                    // 안내 문구
+                    Text("프로필 정보를 변경할 수 있어요")
+                        .dsBodyM()
+                        .foregroundStyle(DS.Color.textSecondary)
+                        .padding(.top, 12)
 
                     // 프로필 이미지
                     profileImageSection()
@@ -49,7 +41,7 @@ public struct ProfileEditView: View {
 
                     // 저장 버튼
                     saveButton()
-                    .padding(.top, 20)
+                        .padding(.top, -24)
 
                     Spacer()
                         .frame(height: 40)
@@ -59,6 +51,24 @@ public struct ProfileEditView: View {
         }
         .navigationTitle("")
         .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .principal) {
+                Text("프로필 수정")
+                    .font(.system(size: 24, weight: .semibold))
+                    .foregroundStyle(DS.Color.deepCocoa)
+            }
+
+            ToolbarItem(placement: .navigationBarLeading) {
+                Button {
+                    Haptics.tap()
+                    dismiss()
+                } label: {
+                    Image(systemName: "xmark")
+                        .font(.system(size: 16, weight: .semibold))
+                        .foregroundStyle(DS.Color.textSecondary)
+                }
+            }
+        }
         .overlay(alignment: .bottom) {
             if viewModel.state.showSaveSuccessToast {
                 successToast()
@@ -170,7 +180,7 @@ private extension ProfileEditView {
                         Image(systemName: "arrow.counterclockwise")
                             .font(.system(size: 13))
                         Text("기본 이미지로 변경")
-                            .font(.system(size: 14, weight: .medium))
+                            .dsSmall()
                     }
                     .foregroundStyle(DS.Color.textSecondary)
                 }
@@ -188,7 +198,7 @@ private extension ProfileEditView {
                         .foregroundStyle(DS.Color.gold)
                         .font(.system(size: 18))
                     Text("이름")
-                        .font(DS.Font.titleM(.semibold))
+                        .dsTitleM(.semibold)
                         .foregroundStyle(DS.Color.deepCocoa)
                 }
 
@@ -216,7 +226,7 @@ private extension ProfileEditView {
                         .foregroundStyle(DS.Color.gold)
                         .font(.system(size: 18))
                     Text("구분")
-                        .font(DS.Font.titleM(.semibold))
+                        .dsTitleM(.semibold)
                         .foregroundStyle(DS.Color.deepCocoa)
                 }
 
@@ -247,7 +257,7 @@ private extension ProfileEditView {
                     .font(.system(size: 20))
 
                 Text(gender.rawValue)
-                    .font(DS.Font.bodyL(.medium))
+                    .dsBodyL(.medium)
                     .foregroundStyle(viewModel.state.selectedGender == gender ? DS.Color.deepCocoa : DS.Color.textSecondary)
             }
             .frame(maxWidth: .infinity)
@@ -275,7 +285,7 @@ private extension ProfileEditView {
             viewModel.send(.saveProfile)
         } label: {
             Text("저장")
-                .font(.system(size: 17, weight: .bold))
+                .dsBodyL(.bold)
                 .foregroundStyle(.white)
                 .frame(maxWidth: .infinity)
                 .frame(height: 50)
@@ -314,7 +324,7 @@ private extension ProfileEditView {
                 }
 
                 Text("저장되었습니다")
-                    .font(DS.Font.bodyM(.semibold))
+                    .dsBodyM(.semibold)
                     .foregroundStyle(DS.Color.textPrimary)
             }
         }
