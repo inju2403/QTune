@@ -19,7 +19,7 @@ public enum LineSpacing: String, Codable, CaseIterable, Equatable {
     public var multiplier: CGFloat {
         switch self {
         case .compact: return 1.0    // 100% (타이트 - 거의 행간 없음)
-        case .normal: return 1.3   // 130% (기본값)
+        case .normal: return 1.235   // 123.5% (원래 앱 기본값)
         case .relaxed: return 1.6    // 160% (넓게 - 명확한 여유)
         case .extraRelaxed: return 2.0 // 200% (아주 넓게)
         }
