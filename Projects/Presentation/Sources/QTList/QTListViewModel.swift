@@ -108,6 +108,17 @@ public final class QTListViewModel {
         case .cancelDelete:
             state.qtToDelete = nil
             state.showDeleteAlert = false
+
+        case .insertAtTop(let qt):
+            state.qtList.insert(qt, at: 0)
+
+        case .updateItem(let qt):
+            if let index = state.qtList.firstIndex(where: { $0.id == qt.id }) {
+                state.qtList[index] = qt
+            }
+
+        case .removeItem(let uuid):
+            state.qtList.removeAll { $0.id == uuid }
         }
     }
 
@@ -219,7 +230,10 @@ public final class QTListViewModel {
             try await deleteQTUseCase.execute(id: qt.id, session: session)
 
             await MainActor.run {
-                NotificationCenter.default.post(name: .qtDidChange, object: nil)
+                NotificationCenter.default.post(
+                    name: .qtDidChange,
+                    object: QTChangeType.deleted(qt.id)
+                )
                 state.qtList.removeAll { $0.id == qt.id }
                 state.qtToDelete = nil
                 state.showDeleteAlert = false

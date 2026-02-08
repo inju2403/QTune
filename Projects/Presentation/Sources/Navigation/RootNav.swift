@@ -10,14 +10,16 @@ import Domain
 
 // Simple navigation coordinator that wraps content with NavigationStack
 public struct RootNavigationView<Content: View>: View {
-    @State private var path = NavigationPath()
+    @Binding var path: NavigationPath
     let content: (Binding<NavigationPath>, @escaping () -> Void) -> Content
     let onNavigateToRecordTab: () -> Void
 
     public init(
+        path: Binding<NavigationPath>,
         onNavigateToRecordTab: @escaping () -> Void,
         @ViewBuilder content: @escaping (Binding<NavigationPath>, @escaping () -> Void) -> Content
     ) {
+        self._path = path
         self.onNavigateToRecordTab = onNavigateToRecordTab
         self.content = content
     }

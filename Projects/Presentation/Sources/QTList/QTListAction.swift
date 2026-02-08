@@ -19,4 +19,7 @@ public enum QTListAction: Equatable {
     case confirmDelete(QuietTime)
     case deleteQT
     case cancelDelete
+    case insertAtTop(QuietTime)
+    case updateItem(QuietTime)
+    case removeItem(UUID)
 }

@@ -165,14 +165,19 @@ public final class QTEditorWizardViewModel {
             }
 
             // 저장
-            _ = try await commitQTUseCase.execute(draft: qt, session: session)
+            let savedQT = try await commitQTUseCase.execute(draft: qt, session: session)
 
             await MainActor.run {
-                NotificationCenter.default.post(name: .qtDidChange, object: nil)
+                // notification 즉시 전송
+                NotificationCenter.default.post(
+                    name: .qtDidChange,
+                    object: QTChangeType.created(savedQT)
+                )
+
                 state.isSaving = false
                 state.showSaveSuccessToast = true
 
-                // 1초 후 콜백 실행
+                // 1초 후 콜백 실행 (기록 탭으로 이동)
                 DispatchQueue.main.asyncAfter(deadline: .now() + 1) { [weak self] in
                     self?.onSaveComplete?()
                 }

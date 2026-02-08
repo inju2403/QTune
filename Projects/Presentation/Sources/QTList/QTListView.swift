@@ -8,11 +8,6 @@
 import SwiftUI
 import Domain
 
-// MARK: - Notification Names
-extension Notification.Name {
-    static let qtDidChange = Notification.Name("qtDidChange")
-}
-
 public struct QTListView: View {
 
     // MARK: - State
@@ -160,15 +155,56 @@ public struct QTListView: View {
             }
         }
         .onAppear {
+            // 스크롤 위치 복원
             if let persisted = persistedScrollId,
                let uuid = UUID(uuidString: persisted) {
                 scrollPosition = uuid
             }
 
-            viewModel.send(.load)
+            // 처음 진입 시에만 로드 (이후에는 .qtDidChange notification으로만 갱신)
+            if viewModel.state.qtList.isEmpty {
+                viewModel.send(.load)
+            }
         }
-        .onReceive(NotificationCenter.default.publisher(for: .qtDidChange)) { _ in
-            viewModel.send(.load)
+        .onReceive(NotificationCenter.default.publisher(for: .qtDidChange)) { notification in
+            guard let changeType = notification.object as? QTChangeType else {
+                // 타입 정보 없으면 전체 로드 (하위 호환)
+                viewModel.send(.load)
+                return
+            }
+
+            switch changeType {
+            case .created(let qt):
+                // 새 QT 작성: 전체 로드 (자동으로 맨 위로 스크롤)
+                viewModel.send(.load)
+                // 스크롤 위치 초기화
+                scrollPosition = nil
+                persistedScrollId = nil
+
+            case .updated(let qt):
+                // QT 수정: 해당 항목만 교체 (스크롤 위치 유지!)
+                viewModel.send(.updateItem(qt))
+
+            case .deleted(let uuid):
+                // 삭제 시 스크롤 위치 보정 (삭제 전에 인접 항목으로 이동)
+                if let index = viewModel.filteredAndSortedList.firstIndex(where: { $0.id == uuid }) {
+                    if index > 0 {
+                        // 위에 항목이 있으면 위로
+                        scrollPosition = viewModel.filteredAndSortedList[index - 1].id
+                        persistedScrollId = viewModel.filteredAndSortedList[index - 1].id.uuidString
+                    } else if viewModel.filteredAndSortedList.count > 1 {
+                        // 첫 번째 항목이면 다음 항목으로
+                        scrollPosition = viewModel.filteredAndSortedList[1].id
+                        persistedScrollId = viewModel.filteredAndSortedList[1].id.uuidString
+                    } else {
+                        // 마지막 남은 항목이면 nil
+                        scrollPosition = nil
+                        persistedScrollId = nil
+                    }
+                }
+                // 리스트에서 제거
+                viewModel.send(.removeItem(uuid))
+            }
         }
         .alert("기록 삭제", isPresented: Binding(
             get: { viewModel.state.showDeleteAlert },
