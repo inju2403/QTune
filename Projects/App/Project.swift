@@ -23,7 +23,7 @@ let project = Project(
       infoPlist: .extendingDefault(with: [
         "CFBundleDisplayName": "$(PRODUCT_NAME)",
         "CFBundleShortVersionString": "1.7.1",
-        "CFBundleVersion": "171",
+        "CFBundleVersion": "172",
         "UILaunchStoryboardName": "LaunchScreen",
         "UIViewControllerBasedStatusBarAppearance": true,
         "UIUserInterfaceStyle": "Light"
