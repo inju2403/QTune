@@ -22,8 +22,8 @@ let project = Project(
       deploymentTargets: .iOS("17.0"),
       infoPlist: .extendingDefault(with: [
         "CFBundleDisplayName": "$(PRODUCT_NAME)",
-        "CFBundleShortVersionString": "1.7.0",
-        "CFBundleVersion": "170",
+        "CFBundleShortVersionString": "1.7.1",
+        "CFBundleVersion": "172",
         "UILaunchStoryboardName": "LaunchScreen",
         "UIViewControllerBasedStatusBarAppearance": true,
         "UIUserInterfaceStyle": "Light"
