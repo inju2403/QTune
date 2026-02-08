@@ -34,14 +34,14 @@ struct DSPageTitleModifier: ViewModifier {
     }
 }
 
-/// Title XL 스타일 (34pt, serif, 행간 없음)
+/// Title XL 스타일 (32pt, serif, 행간 없음)
 struct DSTitleXLModifier: ViewModifier {
     @Environment(\.fontScale) var fontScale
 
     let weight: Font.Weight
 
     func body(content: Content) -> some View {
-        let baseSize: CGFloat = 34
+        let baseSize: CGFloat = 32
         let scaledSize = baseSize * fontScale.multiplier
 
         content
@@ -236,7 +236,7 @@ extension Text {
         modifier(DSPageTitleModifier(weight: weight))
     }
 
-    /// Title XL 스타일 적용 (34pt, serif)
+    /// Title XL 스타일 적용 (32pt, serif)
     public func dsTitleXL(_ weight: Font.Weight = .semibold) -> some View {
         modifier(DSTitleXLModifier(weight: weight))
     }

@@ -132,7 +132,7 @@ private extension ResultView {
 
             Text(viewModel.state.result.korean)
                 .foregroundStyle(DS.Color.textPrimary)
-                .dsBodyL()
+                .dsBodyM()
                 .textSelection(.enabled)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -157,7 +157,7 @@ private extension ResultView {
 
             Text(viewModel.state.result.rationale)
                 .foregroundStyle(DS.Color.textPrimary)
-                .dsBodyL()
+                .dsBodyM()
                 .textSelection(.enabled)
         }
         .frame(maxWidth: .infinity, alignment: .leading)

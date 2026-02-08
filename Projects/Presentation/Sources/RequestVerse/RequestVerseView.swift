@@ -254,25 +254,25 @@ private extension RequestVerseView {
             let nickname = userProfile?.nickname ?? "형제"
             let gender = userProfile?.gender.rawValue ?? "님"
 
-            VStack(spacing: 8) {
+            VStack(spacing: 12) {
                 Text("\(nickname) \(gender)님")
                     .dsTitleXL(.bold)
                     .foregroundStyle(DS.Color.deepCocoa)
 
                 // 부제
                 Text("오늘 어떤 일이 있으셨나요?")
-                    .dsBodyL(.light)
+                    .dsBodyM()
                     .foregroundStyle(DS.Color.textSecondary)
                     .multilineTextAlignment(.center)
 
-                Text("글로 알려주시면 \(nickname) \(gender)님에게\n오늘의 말씀을 추천해드릴게요")
+                Text("글로 알려주시면 \(nickname) \(gender)님에게\n오늘의 말씀을 추천해드릴게요.")
                     .dsBodyM()
-                    .foregroundStyle(DS.Color.textSecondary.opacity(0.8))
+                    .foregroundStyle(DS.Color.textSecondary)
                     .multilineTextAlignment(.center)
             }
         }
         .frame(maxWidth: .infinity)
-        .padding(.vertical, 4)
+        .padding(.vertical, 12)
     }
 
     func inputSection() -> some View {
