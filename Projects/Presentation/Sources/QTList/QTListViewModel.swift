@@ -110,7 +110,12 @@ public final class QTListViewModel {
             state.showDeleteAlert = false
 
         case .insertAtTop(let qt):
-            state.qtList.insert(qt, at: 0)
+            // 중복 체크: 이미 있으면 추가하지 않음
+            if !state.qtList.contains(where: { $0.id == qt.id }) {
+                state.qtList.insert(qt, at: 0)
+                state.lastLoadTime = Date()  // 갱신 시간 기록
+                state.newlyAddedQTId = qt.id  // 스크롤을 위해 ID 저장
+            }
 
         case .updateItem(let qt):
             if let index = state.qtList.firstIndex(where: { $0.id == qt.id }) {
@@ -119,6 +124,9 @@ public final class QTListViewModel {
 
         case .removeItem(let uuid):
             state.qtList.removeAll { $0.id == uuid }
+
+        case .clearNewlyAddedId:
+            state.newlyAddedQTId = nil
         }
     }
 
@@ -126,7 +134,6 @@ public final class QTListViewModel {
     private func load() async {
         // 이미 로딩 중이면 리턴 (race condition 방지)
         guard !state.isLoading else {
-            print("⚠️ [QTListViewModel] Already loading, skipping duplicate load request")
             return
         }
 
@@ -150,6 +157,7 @@ public final class QTListViewModel {
                 state.qtList = list
                 state.hasMoreData = list.count == 20
                 state.isLoading = false
+                state.lastLoadTime = Date()  // 로드 시간 기록
             }
         } catch {
             await MainActor.run {
@@ -157,7 +165,6 @@ public final class QTListViewModel {
                 state.hasMoreData = false
                 state.isLoading = false
             }
-            print("❌ [QTListViewModel] Failed to load QT list: \(error)")
         }
     }
 
@@ -193,7 +200,6 @@ public final class QTListViewModel {
             await MainActor.run {
                 state.isLoadingMore = false
             }
-            print("❌ [QTListViewModel] Failed to load more QT list: \(error)")
         }
     }
 
@@ -219,7 +225,6 @@ public final class QTListViewModel {
                     state.qtList[index] = revertedQT
                 }
             }
-            print("❌ [QTListViewModel] Failed to toggle favorite: \(error)")
         }
     }
 
@@ -242,7 +247,6 @@ public final class QTListViewModel {
             await MainActor.run {
                 state.showDeleteAlert = false
             }
-            print("❌ [QTListViewModel] Failed to delete QT: \(error)")
         }
     }
 

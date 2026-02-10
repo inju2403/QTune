@@ -16,7 +16,7 @@ public struct QTListView: View {
     @Binding var path: NavigationPath
 
     @State private var scrollPosition: UUID?
-    @SceneStorage("qt.list.scrollPosition") private var persistedScrollId: String?
+    @AppStorage("pendingNewQTId") private var pendingNewQTId: String?
 
     @FocusState private var isSearchFocused: Bool
     @Environment(\.fontScale) private var fontScale
@@ -63,7 +63,8 @@ public struct QTListView: View {
         ZStack {
             CrossSunsetBackground()
 
-            List {
+            ScrollViewReader { scrollProxy in
+                List {
                 if !hideSearchBar {
                     searchBar()
                         .listRowSeparator(.hidden)
@@ -72,6 +73,7 @@ public struct QTListView: View {
                 }
 
                 filterBar()
+                    .id("filterBar") // 스크롤 타겟용 ID
                     .listRowSeparator(.hidden)
                     .listRowBackground(Color.clear)
                     .listRowInsets(EdgeInsets())
@@ -106,7 +108,6 @@ public struct QTListView: View {
                             }
                             .onAppear {
                                 scrollPosition = qt.id
-                                persistedScrollId = qt.id.uuidString
 
                                 if let index = viewModel.filteredAndSortedList.firstIndex(where: { $0.id == qt.id }),
                                    index >= viewModel.filteredAndSortedList.count - 5 {
@@ -141,32 +142,62 @@ public struct QTListView: View {
             .listStyle(.plain)
             .scrollContentBackground(.hidden)
             .scrollPosition(id: $scrollPosition, anchor: .center)
-        }
-        .navigationTitle("기록")
-        .navigationBarTitleDisplayMode(.inline)
-        .toolbarBackground(.hidden, for: .navigationBar)
-        .toolbar {
-            ToolbarItem(placement: .navigationBarTrailing) {
-                ProfileHeaderView(profile: userProfile) {
-                    Haptics.tap()
-                    onNavigateToMyPage()
-                }
-                .id(userProfile?.nickname ?? "default")
-            }
-        }
-        .onAppear {
-            // 스크롤 위치 복원
-            if let persisted = persistedScrollId,
-               let uuid = UUID(uuidString: persisted) {
-                scrollPosition = uuid
-            }
+            .onAppear {
+                // 1. 먼저 pendingNewQTId 체크 (NotificationCenter 못 받았을 경우)
+                if let pendingId = pendingNewQTId, !pendingId.isEmpty {
+                    // UserDefaults 클리어
+                    UserDefaults.standard.removeObject(forKey: "pendingNewQTId")
 
-            // 처음 진입 시에만 로드 (이후에는 .qtDidChange notification으로만 갱신)
-            if viewModel.state.qtList.isEmpty {
-                viewModel.send(.load)
+                    // 강제로 로드 (새 QT 포함된 최신 데이터)
+                    viewModel.send(.load)
+
+                    // 로드 후 스크롤
+                    Task { @MainActor in
+                        // 로드 완료 대기
+                        try? await Task.sleep(nanoseconds: 500_000_000) // 0.5초 (충분한 로드 시간)
+
+                        // 맨 위로 스크롤
+                        withAnimation {
+                            scrollProxy.scrollTo("filterBar", anchor: .top)
+                        }
+                    }
+                }
+                // 2. newlyAddedQTId가 있는 경우 (NotificationCenter로 이미 추가됨)
+                else if viewModel.state.newlyAddedQTId != nil {
+                    // 무조건 최신 데이터 로드 (Notification 못 받았을 수 있음)
+                    viewModel.send(.load)
+
+                    // View 렌더링 후 스크롤 실행
+                    Task { @MainActor in
+                        // 로드 완료 대기
+                        try? await Task.sleep(nanoseconds: 300_000_000) // 0.3초 (로드 시간 충분히)
+
+                        // 스크롤 실행
+                        withAnimation {
+                            // filterBar로 스크롤하면 필터/정렬 버튼까지 보임
+                            scrollProxy.scrollTo("filterBar", anchor: .top)
+                        }
+
+                        // 첫 번째 항목으로 scrollPosition 설정
+                        if let firstId = viewModel.filteredAndSortedList.first?.id {
+                            scrollPosition = firstId
+                        }
+
+                        // 스크롤 후 플래그 클리어
+                        viewModel.send(.clearNewlyAddedId)
+                    }
+                }
+                // 3. 일반 진입
+                else {
+                    // 일반 진입: 데이터 로드 조건
+                    let shouldLoad = viewModel.state.qtList.isEmpty && viewModel.state.lastLoadTime == nil
+
+                    if shouldLoad {
+                        viewModel.send(.load)
+                    }
+                }
             }
-        }
-        .onReceive(NotificationCenter.default.publisher(for: .qtDidChange)) { notification in
+            .onReceive(NotificationCenter.default.publisher(for: .qtDidChange)) { notification in
             guard let changeType = notification.object as? QTChangeType else {
                 // 타입 정보 없으면 전체 로드 (하위 호환)
                 viewModel.send(.load)
@@ -175,11 +206,25 @@ public struct QTListView: View {
 
             switch changeType {
             case .created(let qt):
-                // 새 QT 작성: 전체 로드 (자동으로 맨 위로 스크롤)
-                viewModel.send(.load)
-                // 스크롤 위치 초기화
-                scrollPosition = nil
-                persistedScrollId = nil
+                // 새 QT 작성: 맨 위에 추가
+                viewModel.send(.insertAtTop(qt))
+                // newlyAddedQTId는 ViewModel에서 설정됨
+
+                // pendingNewQTId 클리어 (혹시 남아있을 경우)
+                if pendingNewQTId == qt.id.uuidString {
+                    UserDefaults.standard.removeObject(forKey: "pendingNewQTId")
+                }
+
+                // 바로 스크롤 실행 (View가 이미 렌더링된 경우)
+                Task { @MainActor in
+                    // UI 업데이트 대기
+                    try? await Task.sleep(nanoseconds: 100_000_000) // 0.1초
+
+                    // 맨 위로 스크롤
+                    withAnimation {
+                        scrollProxy.scrollTo("filterBar", anchor: .top)
+                    }
+                }
 
             case .updated(let qt):
                 // QT 수정: 해당 항목만 교체 (스크롤 위치 유지!)
@@ -191,15 +236,12 @@ public struct QTListView: View {
                     if index > 0 {
                         // 위에 항목이 있으면 위로
                         scrollPosition = viewModel.filteredAndSortedList[index - 1].id
-                        persistedScrollId = viewModel.filteredAndSortedList[index - 1].id.uuidString
                     } else if viewModel.filteredAndSortedList.count > 1 {
                         // 첫 번째 항목이면 다음 항목으로
                         scrollPosition = viewModel.filteredAndSortedList[1].id
-                        persistedScrollId = viewModel.filteredAndSortedList[1].id.uuidString
                     } else {
                         // 마지막 남은 항목이면 nil
                         scrollPosition = nil
-                        persistedScrollId = nil
                     }
                 }
                 // 리스트에서 제거
@@ -228,6 +270,20 @@ public struct QTListView: View {
                 )
             case .result, .editor:
                 EmptyView()
+            }
+        }
+            } // End of ScrollViewReader
+        }
+        .navigationTitle("기록")
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbarBackground(.hidden, for: .navigationBar)
+        .toolbar {
+            ToolbarItem(placement: .navigationBarTrailing) {
+                ProfileHeaderView(profile: userProfile) {
+                    Haptics.tap()
+                    onNavigateToMyPage()
+                }
+                .id(userProfile?.nickname ?? "default")
             }
         }
     }

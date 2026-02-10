@@ -168,16 +168,19 @@ public final class QTEditorWizardViewModel {
             let savedQT = try await commitQTUseCase.execute(draft: qt, session: session)
 
             await MainActor.run {
-                // notification 즉시 전송
+                state.isSaving = false
+                state.showSaveSuccessToast = true
+
+                // 새 QT ID를 AppStorage에 저장 (QTListView가 없어도 전달 가능)
+                UserDefaults.standard.set(savedQT.id.uuidString, forKey: "pendingNewQTId")
+
+                // Notification도 발송 (이미 QTListView가 있는 경우를 위해)
                 NotificationCenter.default.post(
                     name: .qtDidChange,
                     object: QTChangeType.created(savedQT)
                 )
 
-                state.isSaving = false
-                state.showSaveSuccessToast = true
-
-                // 1초 후 콜백 실행 (기록 탭으로 이동)
+                // 1초 후 기록 탭으로 이동
                 DispatchQueue.main.asyncAfter(deadline: .now() + 1) { [weak self] in
                     self?.onSaveComplete?()
                 }

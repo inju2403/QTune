@@ -22,4 +22,5 @@ public enum QTListAction: Equatable {
     case insertAtTop(QuietTime)
     case updateItem(QuietTime)
     case removeItem(UUID)
+    case clearNewlyAddedId
 }
