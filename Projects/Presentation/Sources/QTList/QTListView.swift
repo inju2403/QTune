@@ -328,8 +328,7 @@ private extension QTListView {
                 viewModel.send(.updateSearchText("", isSearchMode: false))
                 isSearchFocused = false
             } label: {
-                Text("취소")
-                    .dsBodyM(.medium)
+                DSText.bodyM("취소", weight: .medium)
                     .foregroundStyle(DS.Color.gold)
             }
             .frame(width: cancelWidth, alignment: .trailing)
@@ -414,8 +413,7 @@ private extension QTListView {
                 .frame(width: 105, height: 38)
 
             HStack(spacing: DS.Spacing.xs) {
-                Text(text)
-                    .dsBodyM(.medium)
+                DSText.bodyM(text, weight: .medium)
                     .foregroundStyle(DS.Color.textPrimary)
 
                 Image(systemName: "chevron.down")
@@ -434,8 +432,7 @@ private extension QTListView {
                 .frame(width: 105, height: 38)
 
             HStack(spacing: DS.Spacing.xs) {
-                Text(text)
-                    .dsBodyM(.medium)
+                DSText.bodyM(text, weight: .medium)
                     .foregroundStyle(DS.Color.textPrimary)
 
                 Image(systemName: "chevron.down")
@@ -458,21 +455,18 @@ private extension QTListView {
 
                     Spacer()
 
-                    Text(formattedDate(qt.date))
-                        .dsCaption()
+                    DSText.caption(formattedDate(qt.date))
                         .foregroundStyle(DS.Color.textSecondary)
                 }
 
                 if let summary = summaryText(qt), !summary.isEmpty {
-                    Text(summary)
-                        .dsBodyM()
+                    DSText.bodyM(summary)
                         .foregroundStyle(DS.Color.textPrimary)
                         .lineLimit(4)
                 }
 
                 HStack(spacing: DS.Spacing.s) {
-                    Text(qt.template)
-                        .dsCaption(.medium)
+                    DSText.caption(qt.template, weight: .medium)
                         .foregroundStyle(qt.template == "SOAP" ? DS.Color.olive : DS.Color.gold)
                         .padding(.horizontal, DS.Spacing.m)
                         .padding(.vertical, DS.Spacing.s)
@@ -519,12 +513,10 @@ private extension QTListView {
             }
 
             VStack(spacing: DS.Spacing.s) {
-                Text("아직 기록이 없어요")
-                    .dsTitleM(.semibold)
+                DSText.titleM("아직 기록이 없어요")
                     .foregroundStyle(DS.Color.textPrimary)
 
-                Text("오늘의 말씀에서 시작해 보세요")
-                    .dsBodyM()
+                DSText.bodyM("오늘의 말씀에서 시작해 보세요")
                     .foregroundStyle(DS.Color.textSecondary)
             }
 

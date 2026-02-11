@@ -6,11 +6,13 @@
 //
 
 import SwiftUI
+import Domain
 
 /// 섹션 헤더 (아이콘 + 타이틀)
 public struct SectionHeader: View {
     let icon: String
     let title: String
+    @Environment(\.fontScale) private var fontScale
 
     public init(icon: String, title: String) {
         self.icon = icon
@@ -22,8 +24,7 @@ public struct SectionHeader: View {
             Image(systemName: icon)
                 .foregroundStyle(DS.Color.gold)
 
-            Text(title)
-                .dsTitleM()
+            DSText.titleM(title)
                 .foregroundStyle(DS.Color.textPrimary)
 
             Spacer()

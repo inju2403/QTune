@@ -165,14 +165,12 @@ private extension QTDetailView {
             VerseCardView(title: "본문") {
                 VStack(alignment: .leading, spacing: DS.Spacing.m) {
                     // 주 역본
-                    Text(viewModel.state.qt.verse.text)
-                        .dsBodyM()
+                    DSText.bodyM(viewModel.state.qt.verse.text)
                         .textSelection(.enabled)
 
                     // 비교 역본이 있으면 표시
                     if let secondaryVerse = viewModel.state.qt.secondaryVerse {
-                        Text(secondaryVerse.text)
-                            .dsBodyM()
+                        DSText.bodyM(secondaryVerse.text)
                             .textSelection(.enabled)
                     }
                 }
@@ -181,8 +179,7 @@ private extension QTDetailView {
             // 한국어 해설
             if let korean = viewModel.state.qt.korean, !korean.isEmpty {
                 VerseCardView(title: "해설") {
-                    Text(korean)
-                        .dsBodyM()
+                    DSText.bodyM(korean)
                         .textSelection(.enabled)
                 }
             }
@@ -190,8 +187,7 @@ private extension QTDetailView {
             // 이 말씀이 주어진 이유
             if let rationale = viewModel.state.qt.rationale, !rationale.isEmpty {
                 VerseCardView(title: "이 말씀이 주어진 이유") {
-                    Text(rationale)
-                        .dsBodyM()
+                    DSText.bodyM(rationale)
                         .textSelection(.enabled)
                 }
             }
@@ -205,24 +201,21 @@ private extension QTDetailView {
 
             if let observation = viewModel.state.qt.soapObservation, !observation.isEmpty {
                 VerseCardView(title: "Observation · 관찰") {
-                    Text(observation)
-                        .dsBodyM()
+                    DSText.bodyM(observation)
                         .textSelection(.enabled)
                 }
             }
 
             if let application = viewModel.state.qt.soapApplication, !application.isEmpty {
                 VerseCardView(title: "Application · 적용") {
-                    Text(application)
-                        .dsBodyM()
+                    DSText.bodyM(application)
                         .textSelection(.enabled)
                 }
             }
 
             if let prayer = viewModel.state.qt.soapPrayer, !prayer.isEmpty {
                 VerseCardView(title: "Prayer · 기도") {
-                    Text(prayer)
-                        .dsBodyM()
+                    DSText.bodyM(prayer)
                         .textSelection(.enabled)
                 }
             }
@@ -236,32 +229,28 @@ private extension QTDetailView {
 
             if let adoration = viewModel.state.qt.actsAdoration, !adoration.isEmpty {
                 VerseCardView(title: "Adoration · 경배") {
-                    Text(adoration)
-                        .dsBodyM()
+                    DSText.bodyM(adoration)
                         .textSelection(.enabled)
                 }
             }
 
             if let confession = viewModel.state.qt.actsConfession, !confession.isEmpty {
                 VerseCardView(title: "Confession · 고백") {
-                    Text(confession)
-                        .dsBodyM()
+                    DSText.bodyM(confession)
                         .textSelection(.enabled)
                 }
             }
 
             if let thanksgiving = viewModel.state.qt.actsThanksgiving, !thanksgiving.isEmpty {
                 VerseCardView(title: "Thanksgiving · 감사") {
-                    Text(thanksgiving)
-                        .dsBodyM()
+                    DSText.bodyM(thanksgiving)
                         .textSelection(.enabled)
                 }
             }
 
             if let supplication = viewModel.state.qt.actsSupplication, !supplication.isEmpty {
                 VerseCardView(title: "Supplication · 간구") {
-                    Text(supplication)
-                        .dsBodyM()
+                    DSText.bodyM(supplication)
                         .textSelection(.enabled)
                 }
             }

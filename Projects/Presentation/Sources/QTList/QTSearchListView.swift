@@ -191,21 +191,18 @@ private extension QTSearchListView {
 
                     Spacer()
 
-                    Text(formattedDate(qt.date))
-                        .dsCaption()
+                    DSText.caption(formattedDate(qt.date))
                         .foregroundStyle(DS.Color.textSecondary)
                 }
 
                 if let summary = summaryText(qt), !summary.isEmpty {
-                    Text(summary)
-                        .dsBodyM()
+                    DSText.bodyM(summary)
                         .foregroundStyle(DS.Color.textPrimary)
                         .lineLimit(4)
                 }
 
                 HStack(spacing: DS.Spacing.s) {
-                    Text(qt.template)
-                        .dsCaption(.medium)
+                    DSText.caption(qt.template, weight: .medium)
                         .foregroundStyle(qt.template == "SOAP" ? DS.Color.olive : DS.Color.gold)
                         .padding(.horizontal, DS.Spacing.m)
                         .padding(.vertical, DS.Spacing.s)
@@ -252,8 +249,7 @@ private extension QTSearchListView {
             }
 
             VStack(spacing: DS.Spacing.s) {
-                Text(searchText.isEmpty ? "검색어를 입력해 주세요" : "검색된 내용이 없어요")
-                    .dsTitleM(.semibold)
+                DSText.titleM(searchText.isEmpty ? "검색어를 입력해 주세요" : "검색된 내용이 없어요")
                     .foregroundStyle(DS.Color.textPrimary)
             }
 

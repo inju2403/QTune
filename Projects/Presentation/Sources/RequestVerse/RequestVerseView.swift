@@ -210,11 +210,9 @@ private extension RequestVerseView {
                         .font(.system(size: 20))
 
                     VStack(alignment: .leading, spacing: 4) {
-                        Text("오늘 작성 중인 QT가 있어요")
-                            .dsBodyM(.semibold)
+                        DSText.bodyM("오늘 작성 중인 QT가 있어요", weight: .semibold)
                             .foregroundStyle(.white.opacity(0.95))
-                        Text("이어 쓰거나 삭제할 수 있어요")
-                            .dsCaption()
+                        DSText.caption("이어 쓰거나 삭제할 수 있어요")
                             .foregroundStyle(DS.Color.textSec)
                     }
                     Spacer()
@@ -255,18 +253,15 @@ private extension RequestVerseView {
             let gender = userProfile?.gender.rawValue ?? "님"
 
             VStack(spacing: 12) {
-                Text("\(nickname) \(gender)님")
-                    .dsTitleXL(.bold)
+                DSText.titleXL("\(nickname) \(gender)님", weight: .bold)
                     .foregroundStyle(DS.Color.deepCocoa)
 
                 // 부제
-                Text("오늘 어떤 일이 있으셨나요?")
-                    .dsBodyM()
+                DSText.bodyM("오늘 어떤 일이 있으셨나요?")
                     .foregroundStyle(DS.Color.textSecondary)
                     .multilineTextAlignment(.center)
 
-                Text("글로 알려주시면 \(nickname) \(gender)님에게\n오늘의 말씀을 추천해드릴게요.")
-                    .dsBodyM()
+                DSText.bodyM("글로 알려주시면 \(nickname) \(gender)님에게\n오늘의 말씀을 추천해드릴게요.")
                     .foregroundStyle(DS.Color.textSecondary)
                     .multilineTextAlignment(.center)
             }
@@ -279,8 +274,7 @@ private extension RequestVerseView {
         // 단일 통합 입력 필드
         VStack(alignment: .leading, spacing: 8) {
             // 제목
-            Text("어떤 내용이든 좋아요.\n오늘 느낀 감정, 생각 등을 공유해주세요.")
-                .dsBodyM(.medium)
+            DSText.bodyM("어떤 내용이든 좋아요.\n오늘 느낀 감정, 생각 등을 공유해주세요.", weight: .medium)
                 .foregroundStyle(Color(hex: "#6B6B6B"))
                 .multilineTextAlignment(.leading)
 
@@ -290,8 +284,7 @@ private extension RequestVerseView {
             // 글자 수
             HStack {
                 Spacer()
-                Text("\(viewModel.state.moodText.count)/700")
-                    .dsCaption()
+                DSText.caption("\(viewModel.state.moodText.count)/700")
                     .foregroundStyle(viewModel.state.moodText.count > 700 ? Color.red.opacity(0.7) : Color(hex: "#AFAFAF"))
             }
         }
@@ -312,10 +305,8 @@ private extension RequestVerseView {
             }
         )
 
-        return ScaledTextEditor(
+        return DSTextEditor.editor(
             text: binding,
-            size: 16,
-            design: .rounded,
             placeholder: "내용을 입력하세요..."
         )
         .foregroundStyle(Color(hex: "#3A3A3A"))
@@ -336,8 +327,7 @@ private extension RequestVerseView {
                 Image(systemName: "exclamationmark.triangle.fill")
                     .foregroundStyle(.orange)
 
-                Text(errorMessage)
-                    .dsBodyM()
+                DSText.bodyM(errorMessage)
                     .foregroundStyle(.white.opacity(0.95))
 
                 Spacer()
@@ -387,12 +377,10 @@ private extension RequestVerseView {
                     let lines = result.korean.split(separator: "\n", maxSplits: 1, omittingEmptySubsequences: false)
                     if lines.count == 2 {
                         VStack(alignment: .leading, spacing: 8) {
-                            Text(String(lines[0]))
-                                .dsBodyL(.semibold)
+                            DSText.bodyL(String(lines[0]), weight: .semibold)
                                 .foregroundStyle(DS.Color.gold)
 
-                            Text(String(lines[1]))
-                                .dsBodyM()
+                            DSText.bodyM(String(lines[1]))
                         }
                     } else {
                         Text(result.korean)
@@ -420,8 +408,7 @@ private extension RequestVerseView {
         HStack(spacing: 8) {
             Image(systemName: icon)
                 .foregroundStyle(DS.Color.gold)
-            Text(title)
-                .dsTitleS(.semibold)
+            DSText.titleS(title, weight: .semibold)
                 .foregroundStyle(.white.opacity(0.95))
             Spacer()
         }
@@ -450,8 +437,7 @@ private extension RequestVerseView {
         HStack(spacing: 8) {
             Image(systemName: "sparkles")
                 .font(.system(size: 16))
-            Text("오늘의 말씀 추천받기")
-                .dsBodyL(.semibold)
+            DSText.bodyL("오늘의 말씀 추천받기", weight: .semibold)
         }
         .foregroundStyle(.white)
         .frame(maxWidth: .infinity)

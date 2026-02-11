@@ -6,11 +6,13 @@
 //
 
 import SwiftUI
+import Domain
 
 /// 말씀/해설/추천 이유 카드
 public struct VerseCardView<Content: View>: View {
     let title: String?
     @ViewBuilder var content: Content
+    @Environment(\.fontScale) private var fontScale
 
     public init(title: String? = nil, @ViewBuilder content: () -> Content) {
         self.title = title
@@ -20,8 +22,7 @@ public struct VerseCardView<Content: View>: View {
     public var body: some View {
         VStack(alignment: .leading, spacing: DS.Spacing.m) {
             if let title {
-                Text(title)
-                    .dsBodyM(.semibold)
+                DSText.bodyM(title, weight: .semibold)
                     .foregroundStyle(DS.Color.textSecondary)
             }
 

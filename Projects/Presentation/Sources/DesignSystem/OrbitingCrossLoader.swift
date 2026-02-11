@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import Domain
 
 // MARK: - Wood Cross Pulse Loader
 
@@ -142,8 +143,7 @@ public struct QTuneCrossOverlay: View {
 
             VStack(spacing: 24) {
                 QTuneWoodCrossPulse(size: size)    // ✝️ 고퀄 십자가
-                Text(message)
-                    .font(.system(size: 15 * fontScale.multiplier, weight: .semibold))
+                DSText.bodyM(message, weight: .semibold)
                     .foregroundStyle(Color.black.opacity(0.82))
                     .multilineTextAlignment(.center)
                     .padding(.top, 2)
