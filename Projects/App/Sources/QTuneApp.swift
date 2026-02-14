@@ -126,40 +126,21 @@ struct QTuneApp: App {
     /// 기존 사용자 알림 자동 활성화 (한 번만 실행)
     @MainActor
     private func enableNotificationsByDefault(profile: UserProfile) async {
-        // 이미 알림이 켜져있으면 기존 설정 유지
-        if profile.isNotificationEnabled {
-            print("📱 [Migration] User already has notification settings, keeping existing values")
-            hasEnabledNotificationsByDefault = true
-            return
-        }
+        print("📱 [Migration] Syncing notification settings to Firestore")
+        print("   - Enabled: \(profile.isNotificationEnabled)")
+        print("   - Time: \(profile.notificationHour):\(String(format: "%02d", profile.notificationMinute))")
 
-        print("📱 [Migration] Enabling notifications for new user with default time")
-
-        // 기본 시간: 저녁 8시 30분
-        let updatedProfile = UserProfile(
-            nickname: profile.nickname,
-            gender: profile.gender,
-            profileImageData: profile.profileImageData,
-            preferredTranslation: profile.preferredTranslation,
-            secondaryTranslation: profile.secondaryTranslation,
-            fontScale: profile.fontScale,
-            lineSpacing: profile.lineSpacing,
-            isNotificationEnabled: true,
-            notificationHour: 20,
-            notificationMinute: 30
-        )
-
+        // Firestore에 현재 설정 동기화 (UserDefaults → Firestore)
         do {
             try await container.makeUpdateNotificationSettingsUseCase().execute(
-                isEnabled: true,
-                hour: 20,
-                minute: 30
+                isEnabled: profile.isNotificationEnabled,
+                hour: profile.notificationHour,
+                minute: profile.notificationMinute
             )
-            userProfile = updatedProfile
             hasEnabledNotificationsByDefault = true
-            print("✅ [Migration] Notifications enabled at 8:30 PM")
+            print("✅ [Migration] Notification settings synced to Firestore")
         } catch {
-            print("❌ [Migration] Failed to enable notifications: \(error)")
+            print("❌ [Migration] Failed to sync notification settings: \(error)")
         }
     }
 

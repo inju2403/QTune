@@ -20,10 +20,8 @@ const OPENAI_API_KEY = defineSecret("OPENAI_API_KEY");
 
 // Firebase Admin 초기화
 if (!admin.apps.length) {
-  admin.initializeApp({
-    projectId: "qtune-sandbox",
-  });
-  logger.info("Admin SDK initialized with project: qtune-sandbox");
+  admin.initializeApp();
+  logger.info("Admin SDK initialized");
 }
 
 // 하루 최대 호출 횟수

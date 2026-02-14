@@ -190,19 +190,17 @@ class AppDelegate: NSObject, UIApplicationDelegate, MessagingDelegate, UNUserNot
     private func saveFCMTokenToFirestore(token: String, uid: String) {
         print("💾 [FCM] Saving token to Firestore for UID: \(uid)")
 
+        // Bundle ID로 환경 판단
+        let bundleId = Bundle.main.bundleIdentifier ?? ""
+        let environment = bundleId.contains("sandbox") ? "sandbox" : "production"
+
         // Firestore에 FCM 토큰 저장
         let db = Firestore.firestore()
         let userData: [String: Any] = [
             "fcmToken": token,
             "fcmTokenUpdatedAt": FieldValue.serverTimestamp(),
             "platform": "ios",
-            "environment": {
-                #if DEBUG
-                return "sandbox"
-                #else
-                return "production"
-                #endif
-            }()
+            "environment": environment
         ]
 
         print("📤 [FCM] Saving data: \(userData)")
@@ -215,24 +213,17 @@ class AppDelegate: NSObject, UIApplicationDelegate, MessagingDelegate, UNUserNot
                 print("   Path: users/\(uid)")
                 print("   Token: \(token)")
 
-                // FCM 토큰 저장 성공 후 Topic 구독
-                #if DEBUG
-                Messaging.messaging().subscribe(toTopic: "daily_qt_sandbox") { error in
+                // FCM 토큰 저장 성공 후 Topic 구독 (Bundle ID로 환경 판단)
+                let bundleId = Bundle.main.bundleIdentifier ?? ""
+                let topic = bundleId.contains("sandbox") ? "daily_qt_sandbox" : "daily_qt"
+
+                Messaging.messaging().subscribe(toTopic: topic) { error in
                     if let error = error {
-                        print("❌ [FCM] Failed to subscribe to sandbox topic: \(error)")
+                        print("❌ [FCM] Failed to subscribe to '\(topic)' topic: \(error)")
                     } else {
-                        print("✅ [FCM] Subscribed to 'daily_qt_sandbox' topic")
+                        print("✅ [FCM] Subscribed to '\(topic)' topic")
                     }
                 }
-                #else
-                Messaging.messaging().subscribe(toTopic: "daily_qt") { error in
-                    if let error = error {
-                        print("❌ [FCM] Failed to subscribe to topic: \(error)")
-                    } else {
-                        print("✅ [FCM] Subscribed to 'daily_qt' topic")
-                    }
-                }
-                #endif
             }
         }
     }
