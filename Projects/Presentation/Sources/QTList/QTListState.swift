@@ -20,6 +20,8 @@ public struct QTListState: Equatable {
     public var isLoadingMore: Bool
     public var hasMoreData: Bool
     public var currentPage: Int
+    public var lastLoadTime: Date?
+    public var newlyAddedQTId: UUID?  // 새로 추가된 QT ID (스크롤용)
 
     public init(
         searchText: String = "",
@@ -31,7 +33,9 @@ public struct QTListState: Equatable {
         isLoading: Bool = false,
         isLoadingMore: Bool = false,
         hasMoreData: Bool = true,
-        currentPage: Int = 0
+        currentPage: Int = 0,
+        lastLoadTime: Date? = nil,
+        newlyAddedQTId: UUID? = nil
     ) {
         self.searchText = searchText
         self.selectedFilter = selectedFilter
@@ -43,6 +47,8 @@ public struct QTListState: Equatable {
         self.isLoadingMore = isLoadingMore
         self.hasMoreData = hasMoreData
         self.currentPage = currentPage
+        self.lastLoadTime = lastLoadTime
+        self.newlyAddedQTId = newlyAddedQTId
     }
 
     // MARK: - Filter Types

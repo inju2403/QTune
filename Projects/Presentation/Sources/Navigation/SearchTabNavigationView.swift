@@ -15,19 +15,19 @@ public struct SearchTabNavigationView: View {
     @Binding var userProfile: UserProfile?
     @Binding var searchText: String
     @Binding var isSearchPresented: Bool
+    @Binding var path: NavigationPath
 
     let detailViewModelFactory: (QuietTime) -> QTDetailViewModel
     let editorViewModelFactory: () -> QTEditorViewModel
     let profileEditViewModelFactory: (UserProfile?) -> ProfileEditViewModel
     let getUserProfileUseCase: GetUserProfileUseCase
 
-    @State private var path = NavigationPath()
-
     public init(
         qtListViewModel: QTListViewModel,
         userProfile: Binding<UserProfile?>,
         searchText: Binding<String>,
         isSearchPresented: Binding<Bool>,
+        path: Binding<NavigationPath>,
         detailViewModelFactory: @escaping (QuietTime) -> QTDetailViewModel,
         editorViewModelFactory: @escaping () -> QTEditorViewModel,
         profileEditViewModelFactory: @escaping (UserProfile?) -> ProfileEditViewModel,
@@ -37,6 +37,7 @@ public struct SearchTabNavigationView: View {
         self._userProfile = userProfile
         self._searchText = searchText
         self._isSearchPresented = isSearchPresented
+        self._path = path
         self.detailViewModelFactory = detailViewModelFactory
         self.editorViewModelFactory = editorViewModelFactory
         self.profileEditViewModelFactory = profileEditViewModelFactory

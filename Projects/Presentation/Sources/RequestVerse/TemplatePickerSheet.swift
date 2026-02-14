@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import Domain
 
 /// 템플릿 선택 바텀시트 (SOAP / ACTS)
 public struct TemplatePickerSheet: View {
@@ -27,11 +28,9 @@ public struct TemplatePickerSheet: View {
 
             // Main question
             VStack(spacing: 8) {
-                Text("오늘 어떤 방식으로")
-                    .dsTitleM(.semibold)
+                DSText.titleM("오늘 어떤 방식으로", weight: .semibold)
                     .foregroundStyle(DS.Color.deepCocoa)
-                Text("말씀을 묵상하고 싶으신가요?")
-                    .dsTitleM(.semibold)
+                DSText.titleM("말씀을 묵상하고 싶으신가요?", weight: .semibold)
                     .foregroundStyle(DS.Color.deepCocoa)
             }
             .multilineTextAlignment(.center)
@@ -91,18 +90,15 @@ private struct TemplateCard: View {
                     .frame(width: 48, height: 48)
 
                 VStack(alignment: .leading, spacing: 4) {
-                    Text(title)
-                        .dsTitleM(.bold)
+                    DSText.titleM(title, weight: .bold)
                         .foregroundStyle(DS.Color.deepCocoa)
-                    Text(subtitle)
-                        .dsBodyM(.medium)
+                    DSText.bodyM(subtitle, weight: .medium)
                         .foregroundStyle(DS.Color.textSecondary)
                 }
             }
 
             // Description
-            Text(description)
-                .dsBodyM()
+            DSText.bodyM(description)
                 .foregroundStyle(DS.Color.textSecondary)
                 .fixedSize(horizontal: false, vertical: true)
                 .padding(.leading, 4)
@@ -110,8 +106,7 @@ private struct TemplateCard: View {
 
             // Button
             Button(action: action) {
-                Text(buttonTitle)
-                    .dsBodyL(.semibold)
+                DSText.bodyL(buttonTitle, weight: .semibold)
                     .foregroundStyle(.white)
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 16)

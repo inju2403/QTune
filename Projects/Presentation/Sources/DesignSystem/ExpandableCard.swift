@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import Domain
 
 /// 쫘르륵 펼쳐지는 아코디언 카드
 public struct ExpandableCard<Content: View>: View {
@@ -24,8 +25,7 @@ public struct ExpandableCard<Content: View>: View {
 
     public var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text(title)
-                .dsBodyM(.semibold)
+            DSText.bodyM(title, weight: .semibold)
                 .foregroundStyle(.secondary)
 
             content

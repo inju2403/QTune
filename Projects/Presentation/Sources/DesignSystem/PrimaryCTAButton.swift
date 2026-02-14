@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import Domain
 
 /// CTA 버튼 with 광채 + 립플 + 3D effect
 public struct PrimaryCTAButton: View {
@@ -20,6 +21,7 @@ public struct PrimaryCTAButton: View {
     var action: () -> Void
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.fontScale) private var fontScale
     @State private var press = false
     @State private var ripple = false
 
@@ -42,8 +44,7 @@ public struct PrimaryCTAButton: View {
         } label: {
             HStack(spacing: 10) {
                 Image(systemName: icon)
-                Text(title)
-                    .dsBodyL(.semibold)
+                DSText.bodyL(title, weight: .semibold)
             }
             .foregroundStyle(.white)
             .padding(.vertical, 16)

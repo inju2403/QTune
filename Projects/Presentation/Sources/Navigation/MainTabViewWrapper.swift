@@ -28,6 +28,11 @@ public struct MainTabViewWrapper: View {
     @State private var previousTab = 0
     @State private var isSearchPresented = false
 
+    // 각 탭의 NavigationPath 상태 관리
+    @State private var todayTabPath = NavigationPath()
+    @State private var recordTabPath = NavigationPath()
+    @State private var searchTabPath = NavigationPath()
+
     public init(
         qtListViewModel: QTListViewModel,
         detailViewModelFactory: @escaping (QuietTime) -> QTDetailViewModel,
@@ -93,6 +98,7 @@ public struct MainTabViewWrapper: View {
         TabView(selection: $selectedTab) {
             Tab("오늘의 말씀", systemImage: "sparkles", value: 0) {
                 RootNavigationView(
+                    path: $todayTabPath,
                     onNavigateToRecordTab: {
                         withAnimation(.easeInOut(duration: 0.35)) {
                             selectedTab = 1
@@ -123,6 +129,7 @@ public struct MainTabViewWrapper: View {
 
             Tab("기록", systemImage: "book.closed", value: 1) {
                 RootNavigationView(
+                    path: $recordTabPath,
                     onNavigateToRecordTab: {
                         // 이미 기록 탭이므로 아무것도 안 함
                     }
@@ -162,6 +169,7 @@ public struct MainTabViewWrapper: View {
                     userProfile: $userProfile,
                     searchText: $searchText,
                     isSearchPresented: $isSearchPresented,
+                    path: $searchTabPath,
                     detailViewModelFactory: detailViewModelFactory,
                     editorViewModelFactory: editorViewModelFactory,
                     profileEditViewModelFactory: profileEditViewModelFactory,
@@ -193,6 +201,7 @@ public struct MainTabViewWrapper: View {
     private var legacyTabView: some View {
         TabView(selection: $selectedTab) {
             RootNavigationView(
+                path: $todayTabPath,
                 onNavigateToRecordTab: {
                     withAnimation(.easeInOut(duration: 0.35)) {
                         selectedTab = 1
@@ -229,6 +238,7 @@ public struct MainTabViewWrapper: View {
             ))
 
             RootNavigationView(
+                path: $recordTabPath,
                 onNavigateToRecordTab: {
                     // 이미 기록 탭이므로 아무것도 안 함
                 }

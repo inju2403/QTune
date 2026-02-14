@@ -22,3 +22,7 @@ firebase-debug.log
 *.swp
 *.swo
 *~
+
+# Test files
+test-*.js
+test-*.ts
