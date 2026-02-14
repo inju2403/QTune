@@ -8,17 +8,23 @@
  * firebase functions:secrets:set OPENAI_API_KEY
  */
 
-import * as functions from "firebase-functions";
+import * as functions from "firebase-functions/v1";
 import { onCall } from "firebase-functions/v2/https";
+import { onSchedule } from "firebase-functions/v2/scheduler";
 import { defineSecret } from "firebase-functions/params";
 import * as logger from "firebase-functions/logger";
 import * as admin from "firebase-admin";
 
-// Firebase Admin 초기화
-admin.initializeApp();
-
 // Secret Manager에서 OpenAI API 키 정의
 const OPENAI_API_KEY = defineSecret("OPENAI_API_KEY");
+
+// Firebase Admin 초기화
+if (!admin.apps.length) {
+  admin.initializeApp({
+    projectId: "qtune-sandbox",
+  });
+  logger.info("Admin SDK initialized with project: qtune-sandbox");
+}
 
 // 하루 최대 호출 횟수
 const DAILY_LIMIT = 10;
@@ -424,6 +430,26 @@ ${excludeList}
       // 추천 결과를 이력에 저장 (동기화하여 다음 요청에서 바로 반영되도록)
       await saveRecommendedVerse(callerId, result.verseRef);
 
+      // 말씀 추천 요청 기록 (푸시 알림 타겟팅용)
+      const todayKST = new Date().toLocaleDateString('en-CA', {
+        timeZone: 'Asia/Seoul'  // YYYY-MM-DD 형식
+      });
+
+      try {
+        await admin.firestore()
+          .collection('verse_requests')
+          .doc(callerId)
+          .set({
+            lastRequestDate: todayKST,
+            lastRequestTime: admin.firestore.FieldValue.serverTimestamp(),
+            requestCount: admin.firestore.FieldValue.increment(1)
+          }, { merge: true });
+        logger.info("Verse request recorded for push notification targeting");
+      } catch (error) {
+        logger.warn("Failed to record verse request", error);
+        // 실패해도 메인 기능에 영향 없도록 계속 진행
+      }
+
       return result;
     } catch (error: any) {
       logger.error("recommendVerse error", {
@@ -638,6 +664,230 @@ ${englishText}
       throw new functions.https.HttpsError(
         "internal",
         error?.message ?? "Unknown error"
+      );
+    }
+  }
+);
+
+// =========================================
+// 푸시 알림: 매분마다 실행하여 사용자별 알림 시간 체크
+// v2 Scheduler로 변경 (더 나은 IAM 통합)
+// =========================================
+export const sendCustomNotification = onSchedule(
+  {
+    schedule: "* * * * *", // 매분마다 실행
+    timeZone: "Asia/Seoul",
+  },
+  async (event) => {
+    logger.info("[sendCustomNotification] Checking user notification settings");
+
+    const db = admin.firestore();
+    const messaging = admin.messaging();
+
+    // 현재 시간과 날짜 (KST 기준)
+    const now = new Date();
+    const kstOffset = 9 * 60 * 60 * 1000;
+    const kstDate = new Date(now.getTime() + kstOffset);
+    const currentHour = kstDate.getHours();
+    const currentMinute = kstDate.getMinutes();
+    const todayKST = kstDate.toISOString().split("T")[0];
+
+    logger.info("[sendCustomNotification] Current time", {
+      hour: currentHour,
+      minute: currentMinute,
+      date: todayKST,
+    });
+
+    try {
+      // 1. 현재 시간에 알림을 받아야 할 사용자 조회
+      // 알림이 활성화되어 있고, 시간이 일치하며, FCM 토큰이 있는 사용자
+      const usersQuery = await db
+        .collection("users")
+        .where("isNotificationEnabled", "==", true)
+        .where("notificationHour", "==", currentHour)
+        .where("notificationMinute", "==", currentMinute)
+        .where("fcmToken", "!=", null)
+        .get();
+
+      if (usersQuery.empty) {
+        logger.info("[sendCustomNotification] No users scheduled for this time");
+        return;
+      }
+
+      logger.info("[sendCustomNotification] Stats", {
+        scheduledUsers: usersQuery.size,
+      });
+
+      // 2. 토큰별로 개별 전송 (admin.messaging() 사용)
+      let successCount = 0;
+      let failureCount = 0;
+
+      for (const doc of usersQuery.docs) {
+        const uid = doc.id;
+        const token = doc.data().fcmToken as string;
+
+        try {
+          const message = {
+            token: token,
+            notification: {
+              title: "오늘의 QT",
+              body: "오늘 하루도 말씀과 함께하세요",
+            },
+            apns: {
+              headers: {
+                "apns-priority": "10",
+              },
+              payload: {
+                aps: {
+                  alert: {
+                    title: "오늘의 QT",
+                    body: "오늘 하루도 말씀과 함께하세요",
+                  },
+                  sound: "default",
+                  badge: 1,
+                },
+              },
+            },
+            data: {
+              type: "daily_reminder",
+              date: todayKST,
+            },
+          };
+
+          const response = await messaging.send(message);
+          successCount++;
+          logger.info("[sendCustomNotification] Message sent successfully", {
+            uid,
+            messageId: response,
+          });
+        } catch (err: any) {
+          failureCount++;
+          logger.error("[sendCustomNotification] Send error", {
+            uid,
+            error: err?.message,
+            code: err?.code,
+            stack: err?.stack,
+            errorDetails: err?.errorInfo,
+          });
+
+          // 유효하지 않은 토큰 제거
+          if (
+            err?.code === "messaging/registration-token-not-registered" ||
+            err?.code === "messaging/invalid-registration-token"
+          ) {
+            await db.collection("users").doc(uid).update({
+              fcmToken: admin.firestore.FieldValue.delete(),
+            });
+            logger.info("[sendCustomNotification] Removed invalid token", {
+              uid,
+            });
+          }
+        }
+      }
+
+      logger.info("[sendCustomNotification] Completed", {
+        targetCount: usersQuery.size,
+        successCount,
+        failureCount,
+      });
+    } catch (error) {
+      logger.error("[sendCustomNotification] Error", error);
+      throw error;
+    }
+  }
+);
+
+// =========================================
+// 테스트용 수동 푸시 알림 함수
+// =========================================
+export const testPushNotification = onCall(
+  {
+    cors: true,
+  },
+  async (request) => {
+    try {
+      const callerId = getCallerId(request);
+      const { targetUid } = request.data;
+
+      logger.info("[testPushNotification] Manual push test", {
+        callerId,
+        targetUid: targetUid || "self",
+      });
+
+      const db = admin.firestore();
+      const messaging = admin.messaging();
+
+      // 대상 사용자 결정 (targetUid가 없으면 호출자 자신)
+      const uid = targetUid || callerId;
+
+      // FCM 토큰 조회
+      const userDoc = await db.collection("users").doc(uid).get();
+
+      if (!userDoc.exists) {
+        throw new functions.https.HttpsError(
+          "not-found",
+          "User not found"
+        );
+      }
+
+      const userData = userDoc.data();
+      const fcmToken = userData?.fcmToken;
+
+      if (!fcmToken) {
+        throw new functions.https.HttpsError(
+          "failed-precondition",
+          "User has no FCM token"
+        );
+      }
+
+      // 푸시 알림 전송
+      const message = {
+        token: fcmToken,
+        notification: {
+          title: "🔔 테스트 알림",
+          body: "푸시 알림이 정상적으로 작동합니다!",
+        },
+        apns: {
+          payload: {
+            aps: {
+              sound: "default",
+              badge: 1,
+            },
+          },
+        },
+        data: {
+          type: "test",
+          timestamp: new Date().toISOString(),
+        },
+      };
+
+      const response = await messaging.send(message);
+
+      logger.info("[testPushNotification] Success", {
+        uid,
+        messageId: response,
+      });
+
+      return {
+        success: true,
+        messageId: response,
+        targetUid: uid,
+        timestamp: new Date().toISOString(),
+      };
+    } catch (error: any) {
+      logger.error("[testPushNotification] Error", {
+        message: error?.message,
+        code: error?.code,
+      });
+
+      // 에러 다시 던지기
+      if (error instanceof functions.https.HttpsError) {
+        throw error;
+      }
+
+      throw new functions.https.HttpsError(
+        "internal",
+        error?.message || "Failed to send test notification"
       );
     }
   }

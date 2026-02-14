@@ -7,13 +7,16 @@
 
 import SwiftUI
 import Domain
+import UserNotifications
 
 public struct MyPageView: View {
     @State private var viewModel: MyPageViewModel
     @Binding var userProfile: UserProfile?
     @State private var showProfileEdit = false
     @State private var showFontSettings = false
+    @State private var notificationSheetHeight: CGFloat = 450
     @Environment(\.openURL) private var openURL
+    @Environment(\.fontScale) private var fontScale
 
     let profileEditViewModelFactory: (UserProfile?) -> ProfileEditViewModel
     let fontSettingsViewModelFactory: (FontScale, LineSpacing) -> FontSettingsViewModel
@@ -62,6 +65,9 @@ public struct MyPageView: View {
 
                         // 폰트 설정
                         fontSettingsRow()
+
+                        // 알림 설정
+                        notificationSettingsRow()
                     }
 
                     // 큐튠 이야기
@@ -160,6 +166,29 @@ public struct MyPageView: View {
                         }
                     )
                 }
+            }
+            .sheet(isPresented: Binding(
+                get: { viewModel.state.showNotificationSettings },
+                set: { if !$0 { viewModel.send(.dismissNotificationSettings) } }
+            )) {
+                NotificationSettingsSheet(
+                    isNotificationEnabled: Binding(
+                        get: { viewModel.state.isNotificationEnabled },
+                        set: { viewModel.send(.toggleNotification($0)) }
+                    ),
+                    notificationTime: Binding(
+                        get: { viewModel.state.notificationTime },
+                        set: { viewModel.send(.selectNotificationTime($0)) }
+                    ),
+                    onSave: {
+                        if let profile = userProfile {
+                            viewModel.send(.saveNotificationSettings(profile))
+                        }
+                    },
+                    sheetHeight: $notificationSheetHeight
+                )
+                .presentationDetents([.height(notificationSheetHeight)])
+                .presentationDragIndicator(.visible)
             }
         }
     }
@@ -327,6 +356,48 @@ private extension MyPageView {
     }
 
     @ViewBuilder
+    func notificationSettingsRow() -> some View {
+        Button(action: {
+            Haptics.tap()
+            // Initialize state with current profile values before opening sheet
+            if let profile = userProfile {
+                var components = DateComponents()
+                components.hour = profile.notificationHour
+                components.minute = profile.notificationMinute
+                let notificationTime = Calendar.current.date(from: components) ?? Date()
+                viewModel.send(.selectNotificationTime(notificationTime))
+                viewModel.send(.toggleNotification(profile.isNotificationEnabled))
+            }
+            viewModel.send(.tapNotificationSettings)
+        }) {
+            HStack(spacing: 12) {
+                Image(systemName: "bell")
+                    .font(.system(size: 20))
+                    .foregroundStyle(DS.Color.gold)
+                    .frame(width: 24)
+
+                Text("알림 설정")
+                    .dsBodyL()
+                    .foregroundStyle(DS.Color.textPrimary)
+
+                Spacer()
+
+                NotificationStatusText(userProfile: userProfile)
+
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundStyle(DS.Color.textSecondary)
+            }
+        }
+    }
+
+    private func formatNotificationTime(hour: Int, minute: Int) -> String {
+        let period = hour < 12 ? "오전" : "오후"
+        let displayHour = hour == 0 ? 12 : (hour > 12 ? hour - 12 : hour)
+        return String(format: "%@ %d:%02d", period, displayHour, minute)
+    }
+
+    @ViewBuilder
     func versionInfoRow() -> some View {
         HStack(spacing: 12) {
             Image(systemName: "info.circle")
@@ -364,12 +435,55 @@ private extension MyPageView {
     }
 
     var appVersion: String {
-        // App Bundle에서 버전 정보 읽기
-        guard let appBundle = Bundle.allBundles.first(where: { $0.bundleIdentifier == "com.inju.qtune" }),
-              let version = appBundle.infoDictionary?["CFBundleShortVersionString"] as? String else {
-            return "1.2.1"
+        // 현재 실행 중인 앱의 Bundle에서 버전 정보 읽기
+        guard let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String else {
+            return "버전 정보 없음"
         }
         return version
+    }
+}
+
+// MARK: - Notification Status Text
+struct NotificationStatusText: View {
+    let userProfile: UserProfile?
+    @State private var systemNotificationEnabled = true
+    @Environment(\.scenePhase) private var scenePhase
+
+    var body: some View {
+        HStack(spacing: 4) {
+            if systemNotificationEnabled, let profile = userProfile, profile.isNotificationEnabled {
+                Text(formatNotificationTime(hour: profile.notificationHour, minute: profile.notificationMinute))
+                    .dsCaption()
+                    .foregroundStyle(DS.Color.textSecondary)
+            } else {
+                Text("꺼짐")
+                    .dsCaption()
+                    .foregroundStyle(DS.Color.textSecondary)
+            }
+        }
+        .onAppear {
+            checkSystemNotificationSettings()
+        }
+        .onChange(of: scenePhase) { _, newPhase in
+            // 앱이 포그라운드로 돌아올 때 시스템 알림 상태 재확인
+            if newPhase == .active {
+                checkSystemNotificationSettings()
+            }
+        }
+    }
+
+    private func checkSystemNotificationSettings() {
+        UNUserNotificationCenter.current().getNotificationSettings { settings in
+            DispatchQueue.main.async {
+                systemNotificationEnabled = settings.authorizationStatus == .authorized
+            }
+        }
+    }
+
+    private func formatNotificationTime(hour: Int, minute: Int) -> String {
+        let period = hour < 12 ? "오전" : "오후"
+        let displayHour = hour == 0 ? 12 : (hour > 12 ? hour - 12 : hour)
+        return String(format: "%@ %d:%02d", period, displayHour, minute)
     }
 }
 
@@ -520,5 +634,195 @@ struct DualTranslationSelectionSheet: View {
         }
         .buttonStyle(.plain)
         .disabled(isDisabled)
+    }
+}
+
+// MARK: - Notification Settings Sheet
+struct NotificationSettingsSheet: View {
+    @Binding var isNotificationEnabled: Bool
+    @Binding var notificationTime: Date
+    let onSave: () -> Void
+    @Binding var sheetHeight: CGFloat
+
+    @Environment(\.fontScale) private var fontScale
+    @Environment(\.scenePhase) private var scenePhase
+    @State private var systemNotificationEnabled = true
+    @State private var showSystemSettingsAlert = false
+
+    var body: some View {
+        GeometryReader { geometry in
+            VStack(spacing: 0) {
+                // Title
+                VStack(spacing: DS.Spacing.xs) {
+                    Text("알림 설정")
+                        .dsTitleL(.bold)
+                        .foregroundStyle(DS.Color.deepCocoa)
+
+                    Text("매일 QT 시간을 알려드릴게요")
+                        .dsBodyM()
+                        .foregroundStyle(DS.Color.textSecondary)
+                }
+                .padding(.top, DS.Spacing.xl)
+                .padding(.bottom, DS.Spacing.l)
+
+                // Toggle
+                HStack {
+                    Text("알림 받기")
+                        .dsBodyL(.semibold)
+                        .foregroundStyle(DS.Color.textPrimary)
+
+                    Spacer()
+
+                    Toggle("", isOn: Binding(
+                        get: { systemNotificationEnabled && isNotificationEnabled },
+                        set: { newValue in
+                            if !systemNotificationEnabled {
+                                // 시스템 알림이 꺼져있으면 설정으로 바로 이동
+                                openSystemSettings()
+                            } else {
+                                isNotificationEnabled = newValue
+                            }
+                        }
+                    ))
+                    .toggleStyle(SwitchToggleStyle(tint: DS.Color.gold))
+                }
+                .padding(.horizontal, DS.Spacing.l)
+                .padding(.vertical, DS.Spacing.m)
+                .background(DS.Color.canvas)
+                .clipShape(RoundedRectangle(cornerRadius: DS.Radius.m))
+                .padding(.horizontal, DS.Spacing.l)
+
+                // 시스템 알림 꺼져있을 때 안내 메시지
+                if !systemNotificationEnabled {
+                    HStack(spacing: 8) {
+                        Image(systemName: "exclamationmark.triangle.fill")
+                            .font(.system(size: 14))
+                            .foregroundStyle(DS.Color.gold)
+
+                        Text("iPhone 설정에서 알림을 활성화해주세요")
+                            .dsCaption()
+                            .foregroundStyle(DS.Color.textSecondary)
+                    }
+                    .padding(.horizontal, DS.Spacing.l)
+                    .padding(.top, DS.Spacing.xs)
+                }
+
+                if isNotificationEnabled {
+                    // Time Picker
+                    VStack(spacing: DS.Spacing.s) {
+                        HStack {
+                            Text("알림 시간")
+                                .dsBodyM(.semibold)
+                                .foregroundStyle(DS.Color.textPrimary)
+
+                            Spacer()
+                        }
+
+                        DatePicker(
+                            "",
+                            selection: $notificationTime,
+                            displayedComponents: .hourAndMinute
+                        )
+                        .datePickerStyle(WheelDatePickerStyle())
+                        .labelsHidden()
+                        .environment(\.locale, Locale(identifier: "ko_KR"))
+                    }
+                    .padding(.horizontal, DS.Spacing.l)
+                    .padding(.top, DS.Spacing.m)
+                    .transition(.opacity.combined(with: .move(edge: .top)))
+                }
+
+                Spacer()
+
+                // Save Button
+                Button {
+                    Haptics.tap()
+                    onSave()
+                } label: {
+                    Text("저장")
+                        .dsBodyL(.semibold)
+                        .foregroundStyle(.white)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, DS.Spacing.m)
+                        .background(DS.Color.gold)
+                        .clipShape(RoundedRectangle(cornerRadius: DS.Radius.m))
+                }
+                .padding(.horizontal, DS.Spacing.l)
+                .padding(.bottom, DS.Spacing.l)
+            }
+            .onAppear {
+                calculateHeight()
+                checkSystemNotificationSettings()
+            }
+            .onChange(of: isNotificationEnabled) { _, _ in
+                withAnimation(.easeInOut(duration: 0.2)) {
+                    calculateHeight()
+                }
+            }
+            .onChange(of: fontScale) { _, _ in
+                calculateHeight()
+            }
+            .onChange(of: scenePhase) { _, newPhase in
+                // 앱이 포그라운드로 돌아올 때 시스템 알림 상태 재확인
+                if newPhase == .active {
+                    checkSystemNotificationSettings()
+                }
+            }
+        }
+        .animation(.easeInOut(duration: 0.2), value: isNotificationEnabled)
+        .alert("알림 권한이 필요합니다", isPresented: $showSystemSettingsAlert) {
+            Button("취소", role: .cancel) { }
+            Button("설정으로 이동") {
+                openSystemSettings()
+            }
+        } message: {
+            Text("iPhone 설정에서 큐튠 알림을 활성화해주세요")
+        }
+    }
+
+    private func calculateHeight() {
+        // Base height calculation
+        let multiplier = fontScale.multiplier
+        let titleHeight = 28 * multiplier + 20 * multiplier + DS.Spacing.xs + DS.Spacing.xl + DS.Spacing.l
+        let toggleHeight = 24 * multiplier + DS.Spacing.m * 2
+        let buttonHeight = 24 * multiplier + DS.Spacing.m * 2 + DS.Spacing.l
+
+        var totalHeight = titleHeight + toggleHeight + buttonHeight + DS.Spacing.l
+
+        // Add time picker height if enabled
+        if isNotificationEnabled {
+            let timePickerHeight: CGFloat = 216 + DS.Spacing.s + 20 * multiplier + DS.Spacing.m
+            totalHeight += timePickerHeight
+        }
+
+        // Add some padding for safety
+        totalHeight += 40
+
+        // Ensure minimum height and cap at max height
+        sheetHeight = min(max(totalHeight, 350), UIScreen.main.bounds.height * 0.8)
+    }
+
+    private func checkSystemNotificationSettings() {
+        UNUserNotificationCenter.current().getNotificationSettings { settings in
+            DispatchQueue.main.async {
+                let wasSystemEnabled = systemNotificationEnabled
+                systemNotificationEnabled = settings.authorizationStatus == .authorized
+
+                // 시스템 알림이 꺼져있으면 앱 내 설정도 끄기
+                if !systemNotificationEnabled {
+                    isNotificationEnabled = false
+                }
+                // 시스템 알림이 방금 켜졌고 앱 내 설정이 꺼져있으면 앱 내 설정도 자동으로 켜기
+                else if !wasSystemEnabled && systemNotificationEnabled && !isNotificationEnabled {
+                    isNotificationEnabled = true
+                }
+            }
+        }
+    }
+
+    private func openSystemSettings() {
+        if let url = URL(string: UIApplication.openSettingsURLString) {
+            UIApplication.shared.open(url)
+        }
     }
 }

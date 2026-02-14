@@ -16,6 +16,7 @@ struct QTuneApp: App {
     @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
 
     @AppStorage("hasCompletedOnboarding") private var hasCompletedOnboarding = false
+    @AppStorage("hasEnabledNotificationsByDefault") private var hasEnabledNotificationsByDefault = false
     @State private var isAuthReady = false
     @State private var isProfileLoaded = false
     @State private var userProfile: UserProfile?
@@ -91,6 +92,11 @@ struct QTuneApp: App {
             if let profile = try await container.makeGetUserProfileUseCase().execute() {
                 userProfile = profile
                 print("✅ [QTuneApp] Profile loaded: \(profile.nickname)")
+
+                // 3. 기존 사용자 알림 자동 활성화 (마이그레이션)
+                if hasCompletedOnboarding && !hasEnabledNotificationsByDefault {
+                    await enableNotificationsByDefault(profile: profile)
+                }
             }
         } catch {
             print("⚠️ [QTuneApp] Failed to load user profile: \(error)")
@@ -114,6 +120,46 @@ struct QTuneApp: App {
 
         if remaining > 0 {
             try? await Task.sleep(nanoseconds: UInt64(remaining * 1_000_000_000))
+        }
+    }
+
+    /// 기존 사용자 알림 자동 활성화 (한 번만 실행)
+    @MainActor
+    private func enableNotificationsByDefault(profile: UserProfile) async {
+        // 이미 알림이 켜져있으면 기존 설정 유지
+        if profile.isNotificationEnabled {
+            print("📱 [Migration] User already has notification settings, keeping existing values")
+            hasEnabledNotificationsByDefault = true
+            return
+        }
+
+        print("📱 [Migration] Enabling notifications for new user with default time")
+
+        // 기본 시간: 저녁 8시 30분
+        let updatedProfile = UserProfile(
+            nickname: profile.nickname,
+            gender: profile.gender,
+            profileImageData: profile.profileImageData,
+            preferredTranslation: profile.preferredTranslation,
+            secondaryTranslation: profile.secondaryTranslation,
+            fontScale: profile.fontScale,
+            lineSpacing: profile.lineSpacing,
+            isNotificationEnabled: true,
+            notificationHour: 20,
+            notificationMinute: 30
+        )
+
+        do {
+            try await container.makeUpdateNotificationSettingsUseCase().execute(
+                isEnabled: true,
+                hour: 20,
+                minute: 30
+            )
+            userProfile = updatedProfile
+            hasEnabledNotificationsByDefault = true
+            print("✅ [Migration] Notifications enabled at 8:30 PM")
+        } catch {
+            print("❌ [Migration] Failed to enable notifications: \(error)")
         }
     }
 
@@ -202,6 +248,7 @@ struct QTuneApp: App {
                 commitQTUseCase: commitQTUseCase,
                 getUserProfileUseCase: container.makeGetUserProfileUseCase(),
                 saveUserProfileUseCase: container.makeSaveUserProfileUseCase(),
+                updateNotificationSettingsUseCase: container.makeUpdateNotificationSettingsUseCase(),
                 session: container.dummySession,
                 userProfile: $userProfile
             )

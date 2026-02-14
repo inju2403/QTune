@@ -17,19 +17,23 @@ public final class MyPageViewModel {
 
     // MARK: - Dependencies
     private let saveUserProfileUseCase: SaveUserProfileUseCase
+    private let updateNotificationSettingsUseCase: UpdateNotificationSettingsUseCase?
 
     // MARK: - Callbacks
     public var onProfileEdit: (() -> Void)?
     public var onOpenURL: ((URL) -> Void)?
     public var onTranslationChanged: (() -> Void)?
+    public var onNotificationChanged: (() -> Void)?
 
     // MARK: - Init
     public init(
         initialState: MyPageState = MyPageState(),
-        saveUserProfileUseCase: SaveUserProfileUseCase
+        saveUserProfileUseCase: SaveUserProfileUseCase,
+        updateNotificationSettingsUseCase: UpdateNotificationSettingsUseCase? = nil
     ) {
         self.state = initialState
         self.saveUserProfileUseCase = saveUserProfileUseCase
+        self.updateNotificationSettingsUseCase = updateNotificationSettingsUseCase
     }
 
     // MARK: - Send Action
@@ -77,6 +81,21 @@ public final class MyPageViewModel {
 
         case .dismissTranslationSelection:
             state.showTranslationSelection = false
+
+        case .tapNotificationSettings:
+            state.showNotificationSettings = true
+
+        case .toggleNotification(let isEnabled):
+            state.isNotificationEnabled = isEnabled
+
+        case .selectNotificationTime(let time):
+            state.notificationTime = time
+
+        case .saveNotificationSettings(let currentProfile):
+            Task { await saveNotificationSettings(currentProfile: currentProfile) }
+
+        case .dismissNotificationSettings:
+            state.showNotificationSettings = false
         }
     }
 
@@ -97,6 +116,47 @@ public final class MyPageViewModel {
             onTranslationChanged?()
         } catch {
             print("❌ Failed to save translation: \(error)")
+        }
+    }
+
+    @MainActor
+    private func saveNotificationSettings(currentProfile: UserProfile) async {
+        let calendar = Calendar.current
+        let components = calendar.dateComponents([.hour, .minute], from: state.notificationTime)
+        let hour = components.hour ?? 20
+        let minute = components.minute ?? 0
+
+        // Update UserProfile with new notification settings
+        let updatedProfile = UserProfile(
+            nickname: currentProfile.nickname,
+            gender: currentProfile.gender,
+            profileImageData: currentProfile.profileImageData,
+            preferredTranslation: currentProfile.preferredTranslation,
+            secondaryTranslation: currentProfile.secondaryTranslation,
+            fontScale: currentProfile.fontScale,
+            lineSpacing: currentProfile.lineSpacing,
+            isNotificationEnabled: state.isNotificationEnabled,
+            notificationHour: hour,
+            notificationMinute: minute
+        )
+
+        do {
+            // Save to UserDefaults
+            try await saveUserProfileUseCase.execute(profile: updatedProfile)
+
+            // Save to Firestore if UseCase is available
+            if let updateNotificationSettingsUseCase = updateNotificationSettingsUseCase {
+                try await updateNotificationSettingsUseCase.execute(
+                    isEnabled: state.isNotificationEnabled,
+                    hour: hour,
+                    minute: minute
+                )
+            }
+
+            state.showNotificationSettings = false
+            onNotificationChanged?()
+        } catch {
+            print("❌ Failed to save notification settings: \(error)")
         }
     }
 }
