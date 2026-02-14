@@ -322,8 +322,7 @@ public struct QTEditorWizardView: View {
                         .font(DS.Font.titleM())
                 }
 
-                Text("기록이 저장되었습니다")
-                    .dsBodyM(.semibold)
+                DSText.bodyM("기록이 저장되었습니다", weight: .semibold)
                     .foregroundStyle(DS.Color.textPrimary)
             }
         }
@@ -349,8 +348,7 @@ public struct QTEditorWizardView: View {
                             .foregroundStyle(DS.Color.deepCocoa)
                     }
 
-                    Text(viewModel.state.verseEN.trimmingCharacters(in: .whitespacesAndNewlines))
-                        .dsVerse(16)
+                    DSText.verse(viewModel.state.verseEN.trimmingCharacters(in: .whitespacesAndNewlines), size: 16)
                         .foregroundStyle(DS.Color.textPrimary)
                         .fixedSize(horizontal: false, vertical: true)
                         .frame(maxWidth: .infinity, alignment: .leading)
@@ -448,21 +446,18 @@ struct SingleFieldCard<FocusValue: Hashable>: View {
             HStack(spacing: 8) {
                 Image(systemName: "pencil")
                     .foregroundStyle(DS.Color.gold)
-                Text(title)
-                    .dsTitleM(.semibold)
+                DSText.titleM(title, weight: .semibold)
                     .foregroundStyle(DS.Color.deepCocoa)
 
                 Spacer()
 
                 // 글자 수 카운터
-                Text("\(text.count)/\(maxLength)")
-                    .dsCaption()
+                DSText.caption("\(text.count)/\(maxLength)")
                     .foregroundStyle(text.count > maxLength ? .red : DS.Color.textSecondary)
             }
 
             // Description
-            Text(description)
-                .dsBodyM()
+            DSText.bodyM(description)
                 .foregroundStyle(DS.Color.textSecondary)
                 .padding(.top, 4)
 
@@ -492,8 +487,8 @@ struct SingleFieldCard<FocusValue: Hashable>: View {
                         .frame(maxWidth: .infinity, minHeight: 180, alignment: .topLeading)
                         .opacity(0) // 투명하게 (높이 계산용)
 
-                    // 실제 ScaledTextEditor (내부 스크롤 비활성화)
-                    ScaledTextEditor(text: $text, size: 15)
+                    // 실제 DSTextEditor (내부 스크롤 비활성화)
+                    DSTextEditor.body(text: $text)
                         .foregroundStyle(DS.Color.textPrimary)
                         .padding(8)
                         .scrollContentBackground(.hidden)
@@ -585,15 +580,13 @@ struct ExplanationSheetView: View {
                                 .textSelection(.enabled)
 
                             // 나머지 내용
-                            Text(String(lines[1]))
-                                .dsBodyL()
+                            DSText.bodyL(String(lines[1]))
                                 .foregroundStyle(DS.Color.textPrimary)
                                 .frame(maxWidth: .infinity, alignment: .leading)
                                 .fixedSize(horizontal: false, vertical: true)
                                 .textSelection(.enabled)
                         } else {
-                            Text(explanation)
-                                .dsBodyL()
+                            DSText.bodyL(explanation)
                                 .foregroundStyle(DS.Color.textPrimary)
                                 .frame(maxWidth: .infinity, alignment: .leading)
                                 .fixedSize(horizontal: false, vertical: true)

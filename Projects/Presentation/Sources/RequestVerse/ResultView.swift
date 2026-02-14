@@ -89,8 +89,7 @@ private extension ResultView {
                 Image(systemName: "book.closed.fill")
                     .foregroundStyle(DS.Color.gold)
                     .font(.system(size: 20 * fontScale.multiplier))
-                Text(viewModel.state.result.verseRef)
-                    .dsTitleM(.semibold)
+                DSText.titleM(viewModel.state.result.verseRef, weight: .semibold)
                     .foregroundStyle(DS.Color.deepCocoa)
             }
             .padding(.bottom, 16)
@@ -100,13 +99,11 @@ private extension ResultView {
                 Text("\(viewModel.state.result.verse.text)\n\n\(secondaryVerse.text)")
                     .font(.system(size: 17 * fontScale.multiplier, design: .serif))
                     .foregroundStyle(DS.Color.textPrimary)
-                    .dsBodyL()
                     .textSelection(.enabled)
             } else {
                 Text(viewModel.state.result.verse.text)
                     .font(.system(size: 17 * fontScale.multiplier, design: .serif))
                     .foregroundStyle(DS.Color.textPrimary)
-                    .dsBodyL()
                     .textSelection(.enabled)
             }
         }
@@ -125,14 +122,12 @@ private extension ResultView {
             HStack(spacing: 8) {
                 Image(systemName: "lightbulb.fill")
                     .foregroundStyle(DS.Color.gold)
-                Text("해설")
-                    .dsTitleM(.semibold)
+                DSText.titleM("해설", weight: .semibold)
                     .foregroundStyle(DS.Color.deepCocoa)
             }
 
-            Text(viewModel.state.result.korean)
+            DSText.bodyM(viewModel.state.result.korean)
                 .foregroundStyle(DS.Color.textPrimary)
-                .dsBodyM()
                 .textSelection(.enabled)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -150,14 +145,12 @@ private extension ResultView {
             HStack(spacing: 8) {
                 Image(systemName: "sparkles")
                     .foregroundStyle(DS.Color.gold)
-                Text("이 말씀이 주어진 이유")
-                    .dsTitleS(.semibold)
+                DSText.titleS("이 말씀이 주어진 이유", weight: .semibold)
                     .foregroundStyle(DS.Color.deepCocoa)
             }
 
-            Text(viewModel.state.result.rationale)
+            DSText.bodyM(viewModel.state.result.rationale)
                 .foregroundStyle(DS.Color.textPrimary)
-                .dsBodyM()
                 .textSelection(.enabled)
         }
         .frame(maxWidth: .infinity, alignment: .leading)

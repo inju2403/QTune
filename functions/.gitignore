@@ -22,4 +22,10 @@ firebase-debug.log
 *.swp
 *.swo
 *~
+
+# Service account keys
 service-account-key.json
+
+# Test files
+test-*.js
+test-*.ts

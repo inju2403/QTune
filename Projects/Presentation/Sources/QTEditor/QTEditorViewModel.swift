@@ -161,6 +161,7 @@ public final class QTEditorViewModel {
                 qtToSave.soapPrayer = nil
             }
 
+            let savedQT: QuietTime
             if let existingQT = state.editingQT {
                 // 편집 모드: 업데이트
                 print("   Mode: UPDATE existing QT")
@@ -176,19 +177,24 @@ public final class QTEditorViewModel {
                 updated.updatedAt = Date()
 
                 print("   Calling updateQTUseCase...")
-                _ = try await updateQTUseCase.execute(qt: updated, session: session)
+                savedQT = try await updateQTUseCase.execute(qt: updated, session: session)
                 print("   ✅ Update succeeded")
             } else {
                 // 신규 작성: 커밋
                 print("   Mode: COMMIT new QT")
                 qtToSave.status = .draft
                 print("   Calling commitQTUseCase...")
-                _ = try await commitQTUseCase.execute(draft: qtToSave, session: session)
+                savedQT = try await commitQTUseCase.execute(draft: qtToSave, session: session)
                 print("   ✅ Commit succeeded")
             }
 
             await MainActor.run {
-                NotificationCenter.default.post(name: .qtDidChange, object: nil)
+                NotificationCenter.default.post(
+                    name: .qtDidChange,
+                    object: state.editingQT != nil
+                        ? QTChangeType.updated(savedQT)
+                        : QTChangeType.created(savedQT)
+                )
                 state.showSaveSuccessToast = true
             }
         } catch {

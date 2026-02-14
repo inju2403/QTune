@@ -22,7 +22,13 @@ public enum PersistenceFactory {
     /// 여러 개 생성 시 iPad 멀티태스킹 환경에서 메모리 충돌 발생 가능.
     private static var _sharedContainer: ModelContainer?
 
-    /// Container 생성 시 thread-safety 보장
+    /// 앱 전체에서 공유되는 ModelContext (싱글톤)
+    ///
+    /// 즉시 동기화를 위해 ModelContext도 공유합니다.
+    /// @MainActor로 보호되어 thread-safe합니다.
+    private static var _sharedContext: ModelContext?
+
+    /// Container/Context 생성 시 thread-safety 보장
     private static let lock = NSLock()
 
     /// QTRepository 구현체를 생성합니다.
@@ -39,8 +45,13 @@ public enum PersistenceFactory {
             _sharedContainer = try ModelContainer(for: QTEntryModel.self)
         }
 
-        // 매번 새로운 ModelContext 생성 (권장 사항)
-        let context = ModelContext(_sharedContainer!)
-        return DefaultQTRepository(modelContext: context)
+        // Context가 없으면 생성 (첫 호출 시 1회만)
+        if _sharedContext == nil {
+            print("📝 [PersistenceFactory] Creating shared ModelContext")
+            _sharedContext = ModelContext(_sharedContainer!)
+        }
+
+        // 싱글톤 ModelContext 사용 (즉시 동기화를 위해)
+        return DefaultQTRepository(modelContext: _sharedContext!)
     }
 }

@@ -28,8 +28,7 @@ public struct ProfileEditView: View {
             ScrollView {
                 VStack(spacing: 48) {
                     // 안내 문구
-                    Text("프로필 정보를 변경할 수 있어요")
-                        .dsBodyM()
+                    DSText.bodyM("프로필 정보를 변경할 수 있어요")
                         .foregroundStyle(DS.Color.textSecondary)
                         .padding(.top, 12)
 
@@ -179,8 +178,7 @@ private extension ProfileEditView {
                     HStack(spacing: 6) {
                         Image(systemName: "arrow.counterclockwise")
                             .font(.system(size: 13))
-                        Text("기본 이미지로 변경")
-                            .dsSmall()
+                        DSText.small("기본 이미지로 변경")
                     }
                     .foregroundStyle(DS.Color.textSecondary)
                 }
@@ -197,8 +195,7 @@ private extension ProfileEditView {
                     Image(systemName: "person.text.rectangle")
                         .foregroundStyle(DS.Color.gold)
                         .font(.system(size: 18))
-                    Text("이름")
-                        .dsTitleM(.semibold)
+                    DSText.titleM("이름", weight: .semibold)
                         .foregroundStyle(DS.Color.deepCocoa)
                 }
 
@@ -225,8 +222,7 @@ private extension ProfileEditView {
                     Image(systemName: "person.2")
                         .foregroundStyle(DS.Color.gold)
                         .font(.system(size: 18))
-                    Text("구분")
-                        .dsTitleM(.semibold)
+                    DSText.titleM("구분", weight: .semibold)
                         .foregroundStyle(DS.Color.deepCocoa)
                 }
 
@@ -256,8 +252,7 @@ private extension ProfileEditView {
                     .foregroundStyle(viewModel.state.selectedGender == gender ? DS.Color.gold : DS.Color.textSecondary)
                     .font(.system(size: 20))
 
-                Text(gender.rawValue)
-                    .dsBodyL(.medium)
+                DSText.bodyL(gender.rawValue, weight: .medium)
                     .foregroundStyle(viewModel.state.selectedGender == gender ? DS.Color.deepCocoa : DS.Color.textSecondary)
             }
             .frame(maxWidth: .infinity)
@@ -284,8 +279,7 @@ private extension ProfileEditView {
             Haptics.tap()
             viewModel.send(.saveProfile)
         } label: {
-            Text("저장")
-                .dsBodyL(.bold)
+            DSText.bodyL("저장", weight: .bold)
                 .foregroundStyle(.white)
                 .frame(maxWidth: .infinity)
                 .frame(height: 50)
@@ -323,8 +317,7 @@ private extension ProfileEditView {
                         .font(DS.Font.titleM())
                 }
 
-                Text("저장되었습니다")
-                    .dsBodyM(.semibold)
+                DSText.bodyM("저장되었습니다", weight: .semibold)
                     .foregroundStyle(DS.Color.textPrimary)
             }
         }

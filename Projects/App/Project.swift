@@ -22,8 +22,8 @@ let project = Project(
       deploymentTargets: .iOS("17.0"),
       infoPlist: .extendingDefault(with: [
         "CFBundleDisplayName": "$(PRODUCT_NAME)",
-        "CFBundleShortVersionString": "1.7.1",
-        "CFBundleVersion": "172",
+        "CFBundleShortVersionString": "1.7.2",
+        "CFBundleVersion": "173",
         "UILaunchStoryboardName": "LaunchScreen",
         "UIViewControllerBasedStatusBarAppearance": true,
         "UIUserInterfaceStyle": "Light"
@@ -107,19 +107,23 @@ let project = Project(
         configurations: [
           .debug(name: "Debug", settings: [
             "PRODUCT_BUNDLE_IDENTIFIER": "com.inju.qtune",
-            "PRODUCT_NAME": "QTune"
+            "PRODUCT_NAME": "QTune",
+            "ASSETCATALOG_COMPILER_APPICON_NAME": "AppIcon"
           ]),
           .release(name: "Release", settings: [
             "PRODUCT_BUNDLE_IDENTIFIER": "com.inju.qtune",
-            "PRODUCT_NAME": "QTune"
+            "PRODUCT_NAME": "QTune",
+            "ASSETCATALOG_COMPILER_APPICON_NAME": "AppIcon"
           ]),
           .debug(name: "Debug-Sandbox", settings: [
             "PRODUCT_BUNDLE_IDENTIFIER": "com.inju.qtune.sandbox",
-            "PRODUCT_NAME": "QTune-Sandbox"
+            "PRODUCT_NAME": "QTune-Sandbox",
+            "ASSETCATALOG_COMPILER_APPICON_NAME": "AppIcon-Sandbox"
           ]),
           .release(name: "Release-Sandbox", settings: [
             "PRODUCT_BUNDLE_IDENTIFIER": "com.inju.qtune.sandbox",
-            "PRODUCT_NAME": "QTune-Sandbox"
+            "PRODUCT_NAME": "QTune-Sandbox",
+            "ASSETCATALOG_COMPILER_APPICON_NAME": "AppIcon-Sandbox"
           ])
         ],
         defaultSettings: .recommended
@@ -209,7 +213,8 @@ let project = Project(
       ],
       settings: .settings(
         base: [
-            "OTHER_LDFLAGS": .array(["$(inherited)", "-ObjC", "-lc++"])
+            "OTHER_LDFLAGS": .array(["$(inherited)", "-ObjC", "-lc++"]),
+            "ASSETCATALOG_COMPILER_APPICON_NAME": "AppIcon-Sandbox"
         ],
         configurations: [],
         defaultSettings: .recommended

@@ -92,8 +92,7 @@ private extension QTEditorView {
         VStack(alignment: .leading, spacing: 12) {
             // 영문 본문
             VerseCardView(title: "본문") {
-                Text(draft.verse.text)
-                    .dsBodyM()
+                DSText.bodyM(draft.verse.text)
                     .textSelection(.enabled)
             }
 
@@ -103,18 +102,15 @@ private extension QTEditorView {
                     let lines = korean.split(separator: "\n", maxSplits: 1, omittingEmptySubsequences: false)
                     if lines.count == 2 {
                         VStack(alignment: .leading, spacing: DS.Spacing.s) {
-                            Text(String(lines[0]))
-                                .dsBodyM(.semibold)
+                            DSText.bodyM(String(lines[0]), weight: .semibold)
                                 .foregroundStyle(DS.Color.gold)
                                 .textSelection(.enabled)
 
-                            Text(String(lines[1]))
-                                .dsBodyM()
+                            DSText.bodyM(String(lines[1]))
                                 .textSelection(.enabled)
                         }
                     } else {
-                        Text(korean)
-                            .dsBodyM()
+                        DSText.bodyM(korean)
                             .textSelection(.enabled)
                     }
                 }
@@ -123,8 +119,7 @@ private extension QTEditorView {
             // 이 말씀이 주어진 이유
             if let rationale = draft.rationale, !rationale.isEmpty {
                 VerseCardView(title: "이 말씀이 주어진 이유") {
-                    Text(rationale)
-                        .dsBodyM()
+                    DSText.bodyM(rationale)
                         .textSelection(.enabled)
                 }
             }
@@ -227,14 +222,12 @@ struct EditableVerseCard: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: DS.Spacing.m) {
-            Text(title)
-                .dsBodyM(.semibold)
+            DSText.bodyM(title, weight: .semibold)
                 .foregroundStyle(DS.Color.textSecondary)
 
             // 회색 박스 안에 TextEditor (1탭 스타일, 대비 강화)
-            ScaledTextEditor(
+            DSTextEditor.editor(
                 text: $text,
-                size: 16,
                 placeholder: placeholder
             )
             .foregroundStyle(Color(hex: "#1A1A1A"))
@@ -296,8 +289,7 @@ private extension QTEditorView {
                         .font(DS.Font.titleM())
                 }
 
-                Text("기록이 저장되었습니다")
-                    .dsBodyM(.semibold)
+                DSText.bodyM("기록이 저장되었습니다", weight: .semibold)
                     .foregroundStyle(DS.Color.textPrimary)
             }
         }

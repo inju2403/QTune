@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import Domain
 
 /// 주요 액션 버튼 - 광채 + 스르륵
 public struct PrimaryButton: View {
@@ -15,6 +16,7 @@ public struct PrimaryButton: View {
 
     @State private var pressed = false
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.fontScale) private var fontScale
 
     public init(title: String, icon: String? = "sparkles", action: @escaping () -> Void) {
         self.title = title
@@ -31,8 +33,7 @@ public struct PrimaryButton: View {
                 if let icon, !icon.isEmpty {
                     Image(systemName: icon)
                 }
-                Text(title)
-                    .dsTitleM()
+                DSText.titleM(title)
             }
             .padding(.vertical, DS.Spacing.m)
             .padding(.horizontal, DS.Spacing.xl)

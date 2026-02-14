@@ -140,7 +140,10 @@ public final class QTDetailViewModel {
             try await deleteQTUseCase.execute(id: state.qt.id, session: session)
 
             await MainActor.run {
-                NotificationCenter.default.post(name: .qtDidChange, object: nil)
+                NotificationCenter.default.post(
+                    name: .qtDidChange,
+                    object: QTChangeType.deleted(state.qt.id)
+                )
                 onDeleted?()
             }
         } catch {

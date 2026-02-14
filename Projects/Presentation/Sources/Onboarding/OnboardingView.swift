@@ -25,12 +25,10 @@ public struct OnboardingView: View {
 
                 // 타이틀
                 VStack(spacing: 12) {
-                    Text("환영합니다!")
-                        .dsHero()
+                    DSText.hero("환영합니다!")
                         .foregroundStyle(DS.Color.deepCocoa)
 
-                    Text("큐튠과 함께 QT 여정을 시작하기 전에\n간단한 정보를 알려주세요")
-                        .dsBodyL()
+                    DSText.bodyL("큐튠과 함께 QT 여정을 시작하기 전에\n간단한 정보를 알려주세요")
                         .foregroundStyle(DS.Color.textSecondary)
                         .multilineTextAlignment(.center)
                         .lineSpacing(4)
@@ -44,8 +42,7 @@ public struct OnboardingView: View {
                         HStack(spacing: 6) {
                             Image(systemName: "person.fill")
                                 .foregroundStyle(DS.Color.gold)
-                            Text("이름")
-                                .dsTitleM(.semibold)
+                            DSText.titleM("이름", weight: .semibold)
                                 .foregroundStyle(DS.Color.deepCocoa)
                         }
 
@@ -69,8 +66,7 @@ public struct OnboardingView: View {
                         HStack(spacing: 6) {
                             Image(systemName: "heart.fill")
                                 .foregroundStyle(DS.Color.gold)
-                            Text("구분")
-                                .dsTitleM(.semibold)
+                            DSText.titleM("구분", weight: .semibold)
                                 .foregroundStyle(DS.Color.deepCocoa)
                         }
 
@@ -80,8 +76,7 @@ public struct OnboardingView: View {
                                 Haptics.tap()
                                 viewModel.send(.selectGender(.brother))
                             } label: {
-                                Text("형제")
-                                    .dsBodyL(.semibold)
+                                DSText.bodyL("형제", weight: .semibold)
                                     .foregroundStyle(
                                         viewModel.state.selectedGender == .brother
                                             ? .white
@@ -118,8 +113,7 @@ public struct OnboardingView: View {
                                 Haptics.tap()
                                 viewModel.send(.selectGender(.sister))
                             } label: {
-                                Text("자매")
-                                    .dsBodyL(.semibold)
+                                DSText.bodyL("자매", weight: .semibold)
                                     .foregroundStyle(
                                         viewModel.state.selectedGender == .sister
                                             ? .white
@@ -173,8 +167,7 @@ public struct OnboardingView: View {
                             ProgressView()
                                 .tint(.white)
                         } else {
-                            Text("시작하기")
-                                .dsBodyL(.bold)
+                            DSText.bodyL("시작하기", weight: .bold)
                         }
                     }
                     .foregroundStyle(.white)

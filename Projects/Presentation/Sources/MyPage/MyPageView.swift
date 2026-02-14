@@ -229,8 +229,7 @@ private extension MyPageView {
 
             // 이름 + 성별
             if let profile = userProfile {
-                Text("\(profile.nickname) \(profile.gender.rawValue)님")
-                    .dsTitleL(.bold)
+                DSText.titleL("\(profile.nickname) \(profile.gender.rawValue)님", weight: .bold)
                     .foregroundStyle(DS.Color.deepCocoa)
             }
         }
@@ -240,8 +239,7 @@ private extension MyPageView {
 
     @ViewBuilder
     func sectionHeader(_ title: String) -> some View {
-        Text(title)
-            .dsCaption(.semibold)
+        DSText.caption(title, weight: .semibold)
             .foregroundStyle(DS.Color.textSecondary)
     }
 
@@ -257,8 +255,7 @@ private extension MyPageView {
                     .foregroundStyle(DS.Color.gold)
                     .frame(width: 24)
 
-                Text(title)
-                    .dsBodyL()
+                DSText.bodyL(title)
                     .foregroundStyle(DS.Color.textPrimary)
 
                 Spacer()
@@ -282,23 +279,19 @@ private extension MyPageView {
                     .foregroundStyle(DS.Color.gold)
                     .frame(width: 24)
 
-                Text("폰트 설정")
-                    .dsBodyL()
+                DSText.bodyL("폰트 설정")
                     .foregroundStyle(DS.Color.textPrimary)
 
                 Spacer()
 
                 HStack(spacing: 4) {
-                    Text(userProfile?.fontScale.displayName ?? "보통")
-                        .dsCaption()
+                    DSText.caption(userProfile?.fontScale.displayName ?? "보통")
                         .foregroundStyle(DS.Color.textSecondary)
 
-                    Text("·")
-                        .dsCaption()
+                    DSText.caption("·")
                         .foregroundStyle(DS.Color.textSecondary)
 
-                    Text(userProfile?.lineSpacing.displayName ?? "보통")
-                        .dsCaption()
+                    DSText.caption(userProfile?.lineSpacing.displayName ?? "보통")
                         .foregroundStyle(DS.Color.textSecondary)
                 }
 
@@ -326,24 +319,20 @@ private extension MyPageView {
                     .foregroundStyle(DS.Color.gold)
                     .frame(width: 24)
 
-                Text("역본")
-                    .dsBodyL()
+                DSText.bodyL("역본")
                     .foregroundStyle(DS.Color.textPrimary)
 
                 Spacer()
 
                 HStack(spacing: 4) {
-                    Text(userProfile?.preferredTranslation.displayName ?? "개역한글")
-                        .dsCaption()
+                    DSText.caption(userProfile?.preferredTranslation.displayName ?? "개역한글")
                         .foregroundStyle(DS.Color.textSecondary)
 
                     if let secondary = userProfile?.secondaryTranslation {
-                        Text("·")
-                            .dsCaption()
+                        DSText.caption("·")
                             .foregroundStyle(DS.Color.textSecondary)
 
-                        Text(secondary.displayName)
-                            .dsCaption()
+                        DSText.caption(secondary.displayName)
                             .foregroundStyle(DS.Color.textSecondary)
                     }
                 }
@@ -405,14 +394,12 @@ private extension MyPageView {
                 .foregroundStyle(DS.Color.gold)
                 .frame(width: 24)
 
-            Text("버전 정보")
-                .dsBodyL()
+            DSText.bodyL("버전 정보")
                 .foregroundStyle(DS.Color.textPrimary)
 
             Spacer()
 
-            Text(appVersion)
-                .dsBodyL()
+            DSText.bodyL(appVersion)
                 .foregroundStyle(DS.Color.textSecondary)
                 .padding(.trailing, 8)
         }
@@ -497,12 +484,10 @@ struct DualTranslationSelectionSheet: View {
         VStack(spacing: 0) {
             // 타이틀
             VStack(spacing: DS.Spacing.xs) {
-                Text("역본 선택")
-                    .dsTitleL(.bold)
+                DSText.titleL("역본 선택", weight: .bold)
                     .foregroundStyle(DS.Color.deepCocoa)
 
-                Text("주 역본과 비교 역본을 선택하세요")
-                    .dsBodyM()
+                DSText.bodyM("주 역본과 비교 역본을 선택하세요")
                     .foregroundStyle(DS.Color.textSecondary)
             }
             .padding(.top, DS.Spacing.xl)
@@ -512,8 +497,7 @@ struct DualTranslationSelectionSheet: View {
             HStack(alignment: .top, spacing: DS.Spacing.m) {
                 // 주 역본 컬럼
                 VStack(spacing: DS.Spacing.xs) {
-                    Text("주 역본")
-                        .dsBodyM(.semibold)
+                    DSText.bodyM("주 역본", weight: .semibold)
                         .foregroundStyle(DS.Color.textPrimary)
                         .frame(maxWidth: .infinity, alignment: .leading)
 
@@ -529,8 +513,7 @@ struct DualTranslationSelectionSheet: View {
 
                 // 비교 역본 컬럼
                 VStack(spacing: DS.Spacing.xs) {
-                    Text("비교 역본")
-                        .dsBodyM(.semibold)
+                    DSText.bodyM("비교 역본", weight: .semibold)
                         .foregroundStyle(DS.Color.textPrimary)
                         .frame(maxWidth: .infinity, alignment: .leading)
 
@@ -564,8 +547,7 @@ struct DualTranslationSelectionSheet: View {
                 Haptics.tap()
                 onDone()
             } label: {
-                Text("저장")
-                    .dsBodyL(.semibold)
+                DSText.bodyL("저장", weight: .semibold)
                     .foregroundStyle(.white)
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, DS.Spacing.m)
@@ -590,16 +572,14 @@ struct DualTranslationSelectionSheet: View {
         } label: {
             HStack(spacing: 8) {
                 VStack(alignment: .leading, spacing: 2) {
-                    Text(translation?.displayName ?? "선택 안 함")
-                        .dsBodyM(.semibold)
+                    DSText.bodyM(translation?.displayName ?? "선택 안 함", weight: .semibold)
                         .foregroundStyle(
                             isDisabled ? DS.Color.textSecondary.opacity(0.3) :
                             isSelected ? DS.Color.deepCocoa : DS.Color.textPrimary
                         )
 
                     if let translation = translation {
-                        Text(translation.language == "ko" ? "한국어" : "English")
-                            .dsCaption()
+                        DSText.caption(translation.language == "ko" ? "한국어" : "English")
                             .foregroundStyle(
                                 isDisabled ? DS.Color.textSecondary.opacity(0.3) : DS.Color.textSecondary
                             )
