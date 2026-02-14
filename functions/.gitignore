@@ -22,3 +22,4 @@ firebase-debug.log
 *.swp
 *.swo
 *~
+service-account-key.json
