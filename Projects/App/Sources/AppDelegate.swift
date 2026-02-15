@@ -251,6 +251,11 @@ class AppDelegate: NSObject, UIApplicationDelegate, MessagingDelegate, UNUserNot
         withCompletionHandler completionHandler: @escaping () -> Void
     ) {
         print("📱 [Push] User tapped notification")
+
+        // 뱃지 초기화
+        UIApplication.shared.applicationIconBadgeNumber = 0
+        print("🔔 [Push] Badge cleared after tapping notification")
+
         // TODO: 앱 내 특정 화면으로 이동 로직 추가
         completionHandler()
     }
@@ -264,5 +269,14 @@ class AppDelegate: NSObject, UIApplicationDelegate, MessagingDelegate, UNUserNot
 
     func application(_ application: UIApplication, didFailToRegisterForRemoteNotificationsWithError error: Error) {
         print("❌ [APNs] Failed to register: \(error)")
+    }
+
+    // MARK: - App Lifecycle
+
+    /// 앱이 활성화될 때 (백그라운드에서 포그라운드로 돌아올 때)
+    func applicationDidBecomeActive(_ application: UIApplication) {
+        // 뱃지 초기화
+        application.applicationIconBadgeNumber = 0
+        print("🔔 [AppDelegate] Badge cleared on app becoming active")
     }
 }

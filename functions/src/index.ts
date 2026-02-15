@@ -67,7 +67,11 @@ function getCallerId(request: any): string {
 // =========================================
 // 하루 10회 제한 체크 (Firestore 기반)
 // =========================================
-async function checkDailyQuota(callerId: string): Promise<void> {
+async function checkDailyQuota(
+  callerId: string,
+  nickname?: string,
+  gender?: string
+): Promise<void> {
   const db = admin.firestore();
 
   // 오늘 날짜 (한국시간 기준, YYYY-MM-DD)
@@ -83,12 +87,22 @@ async function checkDailyQuota(callerId: string): Promise<void> {
     const doc = await transaction.get(docRef);
 
     if (!doc.exists) {
-      // 첫 호출
-      transaction.set(docRef, {
+      // 첫 호출 - nickname과 gender 포함하여 저장
+      const usageData: any = {
         count: 1,
         updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-      });
-      logger.info(`[checkDailyQuota] First call today: ${callerId}`);
+      };
+
+      // 프로필 정보 추가 (있으면)
+      if (nickname) {
+        usageData.nickname = nickname;
+      }
+      if (gender) {
+        usageData.gender = gender;
+      }
+
+      transaction.set(docRef, usageData);
+      logger.info(`[checkDailyQuota] First call today: ${callerId} (nickname: ${nickname || "N/A"}, gender: ${gender || "N/A"})`);
       return;
     }
 
@@ -105,13 +119,23 @@ async function checkDailyQuota(callerId: string): Promise<void> {
       );
     }
 
-    // 카운트 증가
-    transaction.update(docRef, {
+    // 카운트 증가 및 프로필 정보 업데이트
+    const updateData: any = {
       count: currentCount + 1,
       updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-    });
+    };
+
+    // 프로필 정보 업데이트 (있으면)
+    if (nickname) {
+      updateData.nickname = nickname;
+    }
+    if (gender) {
+      updateData.gender = gender;
+    }
+
+    transaction.update(docRef, updateData);
     logger.info(
-      `[checkDailyQuota] Count updated: ${callerId} (${currentCount + 1}/${DAILY_LIMIT})`
+      `[checkDailyQuota] Count updated: ${callerId} (${currentCount + 1}/${DAILY_LIMIT}, nickname: ${nickname || "N/A"}, gender: ${gender || "N/A"})`
     );
   });
 }
@@ -234,7 +258,7 @@ export const recommendVerse = onCall(
 
       // 호출자 식별 및 하루 10회 제한 체크
       const callerId = getCallerId(request);
-      await checkDailyQuota(callerId);
+      await checkDailyQuota(callerId, nickname, gender);
 
       // 이미 추천한 구절 목록 조회
       const recommendedVerses = await getRecommendedVerses(callerId);
