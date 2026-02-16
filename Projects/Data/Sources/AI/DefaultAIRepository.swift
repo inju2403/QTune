@@ -133,6 +133,10 @@ public final class DefaultAIRepository: AIRepository {
         )
 
         print("✅ [DefaultAIRepository] Pipeline completed successfully")
+
+        // 6. Firestore에 말씀 추천 기록 저장 (푸시 알림용)
+        await recordVerseRequest()
+
         return generatedVerse
     }
 
@@ -186,5 +190,12 @@ public final class DefaultAIRepository: AIRepository {
             text: text,
             translation: translation
         )
+    }
+
+    /// Firestore에 말씀 추천 요청 기록 (푸시 알림 타겟팅용)
+    private func recordVerseRequest() async {
+        // Cloud Functions가 이미 uid를 기록하므로 iOS에서는 스킵
+        // 말씀 추천 요청은 OpenAI API 호출 시 Cloud Functions에서 자동으로 기록됨
+        // TODO: 필요시 UseCase 레벨에서 uid를 전달받아 기록
     }
 }

@@ -5,9 +5,12 @@
 //  Created by 이승주 on 10/11/25.
 //
 
+import UIKit
 import Foundation
 import Domain
 import Data
+import FirebaseFunctions
+import FirebaseAuth
 
 /// 앱 전체 의존성 조립 컨테이너
 ///
@@ -54,7 +57,7 @@ final class AppDependencyContainer {
         let bibleAPIClient = URLSessionHTTPClient(baseURL: bibleAPIBaseURL)
         let bibleDataSource = BibleAPIDataSource(client: bibleAPIClient)
 
-        // Firebase Functions DataSource (기본 생성자 사용)
+        // Firebase Functions DataSource (App 레이어에서 직접 생성)
         let firebaseFunctionsDataSource = FirebaseFunctionsAIDataSource()
 
         let repo = DefaultAIRepository(
@@ -178,6 +181,23 @@ final class AppDependencyContainer {
     /// GetUserProfileUseCase 생성
     func makeGetUserProfileUseCase() -> GetUserProfileUseCase {
         return DefaultGetUserProfileUseCase(repository: makeUserProfileRepository())
+    }
+
+    /// UpdateNotificationSettingsUseCase 생성 (Firestore 연동 포함)
+    ///
+    /// Clean Architecture 원칙:
+    /// - Domain UseCase로 UserDefaults 저장
+    /// - App 레이어 Wrapper UseCase로 Firestore 저장 추가
+    func makeUpdateNotificationSettingsUseCase() -> UpdateNotificationSettingsUseCase {
+        let domainUseCase = DefaultUpdateNotificationSettingsUseCase(
+            userProfileRepository: makeUserProfileRepository()
+        )
+        let firestoreRepository = FirestoreNotificationRepository()
+
+        return FirestoreUpdateNotificationSettingsUseCase(
+            domainUseCase: domainUseCase,
+            firestoreRepository: firestoreRepository
+        )
     }
 }
 

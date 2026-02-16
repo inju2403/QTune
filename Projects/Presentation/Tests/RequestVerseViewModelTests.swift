@@ -19,12 +19,20 @@ final class SpyGenerateVerseInteractor: GenerateVerseUseCase {
     var lastNormalizedText: String?
     var lastUserId: String?
     var lastTimeZone: TimeZone?
+    var lastNickname: String?
+    var lastGender: String?
+    var lastPrimaryTranslation: Translation?
+    var lastSecondaryTranslation: Translation?
 
-    func execute(normalizedText: String, userId: String, timeZone: TimeZone) async throws -> GeneratedVerse {
+    func execute(normalizedText: String, userId: String, timeZone: TimeZone, nickname: String?, gender: String?, primaryTranslation: Translation?, secondaryTranslation: Translation?) async throws -> GeneratedVerse {
         executeCallCount += 1
         lastNormalizedText = normalizedText
         lastUserId = userId
         lastTimeZone = timeZone
+        lastNickname = nickname
+        lastGender = gender
+        lastPrimaryTranslation = primaryTranslation
+        lastSecondaryTranslation = secondaryTranslation
 
         if shouldFail {
             throw NSError(domain: "test", code: -1)

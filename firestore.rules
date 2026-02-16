@@ -1,0 +1,39 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // 사용자별 FCM 토큰 및 메타데이터
+    match /users/{userId} {
+      // 본인 문서만 읽기/쓰기 가능 (또는 서버에서 Admin SDK 사용 시)
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+      // Cloud Functions (Admin SDK)에서 읽기 허용
+      allow read: if request.auth == null;
+    }
+
+    // 말씀 추천 요청 기록 (푸시 알림 타겟팅용)
+    match /verse_requests/{userId} {
+      // 본인 문서만 읽기/쓰기 가능
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+
+    // 사용량 추적 (하루 10회 제한)
+    match /usage/{document} {
+      // 본인 문서만 읽기 가능 (쓰기는 Cloud Functions만)
+      allow read: if request.auth != null &&
+        document.matches(request.auth.uid + '_*');
+      allow write: if false; // Cloud Functions만 쓰기 가능
+    }
+
+    // 구절 추천 이력
+    match /verse_history/{userId} {
+      // 본인 문서만 읽기 가능 (쓰기는 Cloud Functions만)
+      allow read: if request.auth != null && request.auth.uid == userId;
+      allow write: if false; // Cloud Functions만 쓰기 가능
+    }
+
+    // 기타 모든 문서는 접근 거부
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

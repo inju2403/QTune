@@ -19,6 +19,7 @@ public struct MainTabViewWrapper: View {
     let commitQTUseCase: CommitQTUseCase
     let getUserProfileUseCase: GetUserProfileUseCase
     let saveUserProfileUseCase: SaveUserProfileUseCase
+    let updateNotificationSettingsUseCase: UpdateNotificationSettingsUseCase?
     let session: UserSession
 
     @State private var selectedTab = 0
@@ -43,6 +44,7 @@ public struct MainTabViewWrapper: View {
         commitQTUseCase: CommitQTUseCase,
         getUserProfileUseCase: GetUserProfileUseCase,
         saveUserProfileUseCase: SaveUserProfileUseCase,
+        updateNotificationSettingsUseCase: UpdateNotificationSettingsUseCase? = nil,
         session: UserSession,
         userProfile: Binding<UserProfile?>
     ) {
@@ -55,6 +57,7 @@ public struct MainTabViewWrapper: View {
         self.commitQTUseCase = commitQTUseCase
         self.getUserProfileUseCase = getUserProfileUseCase
         self.saveUserProfileUseCase = saveUserProfileUseCase
+        self.updateNotificationSettingsUseCase = updateNotificationSettingsUseCase
         self.session = session
         self._userProfile = userProfile
     }
@@ -64,9 +67,25 @@ public struct MainTabViewWrapper: View {
     }
 
     private func myPageViewModel() -> MyPageViewModel {
-        let viewModel = MyPageViewModel(saveUserProfileUseCase: saveUserProfileUseCase)
+        let viewModel = MyPageViewModel(
+            saveUserProfileUseCase: saveUserProfileUseCase,
+            updateNotificationSettingsUseCase: updateNotificationSettingsUseCase
+        )
         viewModel.onTranslationChanged = {
             // 역본 변경 시 userProfile 다시 로드
+            Task {
+                do {
+                    let profile = try await getUserProfileUseCase.execute()
+                    await MainActor.run {
+                        userProfile = profile
+                    }
+                } catch {
+                    print("❌ Failed to reload user profile: \(error)")
+                }
+            }
+        }
+        viewModel.onNotificationChanged = {
+            // 알림 설정 변경 시 userProfile 다시 로드
             Task {
                 do {
                     let profile = try await getUserProfileUseCase.execute()

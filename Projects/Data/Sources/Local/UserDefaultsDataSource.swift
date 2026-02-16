@@ -24,6 +24,10 @@ protocol UserDefaultsDataSource {
     func getLineSpacing() -> String?
     func setOnboardingCompleted(_ completed: Bool)
     func hasCompletedOnboarding() -> Bool
+    func saveNotificationEnabled(_ enabled: Bool) throws
+    func isNotificationEnabled() -> Bool
+    func saveNotificationTime(hour: Int, minute: Int) throws
+    func getNotificationTime() -> (hour: Int, minute: Int)
 }
 
 final class DefaultUserDefaultsDataSource: UserDefaultsDataSource {
@@ -38,6 +42,9 @@ final class DefaultUserDefaultsDataSource: UserDefaultsDataSource {
         static let fontScale = "user_font_scale"
         static let lineSpacing = "user_line_spacing"
         static let onboardingCompleted = "onboarding_completed"
+        static let notificationEnabled = "notification_enabled"
+        static let notificationHour = "notification_hour"
+        static let notificationMinute = "notification_minute"
     }
 
     init(userDefaults: UserDefaults = .standard) {
@@ -118,5 +125,29 @@ final class DefaultUserDefaultsDataSource: UserDefaultsDataSource {
 
     func hasCompletedOnboarding() -> Bool {
         userDefaults.bool(forKey: Keys.onboardingCompleted)
+    }
+
+    func saveNotificationEnabled(_ enabled: Bool) throws {
+        userDefaults.set(enabled, forKey: Keys.notificationEnabled)
+    }
+
+    func isNotificationEnabled() -> Bool {
+        // 기본값: true (활성화)
+        if userDefaults.object(forKey: Keys.notificationEnabled) == nil {
+            return true
+        }
+        return userDefaults.bool(forKey: Keys.notificationEnabled)
+    }
+
+    func saveNotificationTime(hour: Int, minute: Int) throws {
+        userDefaults.set(hour, forKey: Keys.notificationHour)
+        userDefaults.set(minute, forKey: Keys.notificationMinute)
+    }
+
+    func getNotificationTime() -> (hour: Int, minute: Int) {
+        // 기본값: 오후 8시 30분 (20:30)
+        let hour = userDefaults.object(forKey: Keys.notificationHour) as? Int ?? 20
+        let minute = userDefaults.object(forKey: Keys.notificationMinute) as? Int ?? 30
+        return (hour, minute)
     }
 }

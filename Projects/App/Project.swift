@@ -3,7 +3,7 @@ import ProjectDescription
 let project = Project(
   name: "App",
   packages: [
-    .remote(url: "https://github.com/firebase/firebase-ios-sdk", requirement: .upToNextMajor(from: "11.0.0"))
+    .remote(url: "https://github.com/firebase/firebase-ios-sdk", requirement: .upToNextMajor(from: "10.29.0"))
   ],
   settings: .settings(
     configurations: [
@@ -22,8 +22,8 @@ let project = Project(
       deploymentTargets: .iOS("17.0"),
       infoPlist: .extendingDefault(with: [
         "CFBundleDisplayName": "$(PRODUCT_NAME)",
-        "CFBundleShortVersionString": "1.7.2",
-        "CFBundleVersion": "173",
+        "CFBundleShortVersionString": "1.8.0",
+        "CFBundleVersion": "180",
         "UILaunchStoryboardName": "LaunchScreen",
         "UIViewControllerBasedStatusBarAppearance": true,
         "UIUserInterfaceStyle": "Light"
@@ -37,6 +37,7 @@ let project = Project(
         "Resources/GoogleService-Info-sandbox.plist"
       ],
       buildableFolders: [.folder("Sources")],
+      entitlements: "App.entitlements",
       scripts: [
         .pre(
           script: """
@@ -94,11 +95,14 @@ let project = Project(
         .project(target: "Data", path: "../Data"),
         .package(product: "FirebaseAnalytics"),
         .package(product: "FirebaseCrashlytics"),
-        .package(product: "FirebaseCore")
+        .package(product: "FirebaseAuth"),
+        .package(product: "FirebaseMessaging"),
+        .package(product: "FirebaseFirestore"),
+        .package(product: "FirebaseFunctions")
       ],
       settings: .settings(
         base: [
-            "OTHER_LDFLAGS": .array(["$(inherited)", "-ObjC"])
+            "OTHER_LDFLAGS": .array(["$(inherited)", "-ObjC", "-lc++"])
         ],
         configurations: [
           .debug(name: "Debug", settings: [
@@ -134,8 +138,8 @@ let project = Project(
       deploymentTargets: .iOS("17.0"),
       infoPlist: .extendingDefault(with: [
         "CFBundleDisplayName": "QTune Sandbox",
-        "CFBundleShortVersionString": "1.7.2",
-        "CFBundleVersion": "173",
+        "CFBundleShortVersionString": "1.8.0",
+        "CFBundleVersion": "180",
         "UILaunchStoryboardName": "LaunchScreen",
         "UIViewControllerBasedStatusBarAppearance": true,
         "UIUserInterfaceStyle": "Light"
@@ -148,6 +152,7 @@ let project = Project(
         "Resources/GoogleService-Info.plist"  // Firebase SDK는 이 이름을 찾음
       ],
       buildableFolders: [.folder("Sources")],
+      entitlements: "App-Sandbox.entitlements",
       scripts: [
         .pre(
           script: """
@@ -201,11 +206,14 @@ let project = Project(
         .project(target: "Data", path: "../Data"),
         .package(product: "FirebaseAnalytics"),
         .package(product: "FirebaseCrashlytics"),
-        .package(product: "FirebaseCore")
+        .package(product: "FirebaseAuth"),
+        .package(product: "FirebaseMessaging"),
+        .package(product: "FirebaseFirestore"),
+        .package(product: "FirebaseFunctions")
       ],
       settings: .settings(
         base: [
-            "OTHER_LDFLAGS": .array(["$(inherited)", "-ObjC"]),
+            "OTHER_LDFLAGS": .array(["$(inherited)", "-ObjC", "-lc++"]),
             "ASSETCATALOG_COMPILER_APPICON_NAME": "AppIcon-Sandbox"
         ],
         configurations: [],

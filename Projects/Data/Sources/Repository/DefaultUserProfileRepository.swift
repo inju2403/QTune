@@ -27,6 +27,8 @@ public final class DefaultUserProfileRepository: UserProfileRepository {
         try dataSource.saveSecondaryTranslation(profile.secondaryTranslation?.code)
         try dataSource.saveFontScale(profile.fontScale.rawValue)
         try dataSource.saveLineSpacing(profile.lineSpacing.rawValue)
+        try dataSource.saveNotificationEnabled(profile.isNotificationEnabled)
+        try dataSource.saveNotificationTime(hour: profile.notificationHour, minute: profile.notificationMinute)
         dataSource.setOnboardingCompleted(true)
     }
 
@@ -50,6 +52,9 @@ public final class DefaultUserProfileRepository: UserProfileRepository {
         let lineSpacingString = dataSource.getLineSpacing() ?? "보통"
         let lineSpacing = LineSpacing(rawValue: lineSpacingString) ?? .normal
 
+        let isNotificationEnabled = dataSource.isNotificationEnabled()
+        let (hour, minute) = dataSource.getNotificationTime()
+
         return UserProfile(
             nickname: nickname,
             gender: gender,
@@ -57,7 +62,10 @@ public final class DefaultUserProfileRepository: UserProfileRepository {
             preferredTranslation: translation,
             secondaryTranslation: secondaryTranslation,
             fontScale: fontScale,
-            lineSpacing: lineSpacing
+            lineSpacing: lineSpacing,
+            isNotificationEnabled: isNotificationEnabled,
+            notificationHour: hour,
+            notificationMinute: minute
         )
     }
 

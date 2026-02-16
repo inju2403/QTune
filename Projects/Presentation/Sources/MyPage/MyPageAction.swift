@@ -21,4 +21,9 @@ public enum MyPageAction: Equatable {
     case selectSecondaryTranslation(Translation?)
     case saveTranslations(UserProfile)
     case dismissTranslationSelection
+    case tapNotificationSettings
+    case toggleNotification(Bool)
+    case selectNotificationTime(Date)
+    case saveNotificationSettings(UserProfile)
+    case dismissNotificationSettings
 }
