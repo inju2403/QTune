@@ -72,11 +72,7 @@ public struct MyPageView: View {
 
                     // 큐튠 이야기
                     Section(header: sectionHeader("큐튠 이야기")) {
-                        menuRow(
-                            icon: "lightbulb",
-                            title: "개선점 공유",
-                            action: openImprovementForm
-                        )
+                        improvementMenuRow()
                         menuRow(
                             icon: "hand.thumbsup",
                             title: "칭찬하기",
@@ -244,6 +240,29 @@ private extension MyPageView {
     }
 
     @ViewBuilder
+    func improvementMenuRow() -> some View {
+        Button(action: {
+            Haptics.tap()
+            openKakaoChannel()
+        }) {
+            HStack(spacing: 12) {
+                Image(systemName: "text.bubble")
+                    .font(.system(size: 20))
+                    .foregroundStyle(DS.Color.gold)
+                    .frame(width: 24)
+
+                DSText.bodyL("의견 보내기")
+                    .foregroundStyle(DS.Color.textPrimary)
+
+                Spacer()
+
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundStyle(DS.Color.textSecondary)
+            }
+        }
+    }
+
     func menuRow(icon: String, title: String, action: @escaping () -> Void) -> some View {
         Button(action: {
             Haptics.tap()
@@ -405,7 +424,16 @@ private extension MyPageView {
         }
     }
 
-    func openImprovementForm() {
+    func openKakaoChannel() {
+        // 카카오톡 채널 채팅 직접 연결
+        guard let url = URL(string: "https://pf.kakao.com/_xiqLzX/chat") else {
+            assertionFailure("URL build failed")
+            return
+        }
+        openURL(url)
+    }
+
+    func openGoogleForm() {
         guard let url = URL(string: "https://docs.google.com/forms/d/e/1FAIpQLSfzUt_GdAoPGt8ZjGOzsAdtgc6LAK1MPQc2Iu_6izpYB0OlrQ/viewform") else {
             assertionFailure("URL build failed")
             return
