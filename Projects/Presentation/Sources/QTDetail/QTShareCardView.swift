@@ -230,7 +230,7 @@ public struct QTShareCardView: View {
             .padding(.vertical, 18)
             .background(
                 RoundedRectangle(cornerRadius: 14)
-                    .fill(DS.Color.background.opacity(0.9))
+                    .fill(.white)
             )
             .padding(.horizontal, 20)
             .padding(.bottom, 20)
