@@ -380,6 +380,31 @@ function detectDirectVerseRef(input: string): string | null {
   return null;
 }
 
+// 최대 허용 구절 범위 (초과 시 시작 절~시작+MAX-1로 clamp)
+const MAX_VERSE_RANGE = 20;
+
+/**
+ * verseRef의 범위가 MAX_VERSE_RANGE를 초과하면 clamp합니다.
+ * 예: "Genesis 1:1-50" → "Genesis 1:1-20"
+ */
+function clampVerseRef(verseRef: string): string {
+  const rangeMatch = verseRef.match(/^(.+)\s+(\d+):(\d+)-(\d+)$/);
+  if (!rangeMatch) return verseRef; // 단일 절이면 그대로
+
+  const [, book, chapter, startStr, endStr] = rangeMatch;
+  const start = parseInt(startStr, 10);
+  const end = parseInt(endStr, 10);
+  const range = end - start + 1;
+
+  if (range > MAX_VERSE_RANGE) {
+    const clampedEnd = start + MAX_VERSE_RANGE - 1;
+    logger.warn(`[clampVerseRef] Range ${range} exceeds max ${MAX_VERSE_RANGE}, clamping: ${verseRef} → ${book} ${chapter}:${start}-${clampedEnd}`);
+    return `${book} ${chapter}:${start}-${clampedEnd}`;
+  }
+
+  return verseRef;
+}
+
 /**
  * 사용자 입력이 "유사한 구절 추천" 의도인지 확인합니다.
  * 구절 패턴이 있어도 유사 키워드가 있으면 GPT 자유 추천으로 처리합니다.
@@ -461,7 +486,8 @@ export const recommendVerse = onCall(
       // =========================================
       // 의도 분류: 직접 구절 요청 vs 유사 추천 vs 자유 추천
       // =========================================
-      const detectedVerseRef = detectDirectVerseRef(mood);
+      const rawVerseRef = detectDirectVerseRef(mood);
+      const detectedVerseRef = rawVerseRef ? clampVerseRef(rawVerseRef) : null;
       const isSimilarityRequest = hasSimilarityIntent(mood);
       const isDirectVerseRequest = detectedVerseRef !== null && !isSimilarityRequest;
 
