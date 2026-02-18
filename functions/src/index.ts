@@ -218,6 +218,209 @@ async function saveRecommendedVerse(
 }
 
 // =========================================
+// 한국어 성경 책명 → 영어 매핑
+// =========================================
+const KOREAN_BOOK_MAP: Record<string, string> = {
+  // 구약
+  "창세기": "Genesis", "창": "Genesis",
+  "출애굽기": "Exodus", "출": "Exodus",
+  "레위기": "Leviticus", "레": "Leviticus",
+  "민수기": "Numbers", "민": "Numbers",
+  "신명기": "Deuteronomy", "신": "Deuteronomy",
+  "여호수아": "Joshua", "수": "Joshua",
+  "사사기": "Judges", "삿": "Judges",
+  "룻기": "Ruth", "룻": "Ruth",
+  "사무엘상": "1 Samuel", "삼상": "1 Samuel",
+  "사무엘하": "2 Samuel", "삼하": "2 Samuel",
+  "열왕기상": "1 Kings", "왕상": "1 Kings",
+  "열왕기하": "2 Kings", "왕하": "2 Kings",
+  "역대상": "1 Chronicles", "대상": "1 Chronicles",
+  "역대하": "2 Chronicles", "대하": "2 Chronicles",
+  "에스라": "Ezra", "스": "Ezra",
+  "느헤미야": "Nehemiah", "느": "Nehemiah",
+  "에스더": "Esther", "에": "Esther",
+  "욥기": "Job", "욥": "Job",
+  "시편": "Psalms", "시": "Psalms",
+  "잠언": "Proverbs", "잠": "Proverbs",
+  "전도서": "Ecclesiastes", "전": "Ecclesiastes",
+  "아가": "Song of Solomon", "아": "Song of Solomon",
+  "이사야": "Isaiah", "사": "Isaiah",
+  "예레미야": "Jeremiah", "렘": "Jeremiah",
+  "예레미야애가": "Lamentations", "애": "Lamentations",
+  "에스겔": "Ezekiel", "겔": "Ezekiel",
+  "다니엘": "Daniel", "단": "Daniel",
+  "호세아": "Hosea", "호": "Hosea",
+  "요엘": "Joel", "욜": "Joel",
+  "아모스": "Amos", "암": "Amos",
+  "오바댜": "Obadiah", "옵": "Obadiah",
+  "요나": "Jonah", "욘": "Jonah",
+  "미가": "Micah", "미": "Micah",
+  "나훔": "Nahum", "나": "Nahum",
+  "하박국": "Habakkuk", "합": "Habakkuk",
+  "스바냐": "Zephaniah", "습": "Zephaniah",
+  "학개": "Haggai", "학": "Haggai",
+  "스가랴": "Zechariah", "슥": "Zechariah",
+  "말라기": "Malachi", "말": "Malachi",
+  // 신약
+  "마태복음": "Matthew", "마": "Matthew",
+  "마가복음": "Mark", "막": "Mark",
+  "누가복음": "Luke", "눅": "Luke",
+  "요한복음": "John", "요": "John",
+  "사도행전": "Acts", "행": "Acts",
+  "로마서": "Romans", "롬": "Romans",
+  "고린도전서": "1 Corinthians", "고전": "1 Corinthians",
+  "고린도후서": "2 Corinthians", "고후": "2 Corinthians",
+  "갈라디아서": "Galatians", "갈": "Galatians",
+  "에베소서": "Ephesians", "엡": "Ephesians",
+  "빌립보서": "Philippians", "빌": "Philippians",
+  "골로새서": "Colossians", "골": "Colossians",
+  "데살로니가전서": "1 Thessalonians", "살전": "1 Thessalonians",
+  "데살로니가후서": "2 Thessalonians", "살후": "2 Thessalonians",
+  "디모데전서": "1 Timothy", "딤전": "1 Timothy",
+  "디모데후서": "2 Timothy", "딤후": "2 Timothy",
+  "디도서": "Titus", "딛": "Titus",
+  "빌레몬서": "Philemon", "몬": "Philemon",
+  "히브리서": "Hebrews", "히": "Hebrews",
+  "야고보서": "James", "약": "James",
+  "베드로전서": "1 Peter", "벧전": "1 Peter",
+  "베드로후서": "2 Peter", "벧후": "2 Peter",
+  "요한1서": "1 John", "요일": "1 John",
+  "요한2서": "2 John", "요이": "2 John",
+  "요한3서": "3 John", "요삼": "3 John",
+  "유다서": "Jude", "유": "Jude",
+  "요한계시록": "Revelation", "계": "Revelation",
+};
+
+// 한국어 책명 목록 (긴 것 우선 정렬 → 약어 오매칭 방지)
+const KOREAN_BOOK_NAMES = Object.keys(KOREAN_BOOK_MAP).sort((a, b) => b.length - a.length);
+
+/**
+ * 사용자 입력에서 구절 참조를 추출합니다.
+ * 반환값: 영어 verseRef (예: "Psalms 37:5", "Psalms 37:5-6") 또는 null
+ */
+function detectDirectVerseRef(input: string): string | null {
+  // 1) 한국어 책명 + 장:절 패턴 (범위 포함)
+  //    예: "시편 37:5", "시편 37:5-6", "시 37:5", "시 37:5-6"
+  for (const korName of KOREAN_BOOK_NAMES) {
+    // 콜론(:) 형식: "시편 37:5" or "시편 37:5-6"
+    const colonPattern = new RegExp(
+      `${korName}\\s*(\\d+):(\\d+)(?:-(\\d+))?`,
+      "u"
+    );
+    const colonMatch = input.match(colonPattern);
+    if (colonMatch) {
+      const engName = KOREAN_BOOK_MAP[korName];
+      const chapter = colonMatch[1];
+      const startVerse = colonMatch[2];
+      const endVerse = colonMatch[3];
+      return endVerse
+        ? `${engName} ${chapter}:${startVerse}-${endVerse}`
+        : `${engName} ${chapter}:${startVerse}`;
+    }
+
+    // 장절 표현: "시편 37장 5절" or "시편 37장 5-6절"
+    const jangjeolPattern = new RegExp(
+      `${korName}\\s*(\\d+)장\\s*(\\d+)(?:-(\\d+))?절`,
+      "u"
+    );
+    const jangjeolMatch = input.match(jangjeolPattern);
+    if (jangjeolMatch) {
+      const engName = KOREAN_BOOK_MAP[korName];
+      const chapter = jangjeolMatch[1];
+      const startVerse = jangjeolMatch[2];
+      const endVerse = jangjeolMatch[3];
+      return endVerse
+        ? `${engName} ${chapter}:${startVerse}-${endVerse}`
+        : `${engName} ${chapter}:${startVerse}`;
+    }
+
+    // 자연어 범위 표현 (콜론 형식): "시편 37:5절에서 9절까지" or "시편 37:5절부터 9절까지"
+    const colonRangePattern = new RegExp(
+      `${korName}\\s*(\\d+):(\\d+)절(?:에서|부터)\\s*(\\d+)절까지`,
+      "u"
+    );
+    const colonRangeMatch = input.match(colonRangePattern);
+    if (colonRangeMatch) {
+      const engName = KOREAN_BOOK_MAP[korName];
+      const chapter = colonRangeMatch[1];
+      const startVerse = colonRangeMatch[2];
+      const endVerse = colonRangeMatch[3];
+      return `${engName} ${chapter}:${startVerse}-${endVerse}`;
+    }
+
+    // 자연어 범위 표현 (장절 형식): "시편 37장 5절에서 9절까지" or "시편 37장 5절부터 9절까지"
+    const jangjeolRangePattern = new RegExp(
+      `${korName}\\s*(\\d+)장\\s*(\\d+)절(?:에서|부터)\\s*(\\d+)절까지`,
+      "u"
+    );
+    const jangjeolRangeMatch = input.match(jangjeolRangePattern);
+    if (jangjeolRangeMatch) {
+      const engName = KOREAN_BOOK_MAP[korName];
+      const chapter = jangjeolRangeMatch[1];
+      const startVerse = jangjeolRangeMatch[2];
+      const endVerse = jangjeolRangeMatch[3];
+      return `${engName} ${chapter}:${startVerse}-${endVerse}`;
+    }
+  }
+
+  // 2) 영어 책명 패턴 (이미 영어로 입력한 경우)
+  //    예: "John 3:16", "Psalms 37:5-6", "1 Corinthians 13:4"
+  const engPattern = /\b([1-3]?\s*[A-Za-z]+(?:\s+[A-Za-z]+)?)\s+(\d+):(\d+)(?:-(\d+))?\b/;
+  const engMatch = input.match(engPattern);
+  if (engMatch) {
+    const bookName = engMatch[1].trim();
+    const chapter = engMatch[2];
+    const startVerse = engMatch[3];
+    const endVerse = engMatch[4];
+    return endVerse
+      ? `${bookName} ${chapter}:${startVerse}-${endVerse}`
+      : `${bookName} ${chapter}:${startVerse}`;
+  }
+
+  return null;
+}
+
+// 최대 허용 구절 범위 (초과 시 시작 절~시작+MAX-1로 clamp)
+const MAX_VERSE_RANGE = 20;
+
+/**
+ * verseRef의 범위가 MAX_VERSE_RANGE를 초과하면 clamp합니다.
+ * 예: "Genesis 1:1-50" → "Genesis 1:1-20"
+ */
+function clampVerseRef(verseRef: string): string {
+  const rangeMatch = verseRef.match(/^(.+)\s+(\d+):(\d+)-(\d+)$/);
+  if (!rangeMatch) return verseRef; // 단일 절이면 그대로
+
+  const [, book, chapter, startStr, endStr] = rangeMatch;
+  const start = parseInt(startStr, 10);
+  const end = parseInt(endStr, 10);
+  const range = end - start + 1;
+
+  if (range > MAX_VERSE_RANGE) {
+    const clampedEnd = start + MAX_VERSE_RANGE - 1;
+    logger.warn(`[clampVerseRef] Range ${range} exceeds max ${MAX_VERSE_RANGE}, clamping: ${verseRef} → ${book} ${chapter}:${start}-${clampedEnd}`);
+    return `${book} ${chapter}:${start}-${clampedEnd}`;
+  }
+
+  return verseRef;
+}
+
+/**
+ * 사용자 입력이 "유사한 구절 추천" 의도인지 확인합니다.
+ * 구절 패턴이 있어도 유사 키워드가 있으면 GPT 자유 추천으로 처리합니다.
+ */
+function hasSimilarityIntent(input: string): boolean {
+  const SIMILARITY_KEYWORDS = [
+    "같은", "같은 주제", "비슷한", "유사한", "처럼",
+    "관련된", "관련", "주제로", "주제의", "주제에", "관한", "관해",
+    "이와 같은", "이런", "이러한", "이런 류", "이런 종류",
+    "다른", "또 다른", "말고", "이외에", "외에", "이 외에",
+    "아닌", "말고 다른", "외의", "이외의",
+  ];
+  return SIMILARITY_KEYWORDS.some((kw) => input.includes(kw));
+}
+
+// =========================================
 // 타입 정의 (콜러블 함수 입력 형태)
 // =========================================
 type RecommendVerseRequest = {
@@ -280,14 +483,91 @@ export const recommendVerse = onCall(
         ? `${nickname} ${gender}님`
         : `${gender || "형제"}님`;
 
-      // 제외할 구절 목록 생성
-      const excludeList = recommendedVerses.length > 0
-        ? recommendedVerses.map((v) => `- ${v}`).join("\n")
-        : "";
+      // =========================================
+      // 의도 분류: 직접 구절 요청 vs 유사 추천 vs 자유 추천
+      // =========================================
+      const rawVerseRef = detectDirectVerseRef(mood);
+      const detectedVerseRef = rawVerseRef ? clampVerseRef(rawVerseRef) : null;
+      const isSimilarityRequest = hasSimilarityIntent(mood);
+      const isDirectVerseRequest = detectedVerseRef !== null && !isSimilarityRequest;
 
-      // 제외 규칙 - 강력하고 명확하게
-      const excludeHeader = excludeList
-        ? `
+      logger.info("recommendVerse intent classification", {
+        mood,
+        detectedVerseRef,
+        isSimilarityRequest,
+        isDirectVerseRequest,
+      });
+
+      const openai = await getOpenAIClient(OPENAI_API_KEY.value());
+
+      let result: { verseRef: string; rationale: string };
+
+      if (isDirectVerseRequest) {
+        // =========================================
+        // [직접 구절 요청] verseRef는 서버에서 결정, GPT는 rationale만 생성
+        // =========================================
+        const fixedVerseRef = detectedVerseRef!;
+        logger.info("Direct verse request detected", { fixedVerseRef });
+
+        const rationalePrompt = `사용자: ${userLabel}
+입력: "${mood}${noteSection}"
+말씀: ${fixedVerseRef}
+
+사용자가 직접 요청한 이 말씀이 사용자의 입력과 어떻게 연결되는지 경건하게 설명하세요. (1-2문장)
+
+규칙:
+- 사용자가 입력한 내용의 영적 의미를 깊이 통찰하여 설명
+- 일반적인 위로나 축복 표현 금지 ("위로가 되기를", "바랍니다", "느끼시는", "믿습니다" 등)
+- 사용자의 상황과 이 말씀 사이의 신학적 연결점을 구체적으로 제시`;
+
+        const rationaleCompletion = await openai.chat.completions.create({
+          model: "gpt-4o-mini",
+          temperature: 0.5,
+          messages: [
+            {
+              role: "system",
+              content: "당신은 성경 구절을 해설하는 목사입니다.",
+            },
+            {
+              role: "user",
+              content: rationalePrompt,
+            },
+          ],
+          response_format: {
+            type: "json_schema" as const,
+            json_schema: {
+              name: "RationaleOnly",
+              strict: true,
+              schema: {
+                type: "object",
+                properties: {
+                  rationale: { type: "string", description: "말씀이 주어진 이유 (1-2문장)" },
+                },
+                required: ["rationale"],
+                additionalProperties: false,
+              },
+            },
+          },
+        });
+
+        const rationaleContent = rationaleCompletion.choices[0]?.message?.content;
+        if (!rationaleContent) {
+          throw new functions.https.HttpsError("internal", "Empty response from OpenAI");
+        }
+
+        const rationaleResult = JSON.parse(rationaleContent);
+        result = { verseRef: fixedVerseRef, rationale: rationaleResult.rationale };
+
+      } else {
+        // =========================================
+        // [유사 추천 / 자유 추천] 기존 GPT 추천 흐름
+        // =========================================
+        const excludeList = recommendedVerses.length > 0
+          ? recommendedVerses.map((v) => `- ${v}`).join("\n")
+          : "";
+
+        const excludeHeader = excludeList
+          ? `
 🚨🚨🚨 [최우선 제약사항 - 시스템 레벨 규칙] 🚨🚨🚨
 
 아래 구절들은 **절대로 추천해서는 안 됩니다**:
@@ -296,16 +576,11 @@ ${excludeList}
 ⛔ 위 목록에 있는 구절을 추천하면 시스템 오류로 처리됩니다.
 ⛔ 사용자 입력과 의미적으로 연관이 있어도, 위 목록에 있으면 **절대 추천 금지**.
 ✅ 반드시 위 목록에 **없는** 새로운 구절을 찾아서 추천하세요.
-
-예시:
-- 입력: "마라나타!" + 제외 목록에 "Revelation 22:20" 있음
-  → ❌ Revelation 22:20 추천 금지 (의미 연관 있어도!)
-  → ✅ Philippians 3:20, Titus 2:13 등 다른 재림 관련 구절 추천
 `
-        : "";
+          : "";
 
-      const prompt = excludeList
-        ? `${excludeHeader}
+        const prompt = excludeList
+          ? `${excludeHeader}
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
@@ -319,11 +594,9 @@ ${excludeList}
 [추천 절차]
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-1️⃣ **제외 목록 재확인**: 위 🚨 섹션의 금지 구절 목록을 다시 확인하세요.
+1️⃣ **제외 목록 재확인**: 위 🚨 섹션의 금지 구절 목록을 확인하세요.
 
-2️⃣ **사용자 의도 파악**:
-   - 특정 구절 명시? (예: "마태복음 5:10") → 그 구절 반환
-   - 감정/주제만? (예: "마라나타!", "위로") → 적절한 구절 찾기
+2️⃣ **사용자 감정/상황 파악**: 입력의 감정과 주제를 파악하세요.
 
 3️⃣ **구절 선택**:
    - 제외 목록에 **없는** 구절 중에서 선택
@@ -334,117 +607,92 @@ ${excludeList}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 [출력]
-- verseRef: 영어 책명 + 장:절 (예: "John 3:16")
+- verseRef: 영어 책명 + 장:절 (예: "John 3:16", 범위: "Psalms 37:5-6")
 - rationale: 이 말씀이 주어진 이유 (1-2문장)
   * 사용자가 입력한 내용을 깊이 이해하고, 그 마음의 상태와 이 말씀이 어떻게 연결되는지 경건하게 설명
-  * 말씀이 사용자의 현재 상황에 주는 구체적인 의미를 신학적 통찰과 함께 제시
   * 일반적인 위로나 축복이 아닌, 말씀과 사용자 입력 사이의 실제적 연결점을 발견하여 설명
-  * 경건하되 진정성 있는 톤으로, 이 말씀이 지금 이 순간 주어진 이유를 명확히 전달
 
   좋은 예시:
     - 입력: "주님만을 의지하고 싶어" → "${userLabel}께서 세상의 것이 아닌 주님만을 의지하려는 결단 속에서, 이 말씀은 그 신뢰가 헛되지 않음을 증거합니다."
     - 입력: "일상의 소중함" → "평범한 일상 속에서도 하나님의 은혜를 발견하려는 ${userLabel}의 영적 감수성에 이 말씀이 응답합니다."
-    - 입력: "힘들고 지칠 때" → "고난 중에도 하나님이 함께하신다는 이 약속은 ${userLabel}의 현재 상황에 대한 하나님의 직접적인 응답입니다."
 
   나쁜 예시 (절대 사용 금지):
     - "위로가 되기를 바랍니다" ❌
     - "도움이 되기를 기도합니다" ❌
     - "느끼시는 마음에" ❌
-    - "힘이 되었으면 좋겠습니다" ❌
-    - "느껴질 것이라 믿습니다" ❌`
-        : `[추천 작업]
+    - "힘이 되었으면 좋겠습니다" ❌`
+          : `[추천 작업]
 사용자: ${userLabel}
 입력: "${mood}${noteSection}"
 
 이 사용자에게 성경 구절 1곳을 추천하고 이유를 설명하세요.
 
-[추천 절차]
-1. 사용자가 특정 구절을 명시했는가?
-   - YES: 그 구절 반환
-   - NO: 사용자 감정/상황에 맞는 구절 추천
-
 [출력]
-- verseRef: 영어 책명 + 장:절 (예: "John 3:16")
+- verseRef: 영어 책명 + 장:절 (예: "John 3:16", 범위: "Psalms 37:5-6")
 - rationale: 이 말씀이 주어진 이유 (1-2문장)
   * 사용자가 입력한 내용을 깊이 이해하고, 그 마음의 상태와 이 말씀이 어떻게 연결되는지 경건하게 설명
-  * 말씀이 사용자의 현재 상황에 주는 구체적인 의미를 신학적 통찰과 함께 제시
   * 일반적인 위로나 축복이 아닌, 말씀과 사용자 입력 사이의 실제적 연결점을 발견하여 설명
-  * 경건하되 진정성 있는 톤으로, 이 말씀이 지금 이 순간 주어진 이유를 명확히 전달
 
   좋은 예시:
     - 입력: "주님만을 의지하고 싶어" → "${userLabel}께서 세상의 것이 아닌 주님만을 의지하려는 결단 속에서, 이 말씀은 그 신뢰가 헛되지 않음을 증거합니다."
-    - 입력: "일상의 소중함" → "평범한 일상 속에서도 하나님의 은혜를 발견하려는 ${userLabel}의 영적 감수성에 이 말씀이 응답합니다."
     - 입력: "힘들고 지칠 때" → "고난 중에도 하나님이 함께하신다는 이 약속은 ${userLabel}의 현재 상황에 대한 하나님의 직접적인 응답입니다."
 
   나쁜 예시 (절대 사용 금지):
     - "위로가 되기를 바랍니다" ❌
     - "도움이 되기를 기도합니다" ❌
     - "느끼시는 마음에" ❌
-    - "힘이 되었으면 좋겠습니다" ❌
-    - "느껴질 것이라 믿습니다" ❌`;
+    - "힘이 되었으면 좋겠습니다" ❌`;
 
-      const verseRefDescription = excludeList
-        ? `성경 구절 참조 (예: John 3:16). ⚠️ 중요: 제외 목록에 있는 구절은 절대 추천 금지! 새로운 구절만 반환할 것.`
-        : "성경 구절 참조 (예: John 3:16, Psalms 23:1)";
+        const verseRefDescription = "성경 구절 참조. 단일 절(예: John 3:16) 또는 범위(예: Psalms 37:5-6, Romans 8:28-29) 형식 모두 가능.";
 
-      const responseFormat = {
-        type: "json_schema" as const,
-        json_schema: {
-          name: "VerseRecommendation",
-          strict: true,
-          schema: {
-            type: "object",
-            properties: {
-              verseRef: {
-                type: "string",
-                description: verseRefDescription,
+        const responseFormat = {
+          type: "json_schema" as const,
+          json_schema: {
+            name: "VerseRecommendation",
+            strict: true,
+            schema: {
+              type: "object",
+              properties: {
+                verseRef: { type: "string", description: verseRefDescription },
+                rationale: { type: "string", description: "추천 이유 (1-2문장)" },
               },
-              rationale: {
-                type: "string",
-                description: "추천 이유 (1-2문장)",
-              },
+              required: ["verseRef", "rationale"],
+              additionalProperties: false,
             },
-            required: ["verseRef", "rationale"],
-            additionalProperties: false,
           },
-        },
-      };
+        };
 
-      const openai = await getOpenAIClient(OPENAI_API_KEY.value());
-
-      const completion = await openai.chat.completions.create({
-        model: "gpt-4o-mini",
-        temperature: 0.5, // 적절한 온도로 자연스러운 표현과 규칙 준수 균형
-        messages: [
-          {
-            role: "system",
-            content: "당신은 성경 구절을 추천하는 목사입니다. 사용자가 입력한 내용의 영적 의미를 깊이 통찰하고, 하나님께서 이 특정한 말씀을 통해 사용자에게 전하시려는 메시지가 무엇인지 경건하게 해석하세요. '위로가 되기를', '바랍니다', '느끼시는', '믿습니다' 같은 일반적 표현을 피하고, 사용자의 현재 상황과 말씀 사이의 신학적이고 실제적인 연결점을 구체적으로 제시하세요."
-          },
-          {
-            role: "user",
-            content: prompt,
-          },
-        ],
-        response_format: responseFormat,
-      });
-
-      const content = completion.choices[0]?.message?.content;
-      if (!content) {
-        throw new functions.https.HttpsError(
-          "internal",
-          "Empty response from OpenAI"
-        );
-      }
-
-      const result = JSON.parse(content);
-
-      // 제외 목록 위반 감지 (디버깅용 경고)
-      if (recommendedVerses.includes(result.verseRef)) {
-        logger.warn("⚠️ GPT가 제외 목록을 무시하고 이미 추천한 구절을 재추천함!", {
-          verseRef: result.verseRef,
-          mood,
-          excludedCount: recommendedVerses.length,
+        const completion = await openai.chat.completions.create({
+          model: "gpt-4o-mini",
+          temperature: 0.5,
+          messages: [
+            {
+              role: "system",
+              content: "당신은 성경 구절을 추천하는 목사입니다. 사용자가 입력한 내용의 영적 의미를 깊이 통찰하고, 하나님께서 이 특정한 말씀을 통해 사용자에게 전하시려는 메시지가 무엇인지 경건하게 해석하세요. '위로가 되기를', '바랍니다', '느끼시는', '믿습니다' 같은 일반적 표현을 피하고, 사용자의 현재 상황과 말씀 사이의 신학적이고 실제적인 연결점을 구체적으로 제시하세요.",
+            },
+            {
+              role: "user",
+              content: prompt,
+            },
+          ],
+          response_format: responseFormat,
         });
+
+        const content = completion.choices[0]?.message?.content;
+        if (!content) {
+          throw new functions.https.HttpsError("internal", "Empty response from OpenAI");
+        }
+
+        result = JSON.parse(content);
+
+        // 제외 목록 위반 감지 (디버깅용 경고)
+        if (recommendedVerses.includes(result.verseRef)) {
+          logger.warn("⚠️ GPT가 제외 목록을 무시하고 이미 추천한 구절을 재추천함!", {
+            verseRef: result.verseRef,
+            mood,
+            excludedCount: recommendedVerses.length,
+          });
+        }
       }
 
       logger.info("recommendVerse success", { verseRef: result.verseRef });
