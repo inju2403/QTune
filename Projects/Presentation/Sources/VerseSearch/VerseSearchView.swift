@@ -55,12 +55,6 @@ public struct VerseSearchView: View {
                                 .transition(.opacity)
                         }
 
-                        // 최근 검색 (결과 없을 때)
-                        if !viewModel.state.recentSearches.isEmpty && !viewModel.state.hasResult && !viewModel.state.isLoading {
-                            recentSearches
-                                .transition(.opacity)
-                        }
-
                         // 도움말 힌트 (결과 없을 때)
                         if !viewModel.state.hasResult && !viewModel.state.isLoading {
                             hintCard
@@ -529,61 +523,6 @@ private extension VerseSearchView {
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 30)
-    }
-
-    var recentSearches: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            HStack {
-                DSText.caption("최근 검색", weight: .semibold)
-                    .foregroundStyle(DS.Color.textSec)
-
-                Spacer()
-
-                Button {
-                    Haptics.tap()
-                    viewModel.send(.clearRecentSearches)
-                } label: {
-                    DSText.caption("전체 삭제")
-                        .foregroundStyle(DS.Color.textSec.opacity(0.7))
-                }
-                .buttonStyle(.plain)
-            }
-
-            ScrollView(.horizontal, showsIndicators: false) {
-                HStack(spacing: 8) {
-                    ForEach(viewModel.state.recentSearches, id: \.self) { ref in
-                        Button {
-                            Haptics.tap()
-                            isSearchFocused = false
-                            viewModel.send(.tapRecentSearch(ref))
-                        } label: {
-                            HStack(spacing: 4) {
-                                Image(systemName: "clock")
-                                    .font(.system(size: 11))
-                                DSText.caption(ref, weight: .medium)
-                            }
-                            .foregroundStyle(DS.Color.cocoa)
-                            .padding(.horizontal, 12)
-                            .padding(.vertical, 7)
-                            .background(
-                                Capsule()
-                                    .fill(DS.Color.bgMid)
-                                    .overlay(
-                                        Capsule()
-                                            .stroke(DS.Color.stroke, lineWidth: 1)
-                                    )
-                            )
-                        }
-                        .buttonStyle(.plain)
-                    }
-                }
-            }
-        }
-        .padding(16)
-        .background(
-            RoundedRectangle(cornerRadius: 16)
-                .fill(DS.Color.canvas.opacity(0.7))
-        )
     }
 
     var hintCard: some View {
