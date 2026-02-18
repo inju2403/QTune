@@ -70,7 +70,8 @@ function getCallerId(request: any): string {
 async function checkDailyQuota(
   callerId: string,
   nickname?: string,
-  gender?: string
+  gender?: string,
+  collectionName: string = "usage"
 ): Promise<void> {
   const db = admin.firestore();
 
@@ -81,7 +82,7 @@ async function checkDailyQuota(
   const kstDate = new Date(now.getTime() + kstOffset);
   const today = kstDate.toISOString().split("T")[0];
   const docId = `${callerId}_${today}`;
-  const docRef = db.collection("usage").doc(docId);
+  const docRef = db.collection(collectionName).doc(docId);
 
   await db.runTransaction(async (transaction) => {
     const doc = await transaction.get(docRef);
@@ -950,6 +951,8 @@ rationale 예시:
 interface GetVerseExplanationRequest {
   englishText: string;
   verseRef: string;
+  nickname?: string;
+  gender?: string;
 }
 
 export const getVerseExplanation = onCall(
@@ -957,7 +960,7 @@ export const getVerseExplanation = onCall(
   async (request) => {
     try {
       const data = request.data as GetVerseExplanationRequest;
-      const { englishText, verseRef } = data;
+      const { englishText, verseRef, nickname, gender } = data;
 
       if (!englishText || typeof englishText !== "string") {
         throw new functions.https.HttpsError(
@@ -973,6 +976,9 @@ export const getVerseExplanation = onCall(
       }
 
       const callerId = getCallerId(request);
+
+      // 하루 10회 제한 (verse 추천과 별도 카운터)
+      await checkDailyQuota(callerId, nickname, gender, "usage_explanation");
 
       logger.info("getVerseExplanation called", {
         verseRef,

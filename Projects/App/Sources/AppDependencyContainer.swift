@@ -193,7 +193,10 @@ final class AppDependencyContainer {
 
     /// FetchVerseExplanationUseCase 생성 (AI 해설 - Firebase Functions 경유)
     func makeFetchVerseExplanationUseCase() -> FetchVerseExplanationUseCase {
-        return FetchVerseExplanationInteractor(aiRepository: makeAIRepository())
+        return FetchVerseExplanationInteractor(
+            aiRepository: makeAIRepository(),
+            userProfileRepository: makeUserProfileRepository()
+        )
     }
 
     /// UpdateNotificationSettingsUseCase 생성 (Firestore 연동 포함)

@@ -132,6 +132,15 @@ public final class VerseSearchViewModel {
                 state.explanation = explanation
                 state.isExplanationLoading = false
             }
+        } catch let error as DomainError {
+            await MainActor.run {
+                state.isExplanationLoading = false
+                if case .rateLimited = error {
+                    state.explanationError = "오늘 AI 해설을 10번 모두 사용했어요. 내일 다시 시도해주세요."
+                } else {
+                    state.explanationError = "해설을 가져오지 못했어요. 잠시 후 다시 시도해주세요."
+                }
+            }
         } catch {
             await MainActor.run {
                 state.isExplanationLoading = false
