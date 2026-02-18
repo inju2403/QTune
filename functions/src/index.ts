@@ -333,6 +333,34 @@ function detectDirectVerseRef(input: string): string | null {
         ? `${engName} ${chapter}:${startVerse}-${endVerse}`
         : `${engName} ${chapter}:${startVerse}`;
     }
+
+    // 자연어 범위 표현 (콜론 형식): "시편 37:5절에서 9절까지" or "시편 37:5절부터 9절까지"
+    const colonRangePattern = new RegExp(
+      `${korName}\\s*(\\d+):(\\d+)절(?:에서|부터)\\s*(\\d+)절까지`,
+      "u"
+    );
+    const colonRangeMatch = input.match(colonRangePattern);
+    if (colonRangeMatch) {
+      const engName = KOREAN_BOOK_MAP[korName];
+      const chapter = colonRangeMatch[1];
+      const startVerse = colonRangeMatch[2];
+      const endVerse = colonRangeMatch[3];
+      return `${engName} ${chapter}:${startVerse}-${endVerse}`;
+    }
+
+    // 자연어 범위 표현 (장절 형식): "시편 37장 5절에서 9절까지" or "시편 37장 5절부터 9절까지"
+    const jangjeolRangePattern = new RegExp(
+      `${korName}\\s*(\\d+)장\\s*(\\d+)절(?:에서|부터)\\s*(\\d+)절까지`,
+      "u"
+    );
+    const jangjeolRangeMatch = input.match(jangjeolRangePattern);
+    if (jangjeolRangeMatch) {
+      const engName = KOREAN_BOOK_MAP[korName];
+      const chapter = jangjeolRangeMatch[1];
+      const startVerse = jangjeolRangeMatch[2];
+      const endVerse = jangjeolRangeMatch[3];
+      return `${engName} ${chapter}:${startVerse}-${endVerse}`;
+    }
   }
 
   // 2) 영어 책명 패턴 (이미 영어로 입력한 경우)
