@@ -23,13 +23,10 @@ public struct VerseSearchView: View {
     }
 
     public var body: some View {
-        ZStack {
-            // 배경
-            WarmGradientBackground()
-
-            VStack(spacing: 0) {
-                // 헤더
-                header
+        NavigationStack {
+            ZStack {
+                // 배경
+                WarmGradientBackground()
 
                 ScrollView {
                     VStack(spacing: 20) {
@@ -78,6 +75,20 @@ public struct VerseSearchView: View {
                     .animation(.easeInOut(duration: 0.2), value: viewModel.state.errorMessage)
                 }
                 .scrollDismissesKeyboard(.interactively)
+            }
+            .navigationTitle("구절 직접 찾기")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Button {
+                        Haptics.tap()
+                        dismiss()
+                    } label: {
+                        Image(systemName: "xmark")
+                            .font(.system(size: 16, weight: .semibold))
+                            .foregroundStyle(DS.Color.textSecondary)
+                    }
+                }
             }
         }
         .onAppear {
