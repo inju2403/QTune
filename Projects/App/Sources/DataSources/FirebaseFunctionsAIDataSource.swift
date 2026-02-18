@@ -234,4 +234,63 @@ public final class FirebaseFunctionsAIDataSource: OpenAIRemoteDataSource {
             throw OpenAIDataSourceError.unknown
         }
     }
+
+    public func getVerseExplanation(englishText: String, verseRef: String) async throws -> String {
+        guard let currentUser = Auth.auth().currentUser else {
+            print("🔴 [FirebaseFunctionsAIDataSource] User not authenticated")
+            throw OpenAIDataSourceError.apiKeyNotFound
+        }
+
+        print("🔥 [FirebaseFunctionsAIDataSource] Calling getVerseExplanation function")
+        print("   VerseRef: \(verseRef)")
+        print("   UID: \(currentUser.uid)")
+
+        let data: [String: Any] = [
+            "englishText": englishText,
+            "verseRef": verseRef,
+            "isSandbox": isSandboxEnvironment
+        ]
+
+        if isSandboxEnvironment {
+            print("🏖️ [FirebaseFunctionsAIDataSource] Running in SANDBOX environment")
+        }
+
+        do {
+            let callable = functions.httpsCallable("getVerseExplanation")
+            let result = try await callable.call(data)
+
+            print("✅ [FirebaseFunctionsAIDataSource] getVerseExplanation successful")
+
+            guard let resultData = result.data as? [String: Any],
+                  let explanation = resultData["explanation"] as? String else {
+                print("🔴 [FirebaseFunctionsAIDataSource] Invalid response format")
+                throw OpenAIDataSourceError.invalidJSON
+            }
+
+            print("✅ [FirebaseFunctionsAIDataSource] Explanation: \(explanation.prefix(80))...")
+            return explanation
+
+        } catch let error as NSError {
+            print("🔴 [FirebaseFunctionsAIDataSource] getVerseExplanation error")
+            print("   Domain: \(error.domain)")
+            print("   Code: \(error.code)")
+            print("   Description: \(error.localizedDescription)")
+
+            if error.domain == FunctionsErrorDomain {
+                let code = FunctionsErrorCode(rawValue: error.code)
+                switch code {
+                case .unauthenticated:
+                    throw OpenAIDataSourceError.apiKeyNotFound
+                case .invalidArgument:
+                    throw OpenAIDataSourceError.invalidJSON
+                case .resourceExhausted:
+                    throw OpenAIDataSourceError.dailyLimitExceeded
+                default:
+                    throw OpenAIDataSourceError.unknown
+                }
+            }
+
+            throw OpenAIDataSourceError.unknown
+        }
+    }
 }

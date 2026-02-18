@@ -113,7 +113,7 @@ public final class RequestVerseViewModel {
 
             // 4. 결과를 State에 저장
             let result = GeneratedVerseResult(
-                verseRef: "\(generated.verse.localizedBookName) \(generated.verse.chapter):\(generated.verse.verse)",
+                verseRef: generated.verse.localizedId,
                 verseText: generated.verse.text,
                 verseTextEN: nil,  // TODO: OpenAI API에서 verseTextEN 받아오면 사용
                 korean: generated.korean,

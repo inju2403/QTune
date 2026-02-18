@@ -45,4 +45,12 @@ public protocol AIRepository {
     /// - Returns: 생성된 말씀
     /// - Throws: AIRepositoryError
     func generateVerse(_ request: AIGenerateVerseRequest) async throws -> GeneratedVerse
+
+    /// 구절 객관적 해설 생성 (GPT-4o-mini)
+    /// - Parameters:
+    ///   - englishText: 영어 성경 본문
+    ///   - verseRef: 구절 참조 (예: "John 3:16")
+    /// - Returns: 한국어 해설 3문장
+    /// - Throws: AIRepositoryError
+    func explainVerse(englishText: String, verseRef: String) async throws -> String
 }

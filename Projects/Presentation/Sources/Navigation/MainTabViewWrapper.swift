@@ -19,6 +19,8 @@ public struct MainTabViewWrapper: View {
     let commitQTUseCase: CommitQTUseCase
     let getUserProfileUseCase: GetUserProfileUseCase
     let saveUserProfileUseCase: SaveUserProfileUseCase
+    let fetchVerseDirectUseCase: FetchVerseDirectUseCase
+    let fetchVerseExplanationUseCase: FetchVerseExplanationUseCase?
     let updateNotificationSettingsUseCase: UpdateNotificationSettingsUseCase?
     let session: UserSession
 
@@ -44,6 +46,8 @@ public struct MainTabViewWrapper: View {
         commitQTUseCase: CommitQTUseCase,
         getUserProfileUseCase: GetUserProfileUseCase,
         saveUserProfileUseCase: SaveUserProfileUseCase,
+        fetchVerseDirectUseCase: FetchVerseDirectUseCase,
+        fetchVerseExplanationUseCase: FetchVerseExplanationUseCase? = nil,
         updateNotificationSettingsUseCase: UpdateNotificationSettingsUseCase? = nil,
         session: UserSession,
         userProfile: Binding<UserProfile?>
@@ -57,6 +61,8 @@ public struct MainTabViewWrapper: View {
         self.commitQTUseCase = commitQTUseCase
         self.getUserProfileUseCase = getUserProfileUseCase
         self.saveUserProfileUseCase = saveUserProfileUseCase
+        self.fetchVerseDirectUseCase = fetchVerseDirectUseCase
+        self.fetchVerseExplanationUseCase = fetchVerseExplanationUseCase
         self.updateNotificationSettingsUseCase = updateNotificationSettingsUseCase
         self.session = session
         self._userProfile = userProfile
@@ -134,6 +140,8 @@ public struct MainTabViewWrapper: View {
                         session: session,
                         getUserProfileUseCase: getUserProfileUseCase,
                         saveUserProfileUseCase: saveUserProfileUseCase,
+                        fetchVerseDirectUseCase: fetchVerseDirectUseCase,
+                        fetchVerseExplanationUseCase: fetchVerseExplanationUseCase,
                         onNavigateToRecordTab: onNavigateToRecordTab,
                         onNavigateToMyPage: {
                             withAnimation(.easeInOut(duration: 0.35)) {
@@ -237,6 +245,8 @@ public struct MainTabViewWrapper: View {
                     session: session,
                     getUserProfileUseCase: getUserProfileUseCase,
                     saveUserProfileUseCase: saveUserProfileUseCase,
+                    fetchVerseDirectUseCase: fetchVerseDirectUseCase,
+                    fetchVerseExplanationUseCase: fetchVerseExplanationUseCase,
                     onNavigateToRecordTab: onNavigateToRecordTab,
                     onNavigateToMyPage: {
                         withAnimation(.easeInOut(duration: 0.35)) {

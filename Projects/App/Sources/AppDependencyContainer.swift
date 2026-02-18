@@ -183,6 +183,19 @@ final class AppDependencyContainer {
         return DefaultGetUserProfileUseCase(repository: makeUserProfileRepository())
     }
 
+    /// FetchVerseDirectUseCase 생성 (GPT 없이 Bible API 직접 조회)
+    func makeFetchVerseDirectUseCase() -> FetchVerseDirectUseCase {
+        let bibleAPIBaseURL = URL(string: "https://bible-api.com")!
+        let bibleAPIClient = URLSessionHTTPClient(baseURL: bibleAPIBaseURL)
+        let bibleDataSource = BibleAPIDataSource(client: bibleAPIClient)
+        return DefaultFetchVerseDirectUseCase(bibleDataSource: bibleDataSource)
+    }
+
+    /// FetchVerseExplanationUseCase 생성 (AI 해설 - Firebase Functions 경유)
+    func makeFetchVerseExplanationUseCase() -> FetchVerseExplanationUseCase {
+        return FetchVerseExplanationInteractor(aiRepository: makeAIRepository())
+    }
+
     /// UpdateNotificationSettingsUseCase 생성 (Firestore 연동 포함)
     ///
     /// Clean Architecture 원칙:

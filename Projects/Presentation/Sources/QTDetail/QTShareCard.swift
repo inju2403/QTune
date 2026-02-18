@@ -143,8 +143,7 @@ public struct QTShareCard: View {
     }
 
     private func formatVerseRef(_ verse: Verse) -> String {
-        // 역본에 따라 책명 표시
-        return "\(verse.localizedBookName) \(verse.chapter):\(verse.verse)"
+        return verse.localizedId
     }
 
     private func getVerseText(_ verse: Verse) -> String {

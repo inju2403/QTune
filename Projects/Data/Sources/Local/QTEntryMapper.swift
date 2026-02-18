@@ -17,6 +17,7 @@ extension QTEntryModel {
             book: verseBook,
             chapter: verseChapter,
             verse: verseNumber,
+            endVerse: verseEndNumber,
             text: verseText,
             translation: verseTranslation
         )
@@ -34,6 +35,7 @@ extension QTEntryModel {
                 book: book,
                 chapter: chapter,
                 verse: number,
+                endVerse: secondaryVerseEndNumber,
                 text: text,
                 translation: translation
             )
@@ -78,11 +80,13 @@ extension QTEntryModel {
             verseBook: qt.verse.book,
             verseChapter: qt.verse.chapter,
             verseNumber: qt.verse.verse,
+            verseEndNumber: qt.verse.endVerse,
             verseText: qt.verse.text,
             verseTranslation: qt.verse.translation,
             secondaryVerseBook: qt.secondaryVerse?.book,
             secondaryVerseChapter: qt.secondaryVerse?.chapter,
             secondaryVerseNumber: qt.secondaryVerse?.verse,
+            secondaryVerseEndNumber: qt.secondaryVerse?.endVerse,
             secondaryVerseText: qt.secondaryVerse?.text,
             secondaryVerseTranslation: qt.secondaryVerse?.translation,
             korean: qt.korean,
@@ -107,6 +111,7 @@ extension QTEntryModel {
         self.secondaryVerseBook = qt.secondaryVerse?.book
         self.secondaryVerseChapter = qt.secondaryVerse?.chapter
         self.secondaryVerseNumber = qt.secondaryVerse?.verse
+        self.secondaryVerseEndNumber = qt.secondaryVerse?.endVerse
         self.secondaryVerseText = qt.secondaryVerse?.text
         self.secondaryVerseTranslation = qt.secondaryVerse?.translation
         self.korean = qt.korean

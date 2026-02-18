@@ -229,6 +229,8 @@ struct QTuneApp: App {
                 commitQTUseCase: commitQTUseCase,
                 getUserProfileUseCase: container.makeGetUserProfileUseCase(),
                 saveUserProfileUseCase: container.makeSaveUserProfileUseCase(),
+                fetchVerseDirectUseCase: container.makeFetchVerseDirectUseCase(),
+                fetchVerseExplanationUseCase: container.makeFetchVerseExplanationUseCase(),
                 updateNotificationSettingsUseCase: container.makeUpdateNotificationSettingsUseCase(),
                 session: container.dummySession,
                 userProfile: $userProfile
