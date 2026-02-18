@@ -38,34 +38,65 @@ public final class DefaultFetchVerseDirectUseCase: FetchVerseDirectUseCase {
         }
 
         let verseStr = String(cvParts[1])
-        let startVerse = Int(verseStr.split(separator: "-").first.map(String.init) ?? verseStr) ?? 1
+        let verseParts = verseStr.split(separator: "-")
+        let startVerse = Int(verseParts.first.map(String.init) ?? verseStr) ?? 1
+        let endVerse = verseParts.count > 1 ? Int(String(verseParts[1])) : nil
 
         return Verse(
             book: book,
             chapter: chapter,
             verse: startVerse,
+            endVerse: endVerse,
             text: dto.text,
             translation: translation
         )
     }
 
     /// 한글 책명을 영어 책명으로 정규화
-    /// "시편 37:5" → "Psalms 37:5", "요한복음 3:16-18" → "John 3:16-18"
+    /// "시편 37:5" → "Psalms 37:5", "시37:5" → "Psalms 37:5", "요한복음 3:16-18" → "John 3:16-18"
     static func normalizeVerseRef(_ ref: String) -> String {
         let trimmed = ref.trimmingCharacters(in: .whitespacesAndNewlines)
+
+        // 1차: 공백 기준 분리 ("시 37:5", "Psalms 37:5")
         let parts = trimmed.split(separator: " ")
-        guard parts.count >= 2 else { return trimmed }
-
-        // 마지막 파트가 chapter:verse 형식인지 확인
-        let lastPart = String(parts.last!)
-        guard lastPart.contains(":") else { return trimmed }
-
-        let bookPart = parts.dropLast().joined(separator: " ")
-
-        // 한글 책명이면 영어로 변환
-        if let english = BibleBookMapper.toEnglishName(bookPart) {
-            return "\(english) \(lastPart)"
+        if parts.count >= 2 {
+            let lastPart = String(parts.last!)
+            if lastPart.contains(":") {
+                let bookPart = parts.dropLast().joined(separator: " ")
+                if let english = BibleBookMapper.toEnglishName(bookPart) {
+                    return "\(english) \(lastPart)"
+                }
+                return trimmed
+            }
         }
+
+        // 2차: 공백 없이 붙여쓴 경우 정규식으로 분리 ("시37:5", "요한복음3:16-18")
+        // 패턴: 책명(한글/영문 등) + 숫자:숫자(-숫자)?
+        if let (bookPart, chapterVerse) = splitBookAndChapterVerse(trimmed) {
+            let trimmedBook = bookPart.trimmingCharacters(in: .whitespaces)
+            if let english = BibleBookMapper.toEnglishName(trimmedBook) {
+                return "\(english) \(chapterVerse)"
+            }
+            // 이미 영어 책명인 경우 ("John3:16" → "John 3:16")
+            if !trimmedBook.isEmpty {
+                return "\(trimmedBook) \(chapterVerse)"
+            }
+        }
+
         return trimmed
+    }
+
+    /// 정규식으로 책명과 장:절을 분리
+    /// "시37:5" → ("시", "37:5"), "요한복음3:16-18" → ("요한복음", "3:16-18")
+    private static func splitBookAndChapterVerse(_ ref: String) -> (String, String)? {
+        let pattern = #"^(.+?)(\d+:\d+(?:-\d+)?)$"#
+        guard let regex = try? NSRegularExpression(pattern: pattern),
+              let match = regex.firstMatch(in: ref, range: NSRange(ref.startIndex..., in: ref)),
+              match.numberOfRanges == 3,
+              let bookRange = Range(match.range(at: 1), in: ref),
+              let cvRange = Range(match.range(at: 2), in: ref)
+        else { return nil }
+
+        return (String(ref[bookRange]), String(ref[cvRange]))
     }
 }
