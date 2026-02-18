@@ -91,7 +91,6 @@ public struct QTShareCardView: View {
 
     @State private var renderedImage: Image?
     @State private var renderedUIImage: UIImage?
-    @State private var imageID = UUID()
     @State private var showSaveAlert = false
     @State private var saveAlertMessage = ""
 
@@ -160,8 +159,6 @@ public struct QTShareCardView: View {
                         .aspectRatio(9/16, contentMode: .fit)
                         .cornerRadius(12)
                         .shadow(color: .black.opacity(0.1), radius: 10, x: 0, y: 3)
-                        .id(imageID)
-                        .transition(.opacity)
                 } else {
                     RoundedRectangle(cornerRadius: 12)
                         .fill(DS.Color.background)
@@ -172,7 +169,6 @@ public struct QTShareCardView: View {
                         )
                 }
             }
-            .animation(.easeInOut(duration: 0.25), value: imageID)
             .padding(.horizontal, 20)
             .frame(maxWidth: .infinity, maxHeight: .infinity)
 
@@ -302,11 +298,8 @@ public struct QTShareCardView: View {
             renderer.scale = UIScreen.main.scale
 
             if let uiImage = renderer.uiImage {
-                withAnimation(.easeInOut(duration: 0.25)) {
-                    renderedImage = Image(uiImage: uiImage)
-                    renderedUIImage = uiImage
-                    imageID = UUID()
-                }
+                renderedImage = Image(uiImage: uiImage)
+                renderedUIImage = uiImage
             }
         }
     }
