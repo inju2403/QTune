@@ -84,22 +84,22 @@ public struct QTShareCardView: View {
     let qt: QuietTime
     let onShare: (UIImage?) -> Void
 
-    // 로컬 폰트/줄간격 설정 (마이페이지 설정과 독립적)
-    @State private var localFontScale: FontScale = .medium
-    @State private var localLineSpacing: LineSpacing = .normal
+    // 마지막 설정 기억 (AppStorage — 바텀시트 재오픈 시 유지)
+    @AppStorage("shareCard.fontScaleRaw") private var fontScaleRaw: String = FontScale.medium.rawValue
+    @AppStorage("shareCard.lineSpacingRaw") private var lineSpacingRaw: String = LineSpacing.normal.rawValue
 
     @State private var renderedImage: Image?
     @State private var renderedUIImage: UIImage?
     @State private var showSaveAlert = false
     @State private var saveAlertMessage = ""
 
+    // 현재 설정값
+    private var localFontScale: FontScale { FontScale(rawValue: fontScaleRaw) ?? .medium }
+    private var localLineSpacing: LineSpacing { LineSpacing(rawValue: lineSpacingRaw) ?? .normal }
+
     // 인덱스 헬퍼
-    private var fontScaleIndex: Int {
-        FontScale.allCases.firstIndex(of: localFontScale) ?? 1
-    }
-    private var lineSpacingIndex: Int {
-        LineSpacing.allCases.firstIndex(of: localLineSpacing) ?? 1
-    }
+    private var fontScaleIndex: Int { FontScale.allCases.firstIndex(of: localFontScale) ?? 1 }
+    private var lineSpacingIndex: Int { LineSpacing.allCases.firstIndex(of: localLineSpacing) ?? 1 }
 
     public init(
         qt: QuietTime,
@@ -119,7 +119,7 @@ public struct QTShareCardView: View {
                 .padding(.bottom, 8)
 
             // 상단 버튼 영역 (저장, 공유 — 동일 스타일, 우측 정렬)
-            HStack(spacing: 0) {
+            HStack(alignment: .center, spacing: 8) {
                 Spacer()
 
                 Button {
@@ -130,7 +130,6 @@ public struct QTShareCardView: View {
                         .font(DS.Font.bodyM())
                         .foregroundStyle(DS.Color.textPrimary)
                         .frame(height: 36)
-                        .padding(.horizontal, 16)
                 }
                 .disabled(renderedUIImage == nil)
                 .opacity(renderedUIImage == nil ? 0.4 : 1)
@@ -190,7 +189,7 @@ public struct QTShareCardView: View {
                         index: fontScaleIndex,
                         count: FontScale.allCases.count
                     ) { newIndex in
-                        localFontScale = FontScale.allCases[newIndex]
+                        fontScaleRaw = FontScale.allCases[newIndex].rawValue
                         Task { await renderImage() }
                     }
 
@@ -216,7 +215,7 @@ public struct QTShareCardView: View {
                         index: lineSpacingIndex,
                         count: LineSpacing.allCases.count
                     ) { newIndex in
-                        localLineSpacing = LineSpacing.allCases[newIndex]
+                        lineSpacingRaw = LineSpacing.allCases[newIndex].rawValue
                         Task { await renderImage() }
                     }
 
