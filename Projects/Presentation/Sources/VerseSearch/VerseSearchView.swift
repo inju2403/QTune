@@ -549,31 +549,33 @@ private extension VerseSearchView {
                 .buttonStyle(.plain)
             }
 
-            FlowLayout(spacing: 8) {
-                ForEach(viewModel.state.recentSearches, id: \.self) { ref in
-                    Button {
-                        Haptics.tap()
-                        isSearchFocused = false
-                        viewModel.send(.tapRecentSearch(ref))
-                    } label: {
-                        HStack(spacing: 4) {
-                            Image(systemName: "clock")
-                                .font(.system(size: 11))
-                            DSText.caption(ref, weight: .medium)
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: 8) {
+                    ForEach(viewModel.state.recentSearches, id: \.self) { ref in
+                        Button {
+                            Haptics.tap()
+                            isSearchFocused = false
+                            viewModel.send(.tapRecentSearch(ref))
+                        } label: {
+                            HStack(spacing: 4) {
+                                Image(systemName: "clock")
+                                    .font(.system(size: 11))
+                                DSText.caption(ref, weight: .medium)
+                            }
+                            .foregroundStyle(DS.Color.cocoa)
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 7)
+                            .background(
+                                Capsule()
+                                    .fill(DS.Color.bgMid)
+                                    .overlay(
+                                        Capsule()
+                                            .stroke(DS.Color.stroke, lineWidth: 1)
+                                    )
+                            )
                         }
-                        .foregroundStyle(DS.Color.cocoa)
-                        .padding(.horizontal, 12)
-                        .padding(.vertical, 7)
-                        .background(
-                            Capsule()
-                                .fill(DS.Color.bgMid)
-                                .overlay(
-                                    Capsule()
-                                        .stroke(DS.Color.stroke, lineWidth: 1)
-                                )
-                        )
+                        .buttonStyle(.plain)
                     }
-                    .buttonStyle(.plain)
                 }
             }
         }
@@ -631,47 +633,3 @@ private extension VerseSearchView {
     }
 }
 
-// MARK: - FlowLayout (태그 줄바꿈 레이아웃)
-
-/// 태그 형식의 흘러가는 레이아웃
-struct FlowLayout: Layout {
-    var spacing: CGFloat = 8
-
-    func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) -> CGSize {
-        let containerWidth = proposal.width ?? .infinity
-        var height: CGFloat = 0
-        var rowWidth: CGFloat = 0
-        var rowHeight: CGFloat = 0
-
-        for subview in subviews {
-            let size = subview.sizeThatFits(.unspecified)
-            if rowWidth + size.width > containerWidth && rowWidth > 0 {
-                height += rowHeight + spacing
-                rowWidth = 0
-                rowHeight = 0
-            }
-            rowWidth += size.width + spacing
-            rowHeight = max(rowHeight, size.height)
-        }
-        height += rowHeight
-        return CGSize(width: containerWidth, height: height)
-    }
-
-    func placeSubviews(in bounds: CGRect, proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) {
-        var x = bounds.minX
-        var y = bounds.minY
-        var rowHeight: CGFloat = 0
-
-        for subview in subviews {
-            let size = subview.sizeThatFits(.unspecified)
-            if x + size.width > bounds.maxX && x > bounds.minX {
-                y += rowHeight + spacing
-                x = bounds.minX
-                rowHeight = 0
-            }
-            subview.place(at: CGPoint(x: x, y: y), proposal: ProposedViewSize(size))
-            x += size.width + spacing
-            rowHeight = max(rowHeight, size.height)
-        }
-    }
-}
