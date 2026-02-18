@@ -87,9 +87,11 @@ public struct QTShareCardView: View {
     // 마지막 설정 기억 (AppStorage — 바텀시트 재오픈 시 유지)
     @AppStorage("shareCard.fontScaleRaw") private var fontScaleRaw: String = FontScale.medium.rawValue
     @AppStorage("shareCard.lineSpacingRaw") private var lineSpacingRaw: String = LineSpacing.normal.rawValue
+    @AppStorage("shareCard.showCommentary") private var showCommentary: Bool = true
 
     @State private var renderedImage: Image?
     @State private var renderedUIImage: UIImage?
+    @State private var imageID = UUID()
     @State private var showSaveAlert = false
     @State private var saveAlertMessage = ""
 
@@ -158,6 +160,8 @@ public struct QTShareCardView: View {
                         .aspectRatio(9/16, contentMode: .fit)
                         .cornerRadius(12)
                         .shadow(color: .black.opacity(0.1), radius: 10, x: 0, y: 3)
+                        .id(imageID)
+                        .transition(.opacity)
                 } else {
                     RoundedRectangle(cornerRadius: 12)
                         .fill(DS.Color.background)
@@ -168,6 +172,7 @@ public struct QTShareCardView: View {
                         )
                 }
             }
+            .animation(.easeInOut(duration: 0.25), value: imageID)
             .padding(.horizontal, 20)
             .frame(maxWidth: .infinity, maxHeight: .infinity)
 
@@ -224,6 +229,25 @@ public struct QTShareCardView: View {
                         .foregroundStyle(DS.Color.textSecondary)
                         .frame(width: 22, alignment: .center)
                 }
+
+                // 해설 포함 여부 (qt.korean이 있을 때만 표시)
+                if qt.korean?.isEmpty == false {
+                    Divider()
+
+                    Toggle(isOn: Binding(
+                        get: { showCommentary },
+                        set: { newValue in
+                            showCommentary = newValue
+                            Haptics.tap()
+                            Task { await renderImage() }
+                        }
+                    )) {
+                        Text("해설 포함")
+                            .font(DS.Font.caption())
+                            .foregroundStyle(DS.Color.textSecondary)
+                    }
+                    .tint(DS.Color.gold)
+                }
             }
             .padding(.horizontal, 24)
             .padding(.vertical, 18)
@@ -271,15 +295,18 @@ public struct QTShareCardView: View {
 
     @MainActor
     private func renderImage() async {
-        let shareCard = QTShareCard(qt: qt, fontScale: localFontScale, lineSpacing: localLineSpacing)
+        let shareCard = QTShareCard(qt: qt, fontScale: localFontScale, lineSpacing: localLineSpacing, showCommentary: showCommentary)
 
         if #available(iOS 16.0, *) {
             let renderer = ImageRenderer(content: shareCard)
             renderer.scale = UIScreen.main.scale
 
             if let uiImage = renderer.uiImage {
-                renderedImage = Image(uiImage: uiImage)
-                renderedUIImage = uiImage
+                withAnimation(.easeInOut(duration: 0.25)) {
+                    renderedImage = Image(uiImage: uiImage)
+                    renderedUIImage = uiImage
+                    imageID = UUID()
+                }
             }
         }
     }
