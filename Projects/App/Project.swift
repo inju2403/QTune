@@ -26,7 +26,8 @@ let project = Project(
         "CFBundleVersion": "181",
         "UILaunchStoryboardName": "LaunchScreen",
         "UIViewControllerBasedStatusBarAppearance": true,
-        "UIUserInterfaceStyle": "Light"
+        "UIUserInterfaceStyle": "Light",
+        "NSPhotoLibraryAddUsageDescription": "QT 이미지를 사진첩에 저장하기 위해 권한이 필요합니다."
       ]),
       sources: nil,
       resources: [
@@ -142,7 +143,8 @@ let project = Project(
         "CFBundleVersion": "181",
         "UILaunchStoryboardName": "LaunchScreen",
         "UIViewControllerBasedStatusBarAppearance": true,
-        "UIUserInterfaceStyle": "Light"
+        "UIUserInterfaceStyle": "Light",
+        "NSPhotoLibraryAddUsageDescription": "QT 이미지를 사진첩에 저장하기 위해 권한이 필요합니다."
       ]),
       sources: nil,
       resources: [

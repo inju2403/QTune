@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import UIKit
 
 /// QT 상세 화면 Action
 public enum QTDetailAction: Equatable {
@@ -19,7 +20,7 @@ public enum QTDetailAction: Equatable {
     case selectACTSField(ACTSField)
     case cancelShare
     case closeShareSheet
-    case shareImageToSystem
+    case shareImageToSystem(UIImage)
     case showEditSheet(Bool)
     case reloadQT
 }

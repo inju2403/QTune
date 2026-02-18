@@ -598,15 +598,20 @@ struct ShareSheetsModifier: ViewModifier {
             .sheet(isPresented: imageShareSheetBinding) {
                 QTShareCardView(
                     qt: viewModel.state.qt,
-                    onShare: {
-                        viewModel.send(.shareImageToSystem)
+                    onShare: { uiImage in
+                        if let image = uiImage {
+                            viewModel.send(.shareImageToSystem(image))
+                        }
                     }
                 )
                 .presentationDragIndicator(.hidden)
                 .presentationDetents([.large])
             }
             .sheet(isPresented: systemShareSheetBinding) {
-                QTShareImageView(qt: viewModel.state.qt)
+                QTShareImageView(
+                    qt: viewModel.state.qt,
+                    preRenderedImage: viewModel.state.sharedImage
+                )
             }
     }
 
