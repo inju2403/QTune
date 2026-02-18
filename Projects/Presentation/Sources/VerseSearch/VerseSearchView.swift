@@ -327,7 +327,7 @@ private extension VerseSearchView {
                 Spacer()
 
                 // 역본 뱃지
-                Text(verse.translation)
+                Text(Translation.from(code: verse.translation)?.displayName ?? verse.translation)
                     .font(.system(size: 12, weight: .semibold))
                     .foregroundStyle(DS.Color.gold)
                     .padding(.horizontal, 10)
