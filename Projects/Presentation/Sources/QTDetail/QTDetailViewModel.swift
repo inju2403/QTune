@@ -103,8 +103,9 @@ public final class QTDetailViewModel {
             state.showImageShareSheet = false
             state.showSystemShareSheet = false
 
-        case .shareImageToSystem:
+        case .shareImageToSystem(let image):
             state.showImageShareSheet = false
+            state.sharedImage = image
             state.showSystemShareSheet = true
 
         case .showEditSheet(let show):

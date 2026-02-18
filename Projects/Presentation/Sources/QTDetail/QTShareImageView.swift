@@ -11,6 +11,7 @@ import Domain
 /// 시스템 공유 시트와 연동되는 이미지 공유 뷰
 public struct QTShareImageView: View {
     let qt: QuietTime
+    let preRenderedImage: UIImage?
 
     @State private var shareImage: Image?
     @State private var imageURL: URL?
@@ -18,8 +19,9 @@ public struct QTShareImageView: View {
     @Environment(\.fontScale) private var fontScale
     @Environment(\.lineSpacing) private var lineSpacing
 
-    public init(qt: QuietTime) {
+    public init(qt: QuietTime, preRenderedImage: UIImage? = nil) {
         self.qt = qt
+        self.preRenderedImage = preRenderedImage
     }
 
     public var body: some View {
@@ -46,26 +48,35 @@ public struct QTShareImageView: View {
 
     @MainActor
     private func renderImage() async {
-        let shareCard = QTShareCard(qt: qt, fontScale: fontScale, lineSpacing: lineSpacing)
+        var renderedUIImage: UIImage?
 
-        // iOS 16+ ImageRenderer 사용
-        if #available(iOS 16.0, *) {
-            let renderer = ImageRenderer(content: shareCard)
-            renderer.scale = UIScreen.main.scale
+        // 미리 렌더링된 이미지가 있으면 사용
+        if let preRenderedImage = preRenderedImage {
+            renderedUIImage = preRenderedImage
+        } else {
+            // 없으면 새로 렌더링
+            let shareCard = QTShareCard(qt: qt, fontScale: fontScale, lineSpacing: lineSpacing)
 
-            if let renderedUIImage = renderer.uiImage,
-               let imageData = renderedUIImage.pngData() {
-                // 임시 파일로 저장
-                let tempURL = FileManager.default.temporaryDirectory
-                    .appendingPathComponent("QTune_Share_\(UUID().uuidString).png")
+            // iOS 16+ ImageRenderer 사용
+            if #available(iOS 16.0, *) {
+                let renderer = ImageRenderer(content: shareCard)
+                renderer.scale = UIScreen.main.scale
+                renderedUIImage = renderer.uiImage
+            }
+        }
 
-                do {
-                    try imageData.write(to: tempURL)
-                    self.imageURL = tempURL
-                    self.shareImage = Image(uiImage: renderedUIImage)
-                } catch {
-                    print("Failed to save image to temp file: \(error)")
-                }
+        if let renderedUIImage = renderedUIImage,
+           let imageData = renderedUIImage.pngData() {
+            // 임시 파일로 저장
+            let tempURL = FileManager.default.temporaryDirectory
+                .appendingPathComponent("QTune_Share_\(UUID().uuidString).png")
+
+            do {
+                try imageData.write(to: tempURL)
+                self.imageURL = tempURL
+                self.shareImage = Image(uiImage: renderedUIImage)
+            } catch {
+                print("Failed to save image to temp file: \(error)")
             }
         }
     }

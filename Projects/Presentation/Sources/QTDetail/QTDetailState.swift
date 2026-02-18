@@ -7,6 +7,7 @@
 
 import Foundation
 import Domain
+import UIKit
 
 /// 공유 포맷
 public enum ShareFormat: Equatable {
@@ -53,6 +54,7 @@ public struct QTDetailState: Equatable {
     public var selectedShareType: ShareType?
     public var selectedSOAPField: SOAPField?
     public var selectedACTSField: ACTSField?
+    public var sharedImage: UIImage?
 
     public init(
         qt: QuietTime,
@@ -68,7 +70,8 @@ public struct QTDetailState: Equatable {
         selectedShareFormat: ShareFormat? = nil,
         selectedShareType: ShareType? = nil,
         selectedSOAPField: SOAPField? = nil,
-        selectedACTSField: ACTSField? = nil
+        selectedACTSField: ACTSField? = nil,
+        sharedImage: UIImage? = nil
     ) {
         self.qt = qt
         self.showDeleteAlert = showDeleteAlert
@@ -84,5 +87,6 @@ public struct QTDetailState: Equatable {
         self.selectedShareType = selectedShareType
         self.selectedSOAPField = selectedSOAPField
         self.selectedACTSField = selectedACTSField
+        self.sharedImage = sharedImage
     }
 }

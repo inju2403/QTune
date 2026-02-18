@@ -13,11 +13,18 @@ public struct QTShareCard: View {
     let qt: QuietTime
     let fontScale: FontScale
     let lineSpacing: LineSpacing
+    let showCommentary: Bool
 
-    public init(qt: QuietTime, fontScale: FontScale = .medium, lineSpacing: LineSpacing = .normal) {
+    public init(
+        qt: QuietTime,
+        fontScale: FontScale = .medium,
+        lineSpacing: LineSpacing = .normal,
+        showCommentary: Bool = true
+    ) {
         self.qt = qt
         self.fontScale = fontScale
         self.lineSpacing = lineSpacing
+        self.showCommentary = showCommentary
     }
 
     public var body: some View {
@@ -57,7 +64,7 @@ public struct QTShareCard: View {
                         .padding(.bottom, 70)
 
                     // 해설
-                    if let korean = qt.korean, !korean.isEmpty {
+                    if showCommentary, let korean = qt.korean, !korean.isEmpty {
                         Text("해설")
                             .font(.system(size: 32 * fontScale.multiplier, weight: .semibold))
                             .foregroundStyle(Color.black.opacity(0.6))
