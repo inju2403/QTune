@@ -170,7 +170,9 @@ async function getRecommendedVerses(callerId: string): Promise<string[]> {
 // =========================================
 async function saveRecommendedVerse(
   callerId: string,
-  verseRef: string
+  verseRef: string,
+  nickname?: string,
+  gender?: string
 ): Promise<void> {
   const db = admin.firestore();
   const docRef = db.collection("verse_history").doc(callerId);
@@ -193,14 +195,20 @@ async function saveRecommendedVerse(
         verses.shift();
       }
 
-      transaction.set(
-        docRef,
-        {
-          verses,
-          updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-        },
-        { merge: true }
-      );
+      const updateData: any = {
+        verses,
+        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+      };
+
+      // 프로필 정보 추가 (있으면)
+      if (nickname) {
+        updateData.nickname = nickname;
+      }
+      if (gender) {
+        updateData.gender = gender;
+      }
+
+      transaction.set(docRef, updateData, { merge: true });
 
       logger.info("[saveRecommendedVerse] History updated", {
         callerId,
@@ -699,7 +707,7 @@ ${excludeList}
       logger.info("recommendVerse success", { verseRef: result.verseRef });
 
       // 추천 결과를 이력에 저장 (동기화하여 다음 요청에서 바로 반영되도록)
-      await saveRecommendedVerse(callerId, result.verseRef);
+      await saveRecommendedVerse(callerId, result.verseRef, nickname, gender);
 
       // 말씀 추천 요청 기록 (푸시 알림 타겟팅용)
       const todayKST = new Date().toLocaleDateString('en-CA', {
@@ -707,14 +715,24 @@ ${excludeList}
       });
 
       try {
+        const requestData: any = {
+          lastRequestDate: todayKST,
+          lastRequestTime: admin.firestore.FieldValue.serverTimestamp(),
+          requestCount: admin.firestore.FieldValue.increment(1)
+        };
+
+        // 프로필 정보 추가 (있으면)
+        if (nickname) {
+          requestData.nickname = nickname;
+        }
+        if (gender) {
+          requestData.gender = gender;
+        }
+
         await admin.firestore()
           .collection('verse_requests')
           .doc(callerId)
-          .set({
-            lastRequestDate: todayKST,
-            lastRequestTime: admin.firestore.FieldValue.serverTimestamp(),
-            requestCount: admin.firestore.FieldValue.increment(1)
-          }, { merge: true });
+          .set(requestData, { merge: true });
         logger.info("Verse request recorded for push notification targeting");
       } catch (error) {
         logger.warn("Failed to record verse request", error);
