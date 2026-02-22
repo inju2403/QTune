@@ -70,7 +70,8 @@ function getCallerId(request: any): string {
 async function checkDailyQuota(
   callerId: string,
   nickname?: string,
-  gender?: string
+  gender?: string,
+  collectionName: string = "usage"
 ): Promise<void> {
   const db = admin.firestore();
 
@@ -81,7 +82,7 @@ async function checkDailyQuota(
   const kstDate = new Date(now.getTime() + kstOffset);
   const today = kstDate.toISOString().split("T")[0];
   const docId = `${callerId}_${today}`;
-  const docRef = db.collection("usage").doc(docId);
+  const docRef = db.collection(collectionName).doc(docId);
 
   await db.runTransaction(async (transaction) => {
     const doc = await transaction.get(docRef);
@@ -169,7 +170,9 @@ async function getRecommendedVerses(callerId: string): Promise<string[]> {
 // =========================================
 async function saveRecommendedVerse(
   callerId: string,
-  verseRef: string
+  verseRef: string,
+  nickname?: string,
+  gender?: string
 ): Promise<void> {
   const db = admin.firestore();
   const docRef = db.collection("verse_history").doc(callerId);
@@ -192,14 +195,20 @@ async function saveRecommendedVerse(
         verses.shift();
       }
 
-      transaction.set(
-        docRef,
-        {
-          verses,
-          updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-        },
-        { merge: true }
-      );
+      const updateData: any = {
+        verses,
+        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+      };
+
+      // 프로필 정보 추가 (있으면)
+      if (nickname) {
+        updateData.nickname = nickname;
+      }
+      if (gender) {
+        updateData.gender = gender;
+      }
+
+      transaction.set(docRef, updateData, { merge: true });
 
       logger.info("[saveRecommendedVerse] History updated", {
         callerId,
@@ -698,7 +707,7 @@ ${excludeList}
       logger.info("recommendVerse success", { verseRef: result.verseRef });
 
       // 추천 결과를 이력에 저장 (동기화하여 다음 요청에서 바로 반영되도록)
-      await saveRecommendedVerse(callerId, result.verseRef);
+      await saveRecommendedVerse(callerId, result.verseRef, nickname, gender);
 
       // 말씀 추천 요청 기록 (푸시 알림 타겟팅용)
       const todayKST = new Date().toLocaleDateString('en-CA', {
@@ -706,14 +715,24 @@ ${excludeList}
       });
 
       try {
+        const requestData: any = {
+          lastRequestDate: todayKST,
+          lastRequestTime: admin.firestore.FieldValue.serverTimestamp(),
+          requestCount: admin.firestore.FieldValue.increment(1)
+        };
+
+        // 프로필 정보 추가 (있으면)
+        if (nickname) {
+          requestData.nickname = nickname;
+        }
+        if (gender) {
+          requestData.gender = gender;
+        }
+
         await admin.firestore()
           .collection('verse_requests')
           .doc(callerId)
-          .set({
-            lastRequestDate: todayKST,
-            lastRequestTime: admin.firestore.FieldValue.serverTimestamp(),
-            requestCount: admin.firestore.FieldValue.increment(1)
-          }, { merge: true });
+          .set(requestData, { merge: true });
         logger.info("Verse request recorded for push notification targeting");
       } catch (error) {
         logger.warn("Failed to record verse request", error);
@@ -935,6 +954,144 @@ rationale 예시:
       }
 
       // 기타 에러는 internal로 wrapping
+      throw new functions.https.HttpsError(
+        "internal",
+        error?.message ?? "Unknown error"
+      );
+    }
+  }
+);
+
+// =========================================
+// 구절 해설: 직접 입력한 구절에 대한 객관적 성경 해설 생성
+// (recommendVerse 없이 직접 구절 검색 후 사용)
+// =========================================
+interface GetVerseExplanationRequest {
+  englishText: string;
+  verseRef: string;
+  nickname?: string;
+  gender?: string;
+}
+
+export const getVerseExplanation = onCall(
+  { secrets: [OPENAI_API_KEY] },
+  async (request) => {
+    try {
+      const data = request.data as GetVerseExplanationRequest;
+      const { englishText, verseRef, nickname, gender } = data;
+
+      if (!englishText || typeof englishText !== "string") {
+        throw new functions.https.HttpsError(
+          "invalid-argument",
+          "englishText is required"
+        );
+      }
+      if (!verseRef || typeof verseRef !== "string") {
+        throw new functions.https.HttpsError(
+          "invalid-argument",
+          "verseRef is required"
+        );
+      }
+
+      const callerId = getCallerId(request);
+
+      // 하루 10회 제한 (verse 추천과 별도 카운터)
+      await checkDailyQuota(callerId, nickname, gender, "usage_explanation");
+
+      logger.info("getVerseExplanation called", {
+        verseRef,
+        callerId,
+      });
+
+      const prompt = `
+성경 구절: ${verseRef}
+영어 본문:
+${englishText}
+
+당신은 "QTune" 앱의 성경 해설가입니다.
+위 성경 구절의 의미를 객관적으로 해설해 주세요.
+
+1) 형식
+- 정확히 3개의 문장으로만 구성된 해설
+- 구절명이나 제목 없이 바로 해설 시작
+
+2) 해설 내용 (반드시 3문장)
+- 1문장: 이 구절이 말하는 핵심 메시지
+- 2문장: 그 메시지의 신학적/영적 의미
+- 3문장: 오늘날 우리에게 주는 보편적 교훈
+
+3) 문장 규칙
+- 쉼표 사용 최소화 (문장당 1개 이하)
+- 각 문장은 마침표로 종결
+- 명확하고 간결한 문체
+- 경건하되 딱딱하지 않은 톤
+
+4) 금지 사항
+- 개역개정 직접 인용 금지
+- 설교체나 훈계조 금지
+- 지나친 감정 표현 금지
+- 영어 단어 사용 금지
+
+반드시 JSON Schema에 맞춰 응답해 주세요.
+`;
+
+      const responseFormat = {
+        type: "json_schema" as const,
+        json_schema: {
+          name: "VerseExplanation",
+          strict: true,
+          schema: {
+            type: "object",
+            properties: {
+              explanation: {
+                type: "string",
+                description: "객관적인 성경 해설 3문장",
+              },
+            },
+            required: ["explanation"],
+            additionalProperties: false,
+          },
+        },
+      };
+
+      const openai = await getOpenAIClient(OPENAI_API_KEY.value());
+
+      const completion = await openai.chat.completions.create({
+        model: "gpt-4o-mini",
+        temperature: 0.3,
+        messages: [
+          {
+            role: "user",
+            content: prompt,
+          },
+        ],
+        response_format: responseFormat,
+      });
+
+      const content = completion.choices[0]?.message?.content;
+      if (!content) {
+        throw new functions.https.HttpsError(
+          "internal",
+          "Empty response from OpenAI"
+        );
+      }
+
+      const result = JSON.parse(content);
+      logger.info("getVerseExplanation success", { verseRef });
+
+      return result;
+    } catch (error: any) {
+      logger.error("getVerseExplanation error", {
+        message: error?.message,
+        name: error?.name,
+        code: (error as any)?.code,
+        stack: error?.stack,
+      });
+
+      if (error instanceof functions.https.HttpsError) {
+        throw error;
+      }
+
       throw new functions.https.HttpsError(
         "internal",
         error?.message ?? "Unknown error"

@@ -13,6 +13,7 @@ public struct RequestVerseView: View {
     @State private var viewModel: RequestVerseViewModel
     @State private var showConflict = false
     @State private var resultPhase: ResultPhase = .idle
+    @State private var showVerseSearch = false
     @Binding var userProfile: UserProfile?
     @Binding var path: NavigationPath
     @Binding var isLoading: Bool
@@ -25,6 +26,8 @@ public struct RequestVerseView: View {
     let session: UserSession
     let getUserProfileUseCase: GetUserProfileUseCase
     let saveUserProfileUseCase: SaveUserProfileUseCase
+    let fetchVerseDirectUseCase: FetchVerseDirectUseCase
+    let fetchVerseExplanationUseCase: FetchVerseExplanationUseCase?
     let onNavigateToRecordTab: () -> Void
     let onNavigateToMyPage: () -> Void
 
@@ -36,6 +39,8 @@ public struct RequestVerseView: View {
         session: UserSession,
         getUserProfileUseCase: GetUserProfileUseCase,
         saveUserProfileUseCase: SaveUserProfileUseCase,
+        fetchVerseDirectUseCase: FetchVerseDirectUseCase,
+        fetchVerseExplanationUseCase: FetchVerseExplanationUseCase? = nil,
         onNavigateToRecordTab: @escaping () -> Void,
         onNavigateToMyPage: @escaping () -> Void,
         isLoading: Binding<Bool>,
@@ -49,6 +54,8 @@ public struct RequestVerseView: View {
         self.session = session
         self.getUserProfileUseCase = getUserProfileUseCase
         self.saveUserProfileUseCase = saveUserProfileUseCase
+        self.fetchVerseDirectUseCase = fetchVerseDirectUseCase
+        self.fetchVerseExplanationUseCase = fetchVerseExplanationUseCase
         self.onNavigateToRecordTab = onNavigateToRecordTab
         self.onNavigateToMyPage = onNavigateToMyPage
     }
@@ -79,6 +86,9 @@ public struct RequestVerseView: View {
 
                         // CTA 버튼
                         ctaButton
+
+                        // 직접 찾기 링크
+                        directSearchLink
                         }
                         .padding(.horizontal, 22)
                     }
@@ -178,6 +188,25 @@ public struct RequestVerseView: View {
                 case .detail:
                     EmptyView()
                 }
+            }
+        }
+        .sheet(isPresented: $showVerseSearch) {
+            VerseSearchView(
+                viewModel: VerseSearchViewModel(
+                    fetchVerseDirectUseCase: fetchVerseDirectUseCase,
+                    fetchVerseExplanationUseCase: fetchVerseExplanationUseCase
+                )
+            ) { verse, explanation in
+                // 직접 찾은 구절로 QT 에디터로 이동 (해설이 있으면 같이 전달)
+                path.append(QTRoute.editor(
+                    template: .soap,
+                    verseEN: verse.text,
+                    verseRef: verse.localizedId,
+                    explKR: explanation ?? "",
+                    rationale: "",
+                    verse: verse,
+                    secondaryVerse: nil
+                ))
             }
         }
         .confirmationDialog("작성 중인 QT가 있어요",
@@ -413,6 +442,27 @@ private extension RequestVerseView {
             Spacer()
         }
         .padding(.top, 6)
+    }
+
+    @ViewBuilder
+    private var directSearchLink: some View {
+        Button {
+            Haptics.tap()
+            showVerseSearch = true
+        } label: {
+            HStack(spacing: 5) {
+                DSText.caption("구절을 알고 계신가요?")
+                    .foregroundStyle(DS.Color.textSec)
+                DSText.caption("직접 찾기", weight: .semibold)
+                    .foregroundStyle(DS.Color.gold)
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 10, weight: .semibold))
+                    .foregroundStyle(DS.Color.gold)
+            }
+        }
+        .buttonStyle(.plain)
+        .frame(maxWidth: .infinity)
+        .padding(.bottom, 8)
     }
 
     @ViewBuilder

@@ -24,6 +24,7 @@ public final class QTEntryModel {
     public var verseBook: String
     public var verseChapter: Int
     public var verseNumber: Int
+    public var verseEndNumber: Int?     // 범위일 때 끝 절 (예: 37:5-6 → 6)
     public var verseText: String
     public var verseTranslation: String
 
@@ -31,6 +32,7 @@ public final class QTEntryModel {
     public var secondaryVerseBook: String?
     public var secondaryVerseChapter: Int?
     public var secondaryVerseNumber: Int?
+    public var secondaryVerseEndNumber: Int?
     public var secondaryVerseText: String?
     public var secondaryVerseTranslation: String?
 
@@ -66,11 +68,13 @@ public final class QTEntryModel {
         verseBook: String,
         verseChapter: Int,
         verseNumber: Int,
+        verseEndNumber: Int? = nil,
         verseText: String,
         verseTranslation: String,
         secondaryVerseBook: String? = nil,
         secondaryVerseChapter: Int? = nil,
         secondaryVerseNumber: Int? = nil,
+        secondaryVerseEndNumber: Int? = nil,
         secondaryVerseText: String? = nil,
         secondaryVerseTranslation: String? = nil,
         korean: String?,
@@ -94,11 +98,13 @@ public final class QTEntryModel {
         self.verseBook = verseBook
         self.verseChapter = verseChapter
         self.verseNumber = verseNumber
+        self.verseEndNumber = verseEndNumber
         self.verseText = verseText
         self.verseTranslation = verseTranslation
         self.secondaryVerseBook = secondaryVerseBook
         self.secondaryVerseChapter = secondaryVerseChapter
         self.secondaryVerseNumber = secondaryVerseNumber
+        self.secondaryVerseEndNumber = secondaryVerseEndNumber
         self.secondaryVerseText = secondaryVerseText
         self.secondaryVerseTranslation = secondaryVerseTranslation
         self.korean = korean

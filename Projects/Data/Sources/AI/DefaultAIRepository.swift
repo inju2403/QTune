@@ -140,6 +140,34 @@ public final class DefaultAIRepository: AIRepository {
         return generatedVerse
     }
 
+    public func explainVerse(englishText: String, verseRef: String, nickname: String?, gender: String?) async throws -> String {
+        print("🔄 [DefaultAIRepository] Fetching verse explanation for \(verseRef)")
+
+        do {
+            let explanation = try await openAIDataSource.getVerseExplanation(
+                englishText: englishText,
+                verseRef: verseRef,
+                nickname: nickname,
+                gender: gender
+            )
+            print("✅ [DefaultAIRepository] Verse explanation fetched")
+            return explanation
+        } catch let error as OpenAIDataSourceError {
+            print("🔴 [DefaultAIRepository] Verse explanation failed: \(error)")
+            switch error {
+            case .dailyLimitExceeded:
+                throw AIRepositoryError.dailyLimitExceeded
+            case .apiKeyNotFound:
+                throw AIRepositoryError.apiKeyNotConfigured
+            default:
+                throw AIRepositoryError.koreanExplanationFailed(reason: error.localizedDescription)
+            }
+        } catch {
+            print("🔴 [DefaultAIRepository] Verse explanation failed: \(error)")
+            throw AIRepositoryError.koreanExplanationFailed(reason: error.localizedDescription)
+        }
+    }
+
     // MARK: - Private Methods
 
     /// verseRef를 파싱하여 Verse 모델로 변환
@@ -164,29 +192,32 @@ public final class DefaultAIRepository: AIRepository {
             throw AIRepositoryError.invalidResponse
         }
 
-        // 절 번호 파싱 (범위인 경우 시작 절만 사용)
-        // 예: "6-7" → 6, "16" → 16
+        // 절 번호 파싱 (단일 또는 범위)
+        // 예: "5-6" → startVerse=5, endVerse=6 / "16" → startVerse=16, endVerse=nil
         let verseString = String(chapterVerseComponents[1])
-        let verseNumber: Int
+        let startVerseNumber: Int
+        let endVerseNumber: Int?
         if let dashIndex = verseString.firstIndex(of: "-") {
-            // 범위인 경우 (예: "6-7")
-            let startVerse = String(verseString[..<dashIndex])
-            guard let verse = Int(startVerse) else {
+            let startStr = String(verseString[..<dashIndex])
+            let endStr = String(verseString[verseString.index(after: dashIndex)...])
+            guard let start = Int(startStr), let end = Int(endStr) else {
                 throw AIRepositoryError.invalidResponse
             }
-            verseNumber = verse
+            startVerseNumber = start
+            endVerseNumber = end
         } else {
-            // 단일 절인 경우
             guard let verse = Int(verseString) else {
                 throw AIRepositoryError.invalidResponse
             }
-            verseNumber = verse
+            startVerseNumber = verse
+            endVerseNumber = nil
         }
 
         return Verse(
             book: book,
             chapter: chapter,
-            verse: verseNumber,
+            verse: startVerseNumber,
+            endVerse: endVerseNumber,
             text: text,
             translation: translation
         )

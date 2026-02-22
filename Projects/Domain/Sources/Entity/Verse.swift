@@ -8,11 +8,18 @@
 import Foundation
 
 public struct Verse: Equatable, Hashable {
-    public var id: String { "\(book) \(chapter):\(verse)" }
-    public var localizedId: String { "\(localizedBookName) \(chapter):\(verse)" }
+    public var id: String {
+        if let end = endVerse { return "\(book) \(chapter):\(verse)-\(end)" }
+        return "\(book) \(chapter):\(verse)"
+    }
+    public var localizedId: String {
+        if let end = endVerse { return "\(localizedBookName) \(chapter):\(verse)-\(end)" }
+        return "\(localizedBookName) \(chapter):\(verse)"
+    }
     public let book: String            // 성경 책 이름, 예: "John"
     public let chapter: Int            // 장 번호, 예: 3
-    public let verse: Int              // 절 번호, 예: 16
+    public let verse: Int              // 시작 절 번호, 예: 5
+    public let endVerse: Int?          // 끝 절 번호 (범위일 때), 예: 6 → "5-6"
     public let text: String            // 말씀 본문, 예: "For God so loved the world..."
     public let translation: String      // 번역본, 예: "KJV", "NIV", "개역개정"
 
@@ -20,12 +27,14 @@ public struct Verse: Equatable, Hashable {
         book: String,
         chapter: Int,
         verse: Int,
+        endVerse: Int? = nil,
         text: String,
         translation: String
     ) {
         self.book = book
         self.chapter = chapter
         self.verse = verse
+        self.endVerse = endVerse
         self.text = text
         self.translation = translation
     }
