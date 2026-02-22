@@ -212,6 +212,14 @@ public struct MainTabViewWrapper: View {
         .allowsHitTesting(!isRequestVerseLoading)
         .tint(DS.Color.mocha)
         .onChange(of: selectedTab) { oldValue, newValue in
+            // 검색 탭에서 기록 탭으로 전환 시 복원 체크
+            if oldValue == 3 && newValue == 1 {
+                if qtListViewModel.state.searchText.isEmpty &&
+                   qtListViewModel.state.qtList.isEmpty {
+                    qtListViewModel.send(.load)
+                }
+            }
+
             if newValue == 3 {
                 previousTab = oldValue
             } else {
