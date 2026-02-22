@@ -17,9 +17,6 @@ public final class VerseSearchViewModel {
     private let fetchVerseDirectUseCase: FetchVerseDirectUseCase
     private let fetchVerseExplanationUseCase: FetchVerseExplanationUseCase?
 
-    private static let recentSearchesKey = "VerseSearch.recentSearches"
-    private static let maxRecentCount = 10
-
     public init(
         fetchVerseDirectUseCase: FetchVerseDirectUseCase,
         fetchVerseExplanationUseCase: FetchVerseExplanationUseCase? = nil
@@ -32,7 +29,7 @@ public final class VerseSearchViewModel {
     func send(_ action: VerseSearchAction) {
         switch action {
         case .onAppear:
-            loadRecentSearches()
+            break
 
         case .updateSearch(let text):
             state.searchText = text
@@ -62,18 +59,6 @@ public final class VerseSearchViewModel {
 
         case .dismissError:
             state.errorMessage = nil
-
-        case .tapRecentSearch(let ref):
-            state.searchText = ref
-            state.errorMessage = nil
-            state.result = nil
-            state.explanation = nil
-            state.explanationError = nil
-            Task { await searchVerse() }
-
-        case .clearRecentSearches:
-            state.recentSearches = []
-            UserDefaults.standard.removeObject(forKey: Self.recentSearchesKey)
 
         case .tapFetchExplanation:
             Task { await fetchExplanation() }
@@ -112,7 +97,6 @@ public final class VerseSearchViewModel {
             await MainActor.run {
                 state.result = verse
                 state.isLoading = false
-                addToRecentSearches(query)
             }
         } catch {
             await MainActor.run {
@@ -148,6 +132,15 @@ public final class VerseSearchViewModel {
                 state.explanation = explanation
                 state.isExplanationLoading = false
             }
+        } catch let error as DomainError {
+            await MainActor.run {
+                state.isExplanationLoading = false
+                if case .rateLimited = error {
+                    state.explanationError = "오늘 AI 해설을 10번 모두 사용했어요. 내일 다시 시도해주세요."
+                } else {
+                    state.explanationError = "해설을 가져오지 못했어요. 잠시 후 다시 시도해주세요."
+                }
+            }
         } catch {
             await MainActor.run {
                 state.isExplanationLoading = false
@@ -166,18 +159,4 @@ public final class VerseSearchViewModel {
         return "구절을 가져오지 못했어요. 잠시 후 다시 시도해주세요."
     }
 
-    private func loadRecentSearches() {
-        let saved = UserDefaults.standard.stringArray(forKey: Self.recentSearchesKey) ?? []
-        state.recentSearches = saved
-    }
-
-    private func addToRecentSearches(_ ref: String) {
-        var searches = state.recentSearches.filter { $0 != ref }
-        searches.insert(ref, at: 0)
-        if searches.count > Self.maxRecentCount {
-            searches = Array(searches.prefix(Self.maxRecentCount))
-        }
-        state.recentSearches = searches
-        UserDefaults.standard.set(searches, forKey: Self.recentSearchesKey)
-    }
 }

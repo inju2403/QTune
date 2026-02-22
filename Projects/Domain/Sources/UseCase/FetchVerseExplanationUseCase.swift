@@ -16,16 +16,21 @@ public protocol FetchVerseExplanationUseCase: Sendable {
 /// 구절 해설 조회 UseCase 구현체
 public final class FetchVerseExplanationInteractor: FetchVerseExplanationUseCase {
     private let aiRepository: AIRepository
+    private let userProfileRepository: UserProfileRepository
 
-    public init(aiRepository: AIRepository) {
+    public init(aiRepository: AIRepository, userProfileRepository: UserProfileRepository) {
         self.aiRepository = aiRepository
+        self.userProfileRepository = userProfileRepository
     }
 
     public func execute(englishText: String, verseRef: String) async throws -> String {
+        let profile = try? await userProfileRepository.getProfile()
         do {
             return try await aiRepository.explainVerse(
                 englishText: englishText,
-                verseRef: verseRef
+                verseRef: verseRef,
+                nickname: profile?.nickname,
+                gender: profile?.gender.rawValue
             )
         } catch let error as AIRepositoryError {
             switch error {

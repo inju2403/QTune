@@ -22,8 +22,8 @@ let project = Project(
       deploymentTargets: .iOS("17.0"),
       infoPlist: .extendingDefault(with: [
         "CFBundleDisplayName": "$(PRODUCT_NAME)",
-        "CFBundleShortVersionString": "1.9.0",
-        "CFBundleVersion": "190",
+        "CFBundleShortVersionString": "1.10.0",
+        "CFBundleVersion": "1100",
         "UILaunchStoryboardName": "LaunchScreen",
         "UIViewControllerBasedStatusBarAppearance": true,
         "UIUserInterfaceStyle": "Light",
@@ -139,8 +139,8 @@ let project = Project(
       deploymentTargets: .iOS("17.0"),
       infoPlist: .extendingDefault(with: [
         "CFBundleDisplayName": "QTune Sandbox",
-        "CFBundleShortVersionString": "1.9.0",
-        "CFBundleVersion": "190",
+        "CFBundleShortVersionString": "1.10.0",
+        "CFBundleVersion": "1100",
         "UILaunchStoryboardName": "LaunchScreen",
         "UIViewControllerBasedStatusBarAppearance": true,
         "UIUserInterfaceStyle": "Light",

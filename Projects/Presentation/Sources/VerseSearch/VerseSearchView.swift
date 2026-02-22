@@ -23,13 +23,10 @@ public struct VerseSearchView: View {
     }
 
     public var body: some View {
-        ZStack {
-            // 배경
-            WarmGradientBackground()
-
-            VStack(spacing: 0) {
-                // 헤더
-                header
+        NavigationStack {
+            ZStack {
+                // 배경
+                WarmGradientBackground()
 
                 ScrollView {
                     VStack(spacing: 20) {
@@ -58,12 +55,6 @@ public struct VerseSearchView: View {
                                 .transition(.opacity)
                         }
 
-                        // 최근 검색 (결과 없을 때)
-                        if !viewModel.state.recentSearches.isEmpty && !viewModel.state.hasResult && !viewModel.state.isLoading {
-                            recentSearches
-                                .transition(.opacity)
-                        }
-
                         // 도움말 힌트 (결과 없을 때)
                         if !viewModel.state.hasResult && !viewModel.state.isLoading {
                             hintCard
@@ -78,6 +69,20 @@ public struct VerseSearchView: View {
                     .animation(.easeInOut(duration: 0.2), value: viewModel.state.errorMessage)
                 }
                 .scrollDismissesKeyboard(.interactively)
+            }
+            .navigationTitle("구절 직접 찾기")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Button {
+                        Haptics.tap()
+                        dismiss()
+                    } label: {
+                        Image(systemName: "xmark")
+                            .font(.system(size: 16, weight: .semibold))
+                            .foregroundStyle(DS.Color.textSecondary)
+                    }
+                }
             }
         }
         .onAppear {
@@ -322,7 +327,7 @@ private extension VerseSearchView {
                 Spacer()
 
                 // 역본 뱃지
-                Text(verse.translation)
+                Text(Translation.from(code: verse.translation)?.displayName ?? verse.translation)
                     .font(.system(size: 12, weight: .semibold))
                     .foregroundStyle(DS.Color.gold)
                     .padding(.horizontal, 10)
@@ -520,59 +525,6 @@ private extension VerseSearchView {
         .padding(.vertical, 30)
     }
 
-    var recentSearches: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            HStack {
-                DSText.caption("최근 검색", weight: .semibold)
-                    .foregroundStyle(DS.Color.textSec)
-
-                Spacer()
-
-                Button {
-                    Haptics.tap()
-                    viewModel.send(.clearRecentSearches)
-                } label: {
-                    DSText.caption("전체 삭제")
-                        .foregroundStyle(DS.Color.textSec.opacity(0.7))
-                }
-                .buttonStyle(.plain)
-            }
-
-            FlowLayout(spacing: 8) {
-                ForEach(viewModel.state.recentSearches, id: \.self) { ref in
-                    Button {
-                        Haptics.tap()
-                        isSearchFocused = false
-                        viewModel.send(.tapRecentSearch(ref))
-                    } label: {
-                        HStack(spacing: 4) {
-                            Image(systemName: "clock")
-                                .font(.system(size: 11))
-                            DSText.caption(ref, weight: .medium)
-                        }
-                        .foregroundStyle(DS.Color.cocoa)
-                        .padding(.horizontal, 12)
-                        .padding(.vertical, 7)
-                        .background(
-                            Capsule()
-                                .fill(DS.Color.bgMid)
-                                .overlay(
-                                    Capsule()
-                                        .stroke(DS.Color.stroke, lineWidth: 1)
-                                )
-                        )
-                    }
-                    .buttonStyle(.plain)
-                }
-            }
-        }
-        .padding(16)
-        .background(
-            RoundedRectangle(cornerRadius: 16)
-                .fill(DS.Color.canvas.opacity(0.7))
-        )
-    }
-
     var hintCard: some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack(spacing: 6) {
@@ -620,47 +572,3 @@ private extension VerseSearchView {
     }
 }
 
-// MARK: - FlowLayout (태그 줄바꿈 레이아웃)
-
-/// 태그 형식의 흘러가는 레이아웃
-struct FlowLayout: Layout {
-    var spacing: CGFloat = 8
-
-    func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) -> CGSize {
-        let containerWidth = proposal.width ?? .infinity
-        var height: CGFloat = 0
-        var rowWidth: CGFloat = 0
-        var rowHeight: CGFloat = 0
-
-        for subview in subviews {
-            let size = subview.sizeThatFits(.unspecified)
-            if rowWidth + size.width > containerWidth && rowWidth > 0 {
-                height += rowHeight + spacing
-                rowWidth = 0
-                rowHeight = 0
-            }
-            rowWidth += size.width + spacing
-            rowHeight = max(rowHeight, size.height)
-        }
-        height += rowHeight
-        return CGSize(width: containerWidth, height: height)
-    }
-
-    func placeSubviews(in bounds: CGRect, proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) {
-        var x = bounds.minX
-        var y = bounds.minY
-        var rowHeight: CGFloat = 0
-
-        for subview in subviews {
-            let size = subview.sizeThatFits(.unspecified)
-            if x + size.width > bounds.maxX && x > bounds.minX {
-                y += rowHeight + spacing
-                x = bounds.minX
-                rowHeight = 0
-            }
-            subview.place(at: CGPoint(x: x, y: y), proposal: ProposedViewSize(size))
-            x += size.width + spacing
-            rowHeight = max(rowHeight, size.height)
-        }
-    }
-}

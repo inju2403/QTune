@@ -140,13 +140,15 @@ public final class DefaultAIRepository: AIRepository {
         return generatedVerse
     }
 
-    public func explainVerse(englishText: String, verseRef: String) async throws -> String {
+    public func explainVerse(englishText: String, verseRef: String, nickname: String?, gender: String?) async throws -> String {
         print("🔄 [DefaultAIRepository] Fetching verse explanation for \(verseRef)")
 
         do {
             let explanation = try await openAIDataSource.getVerseExplanation(
                 englishText: englishText,
-                verseRef: verseRef
+                verseRef: verseRef,
+                nickname: nickname,
+                gender: gender
             )
             print("✅ [DefaultAIRepository] Verse explanation fetched")
             return explanation

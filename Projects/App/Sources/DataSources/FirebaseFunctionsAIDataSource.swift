@@ -235,7 +235,7 @@ public final class FirebaseFunctionsAIDataSource: OpenAIRemoteDataSource {
         }
     }
 
-    public func getVerseExplanation(englishText: String, verseRef: String) async throws -> String {
+    public func getVerseExplanation(englishText: String, verseRef: String, nickname: String?, gender: String?) async throws -> String {
         guard let currentUser = Auth.auth().currentUser else {
             print("🔴 [FirebaseFunctionsAIDataSource] User not authenticated")
             throw OpenAIDataSourceError.apiKeyNotFound
@@ -245,11 +245,18 @@ public final class FirebaseFunctionsAIDataSource: OpenAIRemoteDataSource {
         print("   VerseRef: \(verseRef)")
         print("   UID: \(currentUser.uid)")
 
-        let data: [String: Any] = [
+        var data: [String: Any] = [
             "englishText": englishText,
             "verseRef": verseRef,
             "isSandbox": isSandboxEnvironment
         ]
+
+        if let nickname = nickname {
+            data["nickname"] = nickname
+        }
+        if let gender = gender {
+            data["gender"] = gender
+        }
 
         if isSandboxEnvironment {
             print("🏖️ [FirebaseFunctionsAIDataSource] Running in SANDBOX environment")

@@ -15,8 +15,6 @@ public enum VerseSearchAction: Equatable {
     case tapSearch
     case tapGoToQT
     case dismissError
-    case tapRecentSearch(String)
-    case clearRecentSearches
     case onAppear
     // 해설 관련
     case tapFetchExplanation
