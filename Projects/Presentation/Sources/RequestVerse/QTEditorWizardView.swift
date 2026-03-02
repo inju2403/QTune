@@ -41,6 +41,8 @@ public struct QTEditorWizardView: View {
     // MARK: - Sheet State
     @State private var showExplanationSheet = false
     @State private var sheetHeight: CGFloat = 200
+    @State private var showPrayerSheet = false
+    @State private var prayerSheetHeight: CGFloat = 200
 
     // MARK: - Init
     public init(viewModel: QTEditorWizardViewModel) {
@@ -279,6 +281,16 @@ public struct QTEditorWizardView: View {
             .presentationCornerRadius(DS.Radius.xl)
             .presentationBackground(DS.Color.canvas)
         }
+        .sheet(isPresented: $showPrayerSheet) {
+            PrayerSheetView(
+                prayer: viewModel.state.suggestedPrayer,
+                sheetHeight: $prayerSheetHeight
+            )
+            .presentationDetents([.height(prayerSheetHeight)])
+            .presentationDragIndicator(.visible)
+            .presentationCornerRadius(DS.Radius.xl)
+            .presentationBackground(DS.Color.canvas)
+        }
         .overlay(alignment: .bottom) {
             if viewModel.state.showSaveSuccessToast {
                 successToast()
@@ -358,36 +370,70 @@ public struct QTEditorWizardView: View {
                 .background(DS.Color.canvas.opacity(0.9))
                 .cornerRadius(DS.Radius.m)
 
-                // 해설 버튼 (한글 해설이 있을 때만 표시)
+                // 해설 + 기도문 버튼 (한글 해설이 있을 때만 표시)
                 if !viewModel.state.explKR.isEmpty {
-                    Button {
-                        Haptics.tap()
-                        showExplanationSheet = true
-                    } label: {
-                        HStack(spacing: 4) {
-                            Image(systemName: "book.fill")
-                                .font(.system(size: 12 * fontScale.multiplier, weight: .semibold))
-                            Text("해설")
-                                .font(.system(size: 14 * fontScale.multiplier, weight: .semibold, design: .rounded))
-                        }
-                        .foregroundStyle(.white)
-                        .padding(.horizontal, 12)
-                        .padding(.vertical, 6)
-                        .background(
-                            Capsule()
-                                .fill(
-                                    LinearGradient(
-                                        colors: [DS.Color.mocha, DS.Color.gold],
-                                        startPoint: .leading,
-                                        endPoint: .trailing
+                    HStack(spacing: 8) {
+                        // 해설 버튼
+                        Button {
+                            Haptics.tap()
+                            showExplanationSheet = true
+                        } label: {
+                            HStack(spacing: 4) {
+                                Image(systemName: "book.fill")
+                                    .font(.system(size: 12 * fontScale.multiplier, weight: .semibold))
+                                Text("해설")
+                                    .font(.system(size: 14 * fontScale.multiplier, weight: .semibold, design: .rounded))
+                            }
+                            .foregroundStyle(.white)
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 6)
+                            .background(
+                                Capsule()
+                                    .fill(
+                                        LinearGradient(
+                                            colors: [DS.Color.mocha, DS.Color.gold],
+                                            startPoint: .leading,
+                                            endPoint: .trailing
+                                        )
                                     )
-                                )
-                        )
-                        .overlay(
-                            Capsule()
-                                .stroke(DS.Color.gold.opacity(0.3), lineWidth: 1)
-                        )
-                        .shadow(color: DS.Color.mocha.opacity(0.3), radius: 8, y: 2)
+                            )
+                            .overlay(
+                                Capsule()
+                                    .stroke(DS.Color.gold.opacity(0.3), lineWidth: 1)
+                            )
+                            .shadow(color: DS.Color.mocha.opacity(0.3), radius: 8, y: 2)
+                        }
+
+                        // 기도문 버튼
+                        Button {
+                            Haptics.tap()
+                            showPrayerSheet = true
+                        } label: {
+                            HStack(spacing: 4) {
+                                Image(systemName: "hands.sparkles")
+                                    .font(.system(size: 12 * fontScale.multiplier, weight: .semibold))
+                                Text("기도문")
+                                    .font(.system(size: 14 * fontScale.multiplier, weight: .semibold, design: .rounded))
+                            }
+                            .foregroundStyle(.white)
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 6)
+                            .background(
+                                Capsule()
+                                    .fill(
+                                        LinearGradient(
+                                            colors: [DS.Color.mocha, DS.Color.gold],
+                                            startPoint: .leading,
+                                            endPoint: .trailing
+                                        )
+                                    )
+                            )
+                            .overlay(
+                                Capsule()
+                                    .stroke(DS.Color.gold.opacity(0.3), lineWidth: 1)
+                            )
+                            .shadow(color: DS.Color.mocha.opacity(0.3), radius: 8, y: 2)
+                        }
                     }
                     .padding(.top, 12)
                     .padding(.trailing, 12)

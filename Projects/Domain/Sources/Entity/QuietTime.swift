@@ -28,6 +28,7 @@ public struct QuietTime: Identifiable, Equatable, Hashable {
     public var memo: String          // Deprecated: 템플릿 필드로 대체됨
     public var korean: String?       // GPT 한글 해설
     public var rationale: String?    // 추천 이유
+    public var suggestedPrayer: String?  // AI 추천 기도문
     public var date: Date
     public var status: QuietTimeStatus
     public var tags: [String]
@@ -55,6 +56,7 @@ public struct QuietTime: Identifiable, Equatable, Hashable {
         memo: String = "",
         korean: String? = nil,
         rationale: String? = nil,
+        suggestedPrayer: String? = nil,
         date: Date,
         status: QuietTimeStatus,
         tags: [String] = [],
@@ -75,6 +77,7 @@ public struct QuietTime: Identifiable, Equatable, Hashable {
         self.memo = memo
         self.korean = korean
         self.rationale = rationale
+        self.suggestedPrayer = suggestedPrayer
         self.date = date
         self.status = status
         self.tags = tags

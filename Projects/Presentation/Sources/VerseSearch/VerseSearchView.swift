@@ -15,9 +15,9 @@ public struct VerseSearchView: View {
     @State private var viewModel: VerseSearchViewModel
     @FocusState private var isSearchFocused: Bool
     @Environment(\.dismiss) private var dismiss
-    let onGoToQT: (Verse, String?) -> Void
+    let onGoToQT: (Verse, String?, String?) -> Void
 
-    public init(viewModel: VerseSearchViewModel, onGoToQT: @escaping (Verse, String?) -> Void) {
+    public init(viewModel: VerseSearchViewModel, onGoToQT: @escaping (Verse, String?, String?) -> Void) {
         _viewModel = State(wrappedValue: viewModel)
         self.onGoToQT = onGoToQT
     }
@@ -93,10 +93,10 @@ public struct VerseSearchView: View {
         }
         .onReceive(viewModel.effect) { eff in
             switch eff {
-            case .navigateToQTEditor(let verse, let explanation):
+            case .navigateToQTEditor(let verse, let explanation, let suggestedPrayer):
                 dismiss()
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-                    onGoToQT(verse, explanation)
+                    onGoToQT(verse, explanation, suggestedPrayer)
                 }
             }
         }
@@ -570,5 +570,6 @@ private extension VerseSearchView {
                 .foregroundStyle(DS.Color.textSec)
         }
     }
+
 }
 

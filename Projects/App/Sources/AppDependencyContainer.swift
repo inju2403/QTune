@@ -199,6 +199,14 @@ final class AppDependencyContainer {
         )
     }
 
+    /// FetchVersePrayerUseCase 생성 (AI 기도문 - Firebase Functions 경유)
+    func makeFetchVersePrayerUseCase() -> FetchVersePrayerUseCase {
+        return FetchVersePrayerInteractor(
+            aiRepository: makeAIRepository(),
+            userProfileRepository: makeUserProfileRepository()
+        )
+    }
+
     /// UpdateNotificationSettingsUseCase 생성 (Firestore 연동 포함)
     ///
     /// Clean Architecture 원칙:

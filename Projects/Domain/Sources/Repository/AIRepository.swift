@@ -55,4 +55,14 @@ public protocol AIRepository {
     /// - Returns: 한국어 해설 3문장
     /// - Throws: AIRepositoryError
     func explainVerse(englishText: String, verseRef: String, nickname: String?, gender: String?) async throws -> String
+
+    /// 구절 기반 기도문 생성 (GPT-4o-mini)
+    /// - Parameters:
+    ///   - englishText: 영어 성경 본문
+    ///   - verseRef: 구절 참조 (예: "John 3:16")
+    ///   - nickname: 사용자 닉네임 (Firestore 기록용)
+    ///   - gender: 사용자 성별 (Firestore 기록용)
+    /// - Returns: AI 생성 기도문 (6-7문장)
+    /// - Throws: AIRepositoryError
+    func fetchPrayer(englishText: String, verseRef: String, nickname: String?, gender: String?) async throws -> String
 }

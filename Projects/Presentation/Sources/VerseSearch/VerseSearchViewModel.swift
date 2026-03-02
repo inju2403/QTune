@@ -16,13 +16,16 @@ public final class VerseSearchViewModel {
 
     private let fetchVerseDirectUseCase: FetchVerseDirectUseCase
     private let fetchVerseExplanationUseCase: FetchVerseExplanationUseCase?
+    private let fetchVersePrayerUseCase: FetchVersePrayerUseCase?
 
     public init(
         fetchVerseDirectUseCase: FetchVerseDirectUseCase,
-        fetchVerseExplanationUseCase: FetchVerseExplanationUseCase? = nil
+        fetchVerseExplanationUseCase: FetchVerseExplanationUseCase? = nil,
+        fetchVersePrayerUseCase: FetchVersePrayerUseCase? = nil
     ) {
         self.fetchVerseDirectUseCase = fetchVerseDirectUseCase
         self.fetchVerseExplanationUseCase = fetchVerseExplanationUseCase
+        self.fetchVersePrayerUseCase = fetchVersePrayerUseCase
         state.isExplanationAvailable = fetchVerseExplanationUseCase != nil
     }
 
@@ -55,7 +58,7 @@ public final class VerseSearchViewModel {
 
         case .tapGoToQT:
             guard let verse = state.result else { return }
-            effect.send(.navigateToQTEditor(verse: verse, explanation: state.explanation))
+            effect.send(.navigateToQTEditor(verse: verse, explanation: state.explanation, suggestedPrayer: state.suggestedPrayer))
 
         case .dismissError:
             state.errorMessage = nil
@@ -108,33 +111,46 @@ public final class VerseSearchViewModel {
 
     private func fetchExplanation() async {
         guard let verse = state.result,
-              let useCase = fetchVerseExplanationUseCase else { return }
+              let explanationUseCase = fetchVerseExplanationUseCase else { return }
         guard !state.isExplanationLoading else { return }
 
         // WEB(영어) 본문이 있어야 해설 가능
-        // Verse.text가 영어(WEB/KJV) 본문 - 구절 조회 시 영어 API로 가져온 것
-        // selectedTranslation이 한글이면 영어 역본으로 별도 조회가 필요하지만,
-        // 현재는 verse.text를 그대로 사용 (API가 WEB/KJV 영어를 반환하므로)
         let englishText = verse.text
         let verseRef = "\(verse.book) \(verse.chapter):\(verse.verse)"
 
         await MainActor.run {
             state.isExplanationLoading = true
             state.explanationError = nil
+            state.isPrayerLoading = true
+            state.prayerError = nil
         }
 
         do {
-            let explanation = try await useCase.execute(
+            // 해설 가져오기
+            let explanation = try await explanationUseCase.execute(
                 englishText: englishText,
                 verseRef: verseRef
             )
+
+            // 기도문 가져오기 (선택사항)
+            var prayer: String? = nil
+            if let prayerUseCase = fetchVersePrayerUseCase {
+                prayer = try? await prayerUseCase.execute(
+                    englishText: englishText,
+                    verseRef: verseRef
+                )
+            }
+
             await MainActor.run {
                 state.explanation = explanation
+                state.suggestedPrayer = prayer
                 state.isExplanationLoading = false
+                state.isPrayerLoading = false
             }
         } catch let error as DomainError {
             await MainActor.run {
                 state.isExplanationLoading = false
+                state.isPrayerLoading = false
                 if case .rateLimited = error {
                     state.explanationError = "오늘 AI 해설을 10번 모두 사용했어요. 내일 다시 시도해주세요."
                 } else {
@@ -144,6 +160,7 @@ public final class VerseSearchViewModel {
         } catch {
             await MainActor.run {
                 state.isExplanationLoading = false
+                state.isPrayerLoading = false
                 state.explanationError = "해설을 가져오지 못했어요. 잠시 후 다시 시도해주세요."
             }
         }

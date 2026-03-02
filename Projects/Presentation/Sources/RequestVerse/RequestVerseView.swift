@@ -28,6 +28,7 @@ public struct RequestVerseView: View {
     let saveUserProfileUseCase: SaveUserProfileUseCase
     let fetchVerseDirectUseCase: FetchVerseDirectUseCase
     let fetchVerseExplanationUseCase: FetchVerseExplanationUseCase?
+    let fetchVersePrayerUseCase: FetchVersePrayerUseCase?
     let onNavigateToRecordTab: () -> Void
     let onNavigateToMyPage: () -> Void
 
@@ -41,6 +42,7 @@ public struct RequestVerseView: View {
         saveUserProfileUseCase: SaveUserProfileUseCase,
         fetchVerseDirectUseCase: FetchVerseDirectUseCase,
         fetchVerseExplanationUseCase: FetchVerseExplanationUseCase? = nil,
+        fetchVersePrayerUseCase: FetchVersePrayerUseCase? = nil,
         onNavigateToRecordTab: @escaping () -> Void,
         onNavigateToMyPage: @escaping () -> Void,
         isLoading: Binding<Bool>,
@@ -56,6 +58,7 @@ public struct RequestVerseView: View {
         self.saveUserProfileUseCase = saveUserProfileUseCase
         self.fetchVerseDirectUseCase = fetchVerseDirectUseCase
         self.fetchVerseExplanationUseCase = fetchVerseExplanationUseCase
+        self.fetchVersePrayerUseCase = fetchVersePrayerUseCase
         self.onNavigateToRecordTab = onNavigateToRecordTab
         self.onNavigateToMyPage = onNavigateToMyPage
     }
@@ -175,13 +178,14 @@ public struct RequestVerseView: View {
                 switch route {
                 case .result(let result):
                     buildResultView(result: result)
-                case .editor(let template, let verseEN, let verseRef, let explKR, let rationale, let verse, let secondaryVerse):
+                case .editor(let template, let verseEN, let verseRef, let explKR, let rationale, let suggestedPrayer, let verse, let secondaryVerse):
                     buildEditorWizardView(
                         template: template,
                         verseEN: verseEN,
                         verseRef: verseRef,
                         explKR: explKR,
                         rationale: rationale,
+                        suggestedPrayer: suggestedPrayer,
                         verse: verse,
                         secondaryVerse: secondaryVerse
                     )
@@ -194,16 +198,18 @@ public struct RequestVerseView: View {
             VerseSearchView(
                 viewModel: VerseSearchViewModel(
                     fetchVerseDirectUseCase: fetchVerseDirectUseCase,
-                    fetchVerseExplanationUseCase: fetchVerseExplanationUseCase
+                    fetchVerseExplanationUseCase: fetchVerseExplanationUseCase,
+                    fetchVersePrayerUseCase: fetchVersePrayerUseCase
                 )
-            ) { verse, explanation in
-                // 직접 찾은 구절로 QT 에디터로 이동 (해설이 있으면 같이 전달)
+            ) { verse, explanation, suggestedPrayer in
+                // 직접 찾은 구절로 QT 에디터로 이동 (해설 & 기도문이 있으면 같이 전달)
                 path.append(QTRoute.editor(
                     template: .soap,
                     verseEN: verse.text,
                     verseRef: verse.localizedId,
                     explKR: explanation ?? "",
                     rationale: "",
+                    suggestedPrayer: suggestedPrayer ?? "",
                     verse: verse,
                     secondaryVerse: nil
                 ))
@@ -543,6 +549,7 @@ private extension RequestVerseView {
         verseRef: String,
         explKR: String,
         rationale: String,
+        suggestedPrayer: String,
         verse: Verse,
         secondaryVerse: Verse?
     ) -> some View {
@@ -552,6 +559,7 @@ private extension RequestVerseView {
             verseRef: verseRef,
             explKR: explKR,
             rationale: rationale,
+            suggestedPrayer: suggestedPrayer,
             verse: verse,
             secondaryVerse: secondaryVerse,
             commitQTUseCase: commitQTUseCase,
@@ -597,6 +605,7 @@ struct ResultViewWrapper: View {
                 verseRef: result.verseRef,
                 explKR: result.korean,
                 rationale: result.rationale,
+                suggestedPrayer: result.suggestedPrayer,
                 verse: result.verse,
                 secondaryVerse: result.secondaryVerse
             )
@@ -612,6 +621,7 @@ struct QTEditorWizardViewWrapper: View {
     let verseRef: String
     let explKR: String
     let rationale: String
+    let suggestedPrayer: String
     let verse: Verse
     let secondaryVerse: Verse?
     let commitQTUseCase: CommitQTUseCase
@@ -625,6 +635,7 @@ struct QTEditorWizardViewWrapper: View {
             verseRef: verseRef,
             explKR: explKR,
             rationale: rationale,
+            suggestedPrayer: suggestedPrayer,
             verse: verse,
             secondaryVerse: secondaryVerse
         )

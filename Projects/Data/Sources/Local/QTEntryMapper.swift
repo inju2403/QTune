@@ -50,6 +50,7 @@ extension QTEntryModel {
             memo: "",  // Deprecated
             korean: korean,
             rationale: rationale,
+            suggestedPrayer: suggestedPrayer,
             date: createdAt,
             status: qtStatus,
             tags: tags,
@@ -91,6 +92,7 @@ extension QTEntryModel {
             secondaryVerseTranslation: qt.secondaryVerse?.translation,
             korean: qt.korean,
             rationale: qt.rationale,
+            suggestedPrayer: qt.suggestedPrayer,
             status: statusString,
             template: qt.template,
             soapObservation: qt.soapObservation,
@@ -116,6 +118,7 @@ extension QTEntryModel {
         self.secondaryVerseTranslation = qt.secondaryVerse?.translation
         self.korean = qt.korean
         self.rationale = qt.rationale
+        self.suggestedPrayer = qt.suggestedPrayer
         self.status = (qt.status == .committed) ? "committed" : "draft"
         self.template = qt.template
         self.soapObservation = qt.soapObservation

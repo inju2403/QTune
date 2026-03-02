@@ -147,6 +147,7 @@ public final class QTEditorWizardViewModel {
                 secondaryVerse: state.secondaryVerse,
                 korean: state.explKR,
                 rationale: state.rationale,
+                suggestedPrayer: state.suggestedPrayer,
                 date: Date(),
                 status: .draft,
                 template: state.template == .soap ? "SOAP" : "ACTS"

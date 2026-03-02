@@ -11,7 +11,7 @@ import Domain
 /// QT 작성 플로우 네비게이션 라우트
 public enum QTRoute: Hashable {
     case result(GeneratedVerseResult)
-    case editor(template: TemplateKind, verseEN: String, verseRef: String, explKR: String, rationale: String, verse: Verse, secondaryVerse: Verse?)
+    case editor(template: TemplateKind, verseEN: String, verseRef: String, explKR: String, rationale: String, suggestedPrayer: String, verse: Verse, secondaryVerse: Verse?)
     case detail(QuietTime)
 }
 

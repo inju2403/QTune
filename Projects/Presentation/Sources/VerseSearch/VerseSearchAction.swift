@@ -23,5 +23,5 @@ public enum VerseSearchAction: Equatable {
 
 /// 구절 직접 찾기 화면의 사이드 이펙트
 public enum VerseSearchEffect {
-    case navigateToQTEditor(verse: Verse, explanation: String?)
+    case navigateToQTEditor(verse: Verse, explanation: String?, suggestedPrayer: String?)
 }

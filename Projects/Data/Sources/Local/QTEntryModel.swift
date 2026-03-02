@@ -39,6 +39,7 @@ public final class QTEntryModel {
     // MARK: - AI 생성 필드
     public var korean: String?
     public var rationale: String?
+    public var suggestedPrayer: String?
 
     // MARK: - 상태
     public var status: String  // "draft" | "committed"
@@ -79,6 +80,7 @@ public final class QTEntryModel {
         secondaryVerseTranslation: String? = nil,
         korean: String?,
         rationale: String?,
+        suggestedPrayer: String?,
         status: String,
         template: String,
         soapObservation: String?,
@@ -109,6 +111,7 @@ public final class QTEntryModel {
         self.secondaryVerseTranslation = secondaryVerseTranslation
         self.korean = korean
         self.rationale = rationale
+        self.suggestedPrayer = suggestedPrayer
         self.status = status
         self.template = template
         self.soapObservation = soapObservation

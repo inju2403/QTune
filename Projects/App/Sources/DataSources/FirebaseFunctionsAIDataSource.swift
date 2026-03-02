@@ -185,14 +185,16 @@ public final class FirebaseFunctionsAIDataSource: OpenAIRemoteDataSource {
             }
 
             guard let korean = resultData["korean"] as? String,
-                  let rationale = resultData["rationale"] as? String else {
+                  let rationale = resultData["rationale"] as? String,
+                  let suggestedPrayer = resultData["suggestedPrayer"] as? String else {
                 print("🔴 [FirebaseFunctionsAIDataSource] Missing required fields")
                 throw OpenAIDataSourceError.invalidJSON
             }
 
             let dto = KoreanExplanationDTO(
                 korean: korean,
-                rationale: rationale
+                rationale: rationale,
+                suggestedPrayer: suggestedPrayer
             )
 
             print("✅ [FirebaseFunctionsAIDataSource] Parsed KoreanExplanationDTO")
@@ -299,5 +301,19 @@ public final class FirebaseFunctionsAIDataSource: OpenAIRemoteDataSource {
 
             throw OpenAIDataSourceError.unknown
         }
+    }
+
+    public func getVersePrayer(englishText: String, verseRef: String, nickname: String?, gender: String?) async throws -> String {
+        // generateKoreanExplanation 호출 후 suggestedPrayer만 반환
+        // mood는 "직접 검색한 구절"로 전달
+        let dto = try await generateKoreanExplanation(
+            englishText: englishText,
+            verseRef: verseRef,
+            mood: "이 말씀으로 기도하고 싶습니다",
+            note: nil,
+            nickname: nickname,
+            gender: gender
+        )
+        return dto.suggestedPrayer
     }
 }
