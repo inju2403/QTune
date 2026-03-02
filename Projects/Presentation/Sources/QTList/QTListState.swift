@@ -56,7 +56,7 @@ public struct QTListState: Equatable {
         case all = "전체"
         case favorite = "즐겨찾기"
         case soap = "S.O.A.P"
-        case acts = "A.C.T.S"
+        case free = "자유 묵상"
 
         public var displayName: String { rawValue }
     }

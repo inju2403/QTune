@@ -85,7 +85,7 @@ public final class QTDetailViewModel {
                 }
             }
 
-        case .selectSOAPField, .selectACTSField:
+        case .selectSOAPField:
             // 더 이상 사용하지 않음 (이미지/텍스트 공유 모두 고정 필드 사용)
             break
 
@@ -96,7 +96,6 @@ public final class QTDetailViewModel {
             state.selectedShareFormat = nil
             state.selectedShareType = nil
             state.selectedSOAPField = nil
-            state.selectedACTSField = nil
 
         case .closeShareSheet:
             state.showShareSheet = false
@@ -211,18 +210,9 @@ public final class QTDetailViewModel {
             if let prayer = state.qt.soapPrayer, !prayer.isEmpty {
                 text += "🙏 기도\n\(prayer)\n\n"
             }
-        } else {
-            if let adoration = state.qt.actsAdoration, !adoration.isEmpty {
-                text += "✨ 경배\n\(adoration)\n\n"
-            }
-            if let confession = state.qt.actsConfession, !confession.isEmpty {
-                text += "🧎‍♂️ 회개\n\(confession)\n\n"
-            }
-            if let thanksgiving = state.qt.actsThanksgiving, !thanksgiving.isEmpty {
-                text += "🙏 감사\n\(thanksgiving)\n\n"
-            }
-            if let supplication = state.qt.actsSupplication, !supplication.isEmpty {
-                text += "🤲 간구\n\(supplication)\n\n"
+        } else if state.qt.template == "FREE" {
+            if let freeContent = state.qt.freeContent, !freeContent.isEmpty {
+                text += "💭 자유 묵상\n\(freeContent)\n\n"
             }
         }
 
@@ -264,14 +254,14 @@ public final class QTDetailViewModel {
 
         text += "\n━━━━━━━━━━━━━━━━\n\n"
 
-        // SOAP → Prayer만, ACTS → Thanksgiving만
+        // SOAP → Prayer, FREE → 자유 묵상 내용
         if state.qt.template == "SOAP" {
             if let prayer = state.qt.soapPrayer, !prayer.isEmpty {
                 text += "🙏 기도\n\(prayer)\n\n"
             }
-        } else {
-            if let thanksgiving = state.qt.actsThanksgiving, !thanksgiving.isEmpty {
-                text += "🙏 감사\n\(thanksgiving)\n\n"
+        } else if state.qt.template == "FREE" {
+            if let freeContent = state.qt.freeContent, !freeContent.isEmpty {
+                text += "💭 자유 묵상\n\(freeContent)\n\n"
             }
         }
 

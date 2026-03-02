@@ -36,18 +36,15 @@ public struct QuietTime: Identifiable, Equatable, Hashable {
     public var updatedAt: Date
 
     // MARK: - 템플릿
-    public var template: String      // "SOAP" | "ACTS"
+    public var template: String      // "SOAP" | "FREE"
 
     // MARK: - SOAP 필드
     public var soapObservation: String?
     public var soapApplication: String?
     public var soapPrayer: String?
 
-    // MARK: - ACTS 필드
-    public var actsAdoration: String?
-    public var actsConfession: String?
-    public var actsThanksgiving: String?
-    public var actsSupplication: String?
+    // MARK: - 자유 묵상 필드
+    public var freeContent: String?
 
     public init(
         id: UUID = UUID(),
@@ -66,10 +63,7 @@ public struct QuietTime: Identifiable, Equatable, Hashable {
         soapObservation: String? = nil,
         soapApplication: String? = nil,
         soapPrayer: String? = nil,
-        actsAdoration: String? = nil,
-        actsConfession: String? = nil,
-        actsThanksgiving: String? = nil,
-        actsSupplication: String? = nil
+        freeContent: String? = nil
     ) {
         self.id = id
         self.verse = verse
@@ -87,10 +81,7 @@ public struct QuietTime: Identifiable, Equatable, Hashable {
         self.soapObservation = soapObservation
         self.soapApplication = soapApplication
         self.soapPrayer = soapPrayer
-        self.actsAdoration = actsAdoration
-        self.actsConfession = actsConfession
-        self.actsThanksgiving = actsThanksgiving
-        self.actsSupplication = actsSupplication
+        self.freeContent = freeContent
     }
 
     /// 리스트용 미리보기 텍스트 (최대 120자)
@@ -98,8 +89,10 @@ public struct QuietTime: Identifiable, Equatable, Hashable {
         let content: String
         if template == "SOAP" {
             content = soapObservation ?? soapApplication ?? soapPrayer ?? ""
+        } else if template == "FREE" {
+            content = freeContent ?? ""
         } else {
-            content = actsAdoration ?? actsConfession ?? actsThanksgiving ?? actsSupplication ?? ""
+            content = ""
         }
 
         let trimmed = content.trimmingCharacters(in: .whitespacesAndNewlines)

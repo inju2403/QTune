@@ -71,10 +71,8 @@ public final class DefaultQTRepository: QTRepository {
                     matchesTemplate = [model.soapObservation, model.soapApplication, model.soapPrayer]
                         .compactMap { $0 }
                         .contains { $0.lowercased().contains(searchLower) }
-                } else {
-                    matchesTemplate = [model.actsAdoration, model.actsConfession, model.actsThanksgiving, model.actsSupplication]
-                        .compactMap { $0 }
-                        .contains { $0.lowercased().contains(searchLower) }
+                } else if model.template == "FREE" {
+                    matchesTemplate = (model.freeContent ?? "").lowercased().contains(searchLower)
                 }
 
                 return matchesVerse || matchesKorean || matchesRationale || matchesTags || matchesTemplate

@@ -60,10 +60,7 @@ extension QTEntryModel {
             soapObservation: soapObservation,
             soapApplication: soapApplication,
             soapPrayer: soapPrayer,
-            actsAdoration: actsAdoration,
-            actsConfession: actsConfession,
-            actsThanksgiving: actsThanksgiving,
-            actsSupplication: actsSupplication
+            freeContent: freeContent
         )
     }
 
@@ -98,10 +95,7 @@ extension QTEntryModel {
             soapObservation: qt.soapObservation,
             soapApplication: qt.soapApplication,
             soapPrayer: qt.soapPrayer,
-            actsAdoration: qt.actsAdoration,
-            actsConfession: qt.actsConfession,
-            actsThanksgiving: qt.actsThanksgiving,
-            actsSupplication: qt.actsSupplication
+            freeContent: qt.freeContent
         )
     }
 
@@ -124,9 +118,6 @@ extension QTEntryModel {
         self.soapObservation = qt.soapObservation
         self.soapApplication = qt.soapApplication
         self.soapPrayer = qt.soapPrayer
-        self.actsAdoration = qt.actsAdoration
-        self.actsConfession = qt.actsConfession
-        self.actsThanksgiving = qt.actsThanksgiving
-        self.actsSupplication = qt.actsSupplication
+        self.freeContent = qt.freeContent
     }
 }

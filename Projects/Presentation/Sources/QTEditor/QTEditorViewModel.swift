@@ -53,17 +53,8 @@ public final class QTEditorViewModel {
         case .updateSOAPPrayer(let text):
             state.soapTemplate.prayer = text
 
-        case .updateACTSAdoration(let text):
-            state.actsTemplate.adoration = text
-
-        case .updateACTSConfession(let text):
-            state.actsTemplate.confession = text
-
-        case .updateACTSThanksgiving(let text):
-            state.actsTemplate.thanksgiving = text
-
-        case .updateACTSSupplication(let text):
-            state.actsTemplate.supplication = text
+        case .updateFreeContent(let text):
+            state.freeTemplate.content = text
 
         case .saveQT(let draft):
             // 이미 저장 중이면 무시
@@ -82,27 +73,21 @@ public final class QTEditorViewModel {
             qt.soapObservation == nil &&
             qt.soapApplication == nil &&
             qt.soapPrayer == nil &&
-            qt.actsAdoration == nil &&
-            qt.actsConfession == nil &&
-            qt.actsThanksgiving == nil &&
-            qt.actsSupplication == nil
+            qt.freeContent == nil
 
         // 신규 작성이 아닐 때만 editingQT 설정 (UPDATE 모드)
         if !isNewDraft {
             state.editingQT = qt
         }
 
-        state.selectedTemplate = qt.template == "SOAP" ? .soap : .acts
+        state.selectedTemplate = qt.template == "SOAP" ? .soap : .free
 
         if qt.template == "SOAP" {
             state.soapTemplate.observation = qt.soapObservation ?? ""
             state.soapTemplate.application = qt.soapApplication ?? ""
             state.soapTemplate.prayer = qt.soapPrayer ?? ""
-        } else {
-            state.actsTemplate.adoration = qt.actsAdoration ?? ""
-            state.actsTemplate.confession = qt.actsConfession ?? ""
-            state.actsTemplate.thanksgiving = qt.actsThanksgiving ?? ""
-            state.actsTemplate.supplication = qt.actsSupplication ?? ""
+        } else if qt.template == "FREE" {
+            state.freeTemplate.content = qt.freeContent ?? ""
         }
     }
 
@@ -146,16 +131,10 @@ public final class QTEditorViewModel {
                 qtToSave.soapObservation = state.soapTemplate.observation
                 qtToSave.soapApplication = state.soapTemplate.application
                 qtToSave.soapPrayer = state.soapTemplate.prayer
-                qtToSave.actsAdoration = nil
-                qtToSave.actsConfession = nil
-                qtToSave.actsThanksgiving = nil
-                qtToSave.actsSupplication = nil
-            } else {
-                print("   ACTS - A: \(state.actsTemplate.adoration.count), C: \(state.actsTemplate.confession.count), T: \(state.actsTemplate.thanksgiving.count), S: \(state.actsTemplate.supplication.count)")
-                qtToSave.actsAdoration = state.actsTemplate.adoration
-                qtToSave.actsConfession = state.actsTemplate.confession
-                qtToSave.actsThanksgiving = state.actsTemplate.thanksgiving
-                qtToSave.actsSupplication = state.actsTemplate.supplication
+                qtToSave.freeContent = nil
+            } else if state.selectedTemplate == .free {
+                print("   FREE - Content: \(state.freeTemplate.content.count)")
+                qtToSave.freeContent = state.freeTemplate.content
                 qtToSave.soapObservation = nil
                 qtToSave.soapApplication = nil
                 qtToSave.soapPrayer = nil
@@ -170,10 +149,7 @@ public final class QTEditorViewModel {
                 updated.soapObservation = qtToSave.soapObservation
                 updated.soapApplication = qtToSave.soapApplication
                 updated.soapPrayer = qtToSave.soapPrayer
-                updated.actsAdoration = qtToSave.actsAdoration
-                updated.actsConfession = qtToSave.actsConfession
-                updated.actsThanksgiving = qtToSave.actsThanksgiving
-                updated.actsSupplication = qtToSave.actsSupplication
+                updated.freeContent = qtToSave.freeContent
                 updated.updatedAt = Date()
 
                 print("   Calling updateQTUseCase...")

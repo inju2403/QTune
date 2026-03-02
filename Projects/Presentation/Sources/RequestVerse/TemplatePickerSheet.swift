@@ -8,7 +8,7 @@
 import SwiftUI
 import Domain
 
-/// 템플릿 선택 바텀시트 (SOAP / ACTS)
+/// 템플릿 선택 바텀시트 (SOAP / 자유 묵상)
 public struct TemplatePickerSheet: View {
     let onSelect: (TemplateKind) -> Void
     @Environment(\.dismiss) private var dismiss
@@ -51,14 +51,14 @@ public struct TemplatePickerSheet: View {
                 }
 
                 TemplateCard(
-                    icon: "hands.and.sparkles.fill",
-                    title: "ACTS",
-                    subtitle: "기도로 대화하는 묵상",
-                    description: "마음을 돌아보며 기도로 이어가는 묵상. 마음을 풀어놓고 묵상하고 싶을 때 추천해요.",
-                    buttonTitle: "ACTS 묵상하기"
+                    icon: "heart.text.square.fill",
+                    title: "자유 묵상",
+                    subtitle: "자유롭게 생각을 풀어내는 묵상",
+                    description: "정해진 형식 없이 오늘 말씀을 통해 받은 은혜와 깨달음을 자유롭게 기록하는 묵상이에요.",
+                    buttonTitle: "자유 묵상하기"
                 ) {
                     Haptics.tap()
-                    onSelect(.acts)
+                    onSelect(.free)
                     dismiss()
                 }
             }

@@ -79,7 +79,7 @@ public struct QTShareCard: View {
                             .padding(.bottom, 70)
                     }
 
-                    // SOAP → Prayer, ACTS → Thanksgiving
+                    // SOAP → Prayer, FREE → 자유 묵상
                     if qt.template == "SOAP" {
                         if let prayer = qt.soapPrayer, !prayer.isEmpty {
                             Text("기도")
@@ -94,15 +94,15 @@ public struct QTShareCard: View {
                                 .lineSpacing(18 * lineSpacing.multiplier)
                                 .frame(maxWidth: .infinity, alignment: .leading)
                         }
-                    } else {
-                        if let thanksgiving = qt.actsThanksgiving, !thanksgiving.isEmpty {
-                            Text("감사")
+                    } else if qt.template == "FREE" {
+                        if let freeContent = qt.freeContent, !freeContent.isEmpty {
+                            Text("자유 묵상")
                                 .font(.system(size: 32 * fontScale.multiplier, weight: .semibold))
                                 .foregroundStyle(Color.black.opacity(0.6))
                                 .frame(maxWidth: .infinity, alignment: .leading)
                                 .padding(.bottom, 14)
 
-                            Text(thanksgiving)
+                            Text(freeContent)
                                 .font(.system(size: 36 * fontScale.multiplier, weight: .regular))
                                 .foregroundStyle(Color.black.opacity(0.85))
                                 .lineSpacing(18 * lineSpacing.multiplier)

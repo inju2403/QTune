@@ -12,7 +12,7 @@ import Domain
 public struct QTEditorState: Equatable {
     public var selectedTemplate: QTTemplateType
     public var soapTemplate: SOAPTemplate
-    public var actsTemplate: ACTSTemplate
+    public var freeTemplate: FreeTemplate
     public var showSaveSuccessToast: Bool
     public var showSaveErrorAlert: Bool
     public var editingQT: QuietTime?
@@ -21,7 +21,7 @@ public struct QTEditorState: Equatable {
     public init(
         selectedTemplate: QTTemplateType = .soap,
         soapTemplate: SOAPTemplate = SOAPTemplate(),
-        actsTemplate: ACTSTemplate = ACTSTemplate(),
+        freeTemplate: FreeTemplate = FreeTemplate(),
         showSaveSuccessToast: Bool = false,
         showSaveErrorAlert: Bool = false,
         editingQT: QuietTime? = nil,
@@ -29,7 +29,7 @@ public struct QTEditorState: Equatable {
     ) {
         self.selectedTemplate = selectedTemplate
         self.soapTemplate = soapTemplate
-        self.actsTemplate = actsTemplate
+        self.freeTemplate = freeTemplate
         self.showSaveSuccessToast = showSaveSuccessToast
         self.showSaveErrorAlert = showSaveErrorAlert
         self.editingQT = editingQT

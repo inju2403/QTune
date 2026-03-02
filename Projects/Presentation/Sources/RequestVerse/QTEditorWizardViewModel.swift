@@ -45,14 +45,8 @@ public final class QTEditorWizardViewModel {
             state.application = text
         case .updatePrayer(let text):
             state.prayer = text
-        case .updateAdoration(let text):
-            state.adoration = text
-        case .updateConfession(let text):
-            state.confession = text
-        case .updateThanksgiving(let text):
-            state.thanksgiving = text
-        case .updateSupplication(let text):
-            state.supplication = text
+        case .updateFreeContent(let text):
+            state.freeContent = text
         case .save:
             Task { await saveQT() }
         }
@@ -63,8 +57,8 @@ public final class QTEditorWizardViewModel {
         switch state.template {
         case .soap:
             return state.soapStep == .observation
-        case .acts:
-            return state.actsStep == .adoration
+        case .free:
+            return true
         }
     }
 
@@ -72,8 +66,8 @@ public final class QTEditorWizardViewModel {
         switch state.template {
         case .soap:
             return state.soapStep == .prayer
-        case .acts:
-            return state.actsStep == .supplication
+        case .free:
+            return true
         }
     }
 
@@ -85,8 +79,8 @@ public final class QTEditorWizardViewModel {
         switch state.template {
         case .soap:
             return state.soapStep.rawValue
-        case .acts:
-            return state.actsStep.rawValue
+        case .free:
+            return 0
         }
     }
 
@@ -94,8 +88,8 @@ public final class QTEditorWizardViewModel {
         switch state.template {
         case .soap:
             return SoapStep.allCases.count
-        case .acts:
-            return ActsStep.allCases.count
+        case .free:
+            return 1
         }
     }
 
@@ -109,13 +103,9 @@ public final class QTEditorWizardViewModel {
                 // 마지막 단계에서 저장
                 send(.save)
             }
-        case .acts:
-            if let next = ActsStep(rawValue: state.actsStep.rawValue + 1) {
-                state.actsStep = next
-            } else {
-                // 마지막 단계에서 저장
-                send(.save)
-            }
+        case .free:
+            // 자유 묵상은 단일 단계이므로 바로 저장
+            send(.save)
         }
     }
 
@@ -125,10 +115,9 @@ public final class QTEditorWizardViewModel {
             if let prev = SoapStep(rawValue: state.soapStep.rawValue - 1) {
                 state.soapStep = prev
             }
-        case .acts:
-            if let prev = ActsStep(rawValue: state.actsStep.rawValue - 1) {
-                state.actsStep = prev
-            }
+        case .free:
+            // 자유 묵상은 단일 단계이므로 이전 단계 없음
+            break
         }
     }
 
@@ -150,7 +139,7 @@ public final class QTEditorWizardViewModel {
                 suggestedPrayer: state.suggestedPrayer,
                 date: Date(),
                 status: .draft,
-                template: state.template == .soap ? "SOAP" : "ACTS"
+                template: state.template == .soap ? "SOAP" : "FREE"
             )
 
             // 템플릿별 필드 설정
@@ -159,10 +148,7 @@ public final class QTEditorWizardViewModel {
                 qt.soapApplication = state.application
                 qt.soapPrayer = state.prayer
             } else {
-                qt.actsAdoration = state.adoration
-                qt.actsConfession = state.confession
-                qt.actsThanksgiving = state.thanksgiving
-                qt.actsSupplication = state.supplication
+                qt.freeContent = state.freeContent
             }
 
             // 저장

@@ -16,16 +16,9 @@ public enum SoapStep: Int, CaseIterable, Equatable {
     case prayer
 }
 
-public enum ActsStep: Int, CaseIterable, Equatable {
-    case adoration
-    case confession
-    case thanksgiving
-    case supplication
-}
-
 // MARK: - QTEditorWizardView
 /// QT 작성 화면 (새로운 QT를 작성할 때 사용)
-/// 말씀 추천을 받은 후 SOAP/ACTS 템플릿으로 묵상을 기록
+/// 말씀 추천을 받은 후 SOAP/Free 템플릿으로 묵상을 기록
 public struct QTEditorWizardView: View {
     // MARK: - ViewModel
     @State private var viewModel: QTEditorWizardViewModel
@@ -36,7 +29,7 @@ public struct QTEditorWizardView: View {
 
     // MARK: - Focus State
     @FocusState private var soapFocus: SoapStep?
-    @FocusState private var actsFocus: ActsStep?
+    @FocusState private var freeFocus: Bool?
 
     // MARK: - Sheet State
     @State private var showExplanationSheet = false
@@ -106,58 +99,18 @@ public struct QTEditorWizardView: View {
                                     }
                                 }
                             } else {
-                                StepPager(currentIndex: viewModel.currentStepIndex, total: viewModel.totalSteps) {
-                                    switch viewModel.state.actsStep {
-                                    case .adoration:
-                                        SingleFieldCard(
-                                            title: "Adoration · 경배",
-                                            description: "말씀을 통해 드러난 하나님의 성품을 묵상하며 경배를 드려보세요.",
-                                            placeholder: "이 말씀에서 경배하고 싶은 하나님의 성품을 적어보세요.",
-                                            text: Binding(
-                                                get: { viewModel.state.adoration },
-                                                set: { viewModel.send(.updateAdoration($0)) }
-                                            ),
-                                            focused: $actsFocus,
-                                            focusValue: ActsStep.adoration
-                                        )
-                                    case .confession:
-                                        SingleFieldCard(
-                                            title: "Confession · 회개",
-                                            description: "말씀 앞에서 회개하고 싶은 마음이 있나요?",
-                                            placeholder: "회개하고 싶은 것을 적어보세요.",
-                                            text: Binding(
-                                                get: { viewModel.state.confession },
-                                                set: { viewModel.send(.updateConfession($0)) }
-                                            ),
-                                            focused: $actsFocus,
-                                            focusValue: ActsStep.confession
-                                        )
-                                    case .thanksgiving:
-                                        SingleFieldCard(
-                                            title: "Thanksgiving · 감사",
-                                            description: "하나님이 베푸신 구체적인 은혜와 축복에 감사를 표현해보세요.",
-                                            placeholder: "감사하고 싶은 은혜는 무엇인가요?",
-                                            text: Binding(
-                                                get: { viewModel.state.thanksgiving },
-                                                set: { viewModel.send(.updateThanksgiving($0)) }
-                                            ),
-                                            focused: $actsFocus,
-                                            focusValue: ActsStep.thanksgiving
-                                        )
-                                    case .supplication:
-                                        SingleFieldCard(
-                                            title: "Supplication · 간구",
-                                            description: "자신과 다른 사람들을 위해 하나님께 무엇을 간구하고 싶나요?",
-                                            placeholder: "간구하고 싶은 기도 제목이 있나요?",
-                                            text: Binding(
-                                                get: { viewModel.state.supplication },
-                                                set: { viewModel.send(.updateSupplication($0)) }
-                                            ),
-                                            focused: $actsFocus,
-                                            focusValue: ActsStep.supplication
-                                        )
-                                    }
-                                }
+                                // 자유 묵상 (단일 필드)
+                                SingleFieldCard(
+                                    title: "자유 묵상",
+                                    description: "오늘 말씀을 통해 받은 은혜와 깨달음을 자유롭게 기록해보세요.",
+                                    placeholder: "오늘 말씀을 묵상하며 떠오르는 생각들을 자유롭게 적어보세요...",
+                                    text: Binding(
+                                        get: { viewModel.state.freeContent },
+                                        set: { viewModel.send(.updateFreeContent($0)) }
+                                    ),
+                                    focused: $freeFocus,
+                                    focusValue: true
+                                )
                             }
                         }
                         .padding(.horizontal, 20)
@@ -208,9 +161,8 @@ public struct QTEditorWizardView: View {
                         DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
                             if viewModel.state.template == .soap {
                                 soapFocus = viewModel.state.soapStep
-                            } else {
-                                actsFocus = viewModel.state.actsStep
                             }
+                            // 자유 묵상은 단일 필드이므로 포커스 이동 불필요
                         }
                     } label: {
                         HStack(spacing: 6) {
@@ -306,13 +258,12 @@ public struct QTEditorWizardView: View {
             }
         }
         .onAppear {
-            // 화면 진입 시 첫 번째 필드에 자동 포커스
+            // 화면 진입 시 첫 번째 필드에 자동 포커스 (SOAP만 해당)
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
                 if viewModel.state.template == .soap {
                     soapFocus = .observation
-                } else {
-                    actsFocus = .adoration
                 }
+                // 자유 묵상은 단일 필드이므로 포커스 설정 불필요
             }
         }
     }

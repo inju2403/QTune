@@ -270,18 +270,9 @@ private extension QTSearchListView {
             if let prayer = qt.soapPrayer?.trimmingCharacters(in: .whitespacesAndNewlines), !prayer.isEmpty {
                 return prayer
             }
-        } else {
-            if let adoration = qt.actsAdoration?.trimmingCharacters(in: .whitespacesAndNewlines), !adoration.isEmpty {
-                return adoration
-            }
-            if let confession = qt.actsConfession?.trimmingCharacters(in: .whitespacesAndNewlines), !confession.isEmpty {
-                return confession
-            }
-            if let thanksgiving = qt.actsThanksgiving?.trimmingCharacters(in: .whitespacesAndNewlines), !thanksgiving.isEmpty {
-                return thanksgiving
-            }
-            if let supplication = qt.actsSupplication?.trimmingCharacters(in: .whitespacesAndNewlines), !supplication.isEmpty {
-                return supplication
+        } else if qt.template == "FREE" {
+            if let freeContent = qt.freeContent?.trimmingCharacters(in: .whitespacesAndNewlines), !freeContent.isEmpty {
+                return freeContent
             }
         }
         return nil

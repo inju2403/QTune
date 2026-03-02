@@ -49,9 +49,60 @@ public enum PersistenceFactory {
         if _sharedContext == nil {
             print("📝 [PersistenceFactory] Creating shared ModelContext")
             _sharedContext = ModelContext(_sharedContainer!)
+
+            // ACTS → FREE 마이그레이션 실행 (첫 실행 시에만)
+            performACTSMigrationIfNeeded(context: _sharedContext!)
         }
 
         // 싱글톤 ModelContext 사용 (즉시 동기화를 위해)
         return DefaultQTRepository(modelContext: _sharedContext!)
+    }
+
+    /// ACTS 템플릿 데이터를 FREE로 자동 마이그레이션
+    ///
+    /// 기존 ACTS 템플릿 기록을 찾아서 4개 필드를 하나로 병합하고 FREE로 변환합니다.
+    private static func performACTSMigrationIfNeeded(context: ModelContext) {
+        do {
+            let descriptor = FetchDescriptor<QTEntryModel>(
+                predicate: #Predicate { $0.template == "ACTS" }
+            )
+            let actsRecords = try context.fetch(descriptor)
+
+            guard !actsRecords.isEmpty else {
+                return
+            }
+
+            print("🔄 [Migration] Migrating \(actsRecords.count) ACTS records to FREE...")
+
+            for record in actsRecords {
+                var parts: [String] = []
+
+                if let adoration = record.actsAdoration, !adoration.isEmpty {
+                    parts.append("🙌 경배 (Adoration)\n\(adoration)")
+                }
+                if let confession = record.actsConfession, !confession.isEmpty {
+                    parts.append("🙏 고백 (Confession)\n\(confession)")
+                }
+                if let thanksgiving = record.actsThanksgiving, !thanksgiving.isEmpty {
+                    parts.append("✨ 감사 (Thanksgiving)\n\(thanksgiving)")
+                }
+                if let supplication = record.actsSupplication, !supplication.isEmpty {
+                    parts.append("🙌 간구 (Supplication)\n\(supplication)")
+                }
+
+                record.template = "FREE"
+                record.freeContent = parts.isEmpty ? nil : parts.joined(separator: "\n\n")
+                record.actsAdoration = nil
+                record.actsConfession = nil
+                record.actsThanksgiving = nil
+                record.actsSupplication = nil
+            }
+
+            try context.save()
+            print("✅ [Migration] Successfully migrated \(actsRecords.count) ACTS records to FREE")
+
+        } catch {
+            print("❌ [Migration] Failed: \(error)")
+        }
     }
 }

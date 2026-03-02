@@ -36,8 +36,8 @@ public struct QTEditorView: View {
                     // 편집 가능한 묵상/기도 섹션
                     if draft.template == "SOAP" {
                         soapEditSection()
-                    } else {
-                        actsEditSection()
+                    } else if draft.template == "FREE" {
+                        freeEditSection()
                     }
                 }
                 .padding(DS.Spacing.l)
@@ -165,48 +165,21 @@ private extension QTEditorView {
     }
 }
 
-// MARK: - ACTS Edit Section
+// MARK: - Free Edit Section
 
 private extension QTEditorView {
     @ViewBuilder
-    func actsEditSection() -> some View {
+    func freeEditSection() -> some View {
         VStack(alignment: .leading, spacing: 12) {
-            SectionHeader(icon: "hands.sparkles", title: "나의 기도")
+            SectionHeader(icon: "square.and.pencil", title: "나의 묵상")
 
             EditableVerseCard(
-                title: "Adoration · 경배",
+                title: "자유 묵상",
                 text: Binding(
-                    get: { viewModel.state.actsTemplate.adoration },
-                    set: { viewModel.send(.updateACTSAdoration($0)) }
+                    get: { viewModel.state.freeTemplate.content },
+                    set: { viewModel.send(.updateFreeContent($0)) }
                 ),
-                placeholder: "말씀을 통해 드러난 하나님의 성품을 묵상하며 경배를 드려보세요."
-            )
-
-            EditableVerseCard(
-                title: "Confession · 고백",
-                text: Binding(
-                    get: { viewModel.state.actsTemplate.confession },
-                    set: { viewModel.send(.updateACTSConfession($0)) }
-                ),
-                placeholder: "말씀 앞에서 회개하고 싶은 마음이 있나요?"
-            )
-
-            EditableVerseCard(
-                title: "Thanksgiving · 감사",
-                text: Binding(
-                    get: { viewModel.state.actsTemplate.thanksgiving },
-                    set: { viewModel.send(.updateACTSThanksgiving($0)) }
-                ),
-                placeholder: "하나님이 베푸신 구체적인 은혜와 축복에 감사를 표현해보세요."
-            )
-
-            EditableVerseCard(
-                title: "Supplication · 간구",
-                text: Binding(
-                    get: { viewModel.state.actsTemplate.supplication },
-                    set: { viewModel.send(.updateACTSSupplication($0)) }
-                ),
-                placeholder: "자신과 다른 사람들을 위해 하나님께 무엇을 간구하고 싶나요?"
+                placeholder: "오늘 말씀을 통해 받은 은혜와 깨달음을 자유롭게 기록해보세요."
             )
         }
     }
