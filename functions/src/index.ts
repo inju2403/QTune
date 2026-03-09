@@ -571,105 +571,115 @@ export const recommendVerse = onCall(
         // =========================================
         // [유사 추천 / 자유 추천] 기존 GPT 추천 흐름
         // =========================================
-        const excludeList = recommendedVerses.length > 0
-          ? recommendedVerses.map((v) => `- ${v}`).join("\n")
+        // 후보 3개 방식: 30개 exclude list + GPT 각각 검증 + 서버 필터링
+        const recentVerses = recommendedVerses.slice(-30); // 마지막 30개
+        const excludeList = recentVerses.length > 0
+          ? recentVerses.map((v) => `- ${v}`).join("\n")
           : "";
 
-        const excludeHeader = excludeList
-          ? `
-🚨🚨🚨 [최우선 제약사항 - 시스템 레벨 규칙] 🚨🚨🚨
+        // System message: 역할 정의 + exclude list 제약 (절대 규칙)
+        const systemMessage = excludeList
+          ? `당신은 성경 구절을 추천하는 목사입니다.
 
-아래 구절들은 **절대로 추천해서는 안 됩니다**:
+🚨 [절대 규칙 - 시스템 레벨 제약] 🚨
+다음 구절들은 **절대로 추천할 수 없습니다**:
 ${excludeList}
 
-⛔ 위 목록에 있는 구절을 추천하면 시스템 오류로 처리됩니다.
+⛔ 위 목록에 있는 구절을 추천하면 시스템 오류가 발생합니다.
 ⛔ 사용자 입력과 의미적으로 연관이 있어도, 위 목록에 있으면 **절대 추천 금지**.
 ✅ 반드시 위 목록에 **없는** 새로운 구절을 찾아서 추천하세요.
-`
-          : "";
 
-        const prompt = excludeList
-          ? `${excludeHeader}
+[추천 스타일]
+사용자가 입력한 내용의 영적 의미를 깊이 통찰하고, 하나님께서 이 특정한 말씀을 통해 사용자에게 전하시려는 메시지가 무엇인지 경건하게 해석하세요. '위로가 되기를', '바랍니다', '느끼시는', '믿습니다' 같은 일반적 표현을 피하고, 사용자의 현재 상황과 말씀 사이의 신학적이고 실제적인 연결점을 구체적으로 제시하세요.`
+          : `당신은 성경 구절을 추천하는 목사입니다. 사용자가 입력한 내용의 영적 의미를 깊이 통찰하고, 하나님께서 이 특정한 말씀을 통해 사용자에게 전하시려는 메시지가 무엇인지 경건하게 해석하세요. '위로가 되기를', '바랍니다', '느끼시는', '믿습니다' 같은 일반적 표현을 피하고, 사용자의 현재 상황과 말씀 사이의 신학적이고 실제적인 연결점을 구체적으로 제시하세요.`;
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-[추천 작업]
-사용자: ${userLabel}
+        // User message: 사용자 정보 + 출력 형식 (요청 내용)
+        const userMessage = `사용자: ${userLabel}
 입력: "${mood}${noteSection}"
 
-위 제약사항을 **절대적으로 준수**하면서, 이 사용자에게 성경 구절을 추천하세요.
+위 사용자에게 적합한 성경 구절 후보 3개를 추천하세요.
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-[추천 절차]
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+⚠️ 중요: 각 후보마다 제외 목록 확인을 **반드시** 수행하세요!
 
-1️⃣ **제외 목록 재확인**: 위 🚨 섹션의 금지 구절 목록을 확인하세요.
+[각 후보 작성 절차]
+1️⃣ verseRef 선택 (사용자 입력에 적합한 구절)
+2️⃣ 제외 목록 확인: 위 시스템 메시지의 제외 목록에 이 구절이 있는가?
+3️⃣ checkReasoning 작성: "제외 목록 확인 → [verseRef]는 목록에 없음 ✅" 형식으로
+4️⃣ rationale 작성: 추천 이유 (1-2문장)
 
-2️⃣ **사용자 감정/상황 파악**: 입력의 감정과 주제를 파악하세요.
-
-3️⃣ **구절 선택**:
-   - 제외 목록에 **없는** 구절 중에서 선택
-   - 사용자 입력과 의미적으로 가장 잘 맞는 구절
-
-4️⃣ **최종 검증**: 선택한 verseRef가 제외 목록에 **없는지** 다시 확인!
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-[출력]
+[출력 형식]
+3개의 후보를 배열로 반환:
 - verseRef: 영어 책명 + 장:절 (예: "John 3:16", 범위: "Psalms 37:5-6")
+- isInExcludeList: 제외 목록에 있는가? (반드시 false여야 함!)
+- checkReasoning: 제외 목록 확인 과정 설명
 - rationale: 이 말씀이 주어진 이유 (1-2문장)
   * 사용자가 입력한 내용을 깊이 이해하고, 그 마음의 상태와 이 말씀이 어떻게 연결되는지 경건하게 설명
   * 일반적인 위로나 축복이 아닌, 말씀과 사용자 입력 사이의 실제적 연결점을 발견하여 설명
 
-  좋은 예시:
-    - 입력: "주님만을 의지하고 싶어" → "${userLabel}께서 세상의 것이 아닌 주님만을 의지하려는 결단 속에서, 이 말씀은 그 신뢰가 헛되지 않음을 증거합니다."
-    - 입력: "일상의 소중함" → "평범한 일상 속에서도 하나님의 은혜를 발견하려는 ${userLabel}의 영적 감수성에 이 말씀이 응답합니다."
+rationale 좋은 예시:
+  - 입력: "주님만을 의지하고 싶어" → "${userLabel}께서 세상의 것이 아닌 주님만을 의지하려는 결단 속에서, 이 말씀은 그 신뢰가 헛되지 않음을 증거합니다."
+  - 입력: "일상의 소중함" → "평범한 일상 속에서도 하나님의 은혜를 발견하려는 ${userLabel}의 영적 감수성에 이 말씀이 응답합니다."
 
-  나쁜 예시 (절대 사용 금지):
-    - "위로가 되기를 바랍니다" ❌
-    - "도움이 되기를 기도합니다" ❌
-    - "느끼시는 마음에" ❌
-    - "힘이 되었으면 좋겠습니다" ❌`
-          : `[추천 작업]
-사용자: ${userLabel}
-입력: "${mood}${noteSection}"
+rationale 나쁜 예시 (절대 사용 금지):
+  - "위로가 되기를 바랍니다" ❌
+  - "도움이 되기를 기도합니다" ❌
+  - "느끼시는 마음에" ❌
+  - "힘이 되었으면 좋겠습니다" ❌
 
-이 사용자에게 성경 구절 1곳을 추천하고 이유를 설명하세요.
-
-[출력]
-- verseRef: 영어 책명 + 장:절 (예: "John 3:16", 범위: "Psalms 37:5-6")
-- rationale: 이 말씀이 주어진 이유 (1-2문장)
-  * 사용자가 입력한 내용을 깊이 이해하고, 그 마음의 상태와 이 말씀이 어떻게 연결되는지 경건하게 설명
-  * 일반적인 위로나 축복이 아닌, 말씀과 사용자 입력 사이의 실제적 연결점을 발견하여 설명
-
-  좋은 예시:
-    - 입력: "주님만을 의지하고 싶어" → "${userLabel}께서 세상의 것이 아닌 주님만을 의지하려는 결단 속에서, 이 말씀은 그 신뢰가 헛되지 않음을 증거합니다."
-    - 입력: "힘들고 지칠 때" → "고난 중에도 하나님이 함께하신다는 이 약속은 ${userLabel}의 현재 상황에 대한 하나님의 직접적인 응답입니다."
-
-  나쁜 예시 (절대 사용 금지):
-    - "위로가 되기를 바랍니다" ❌
-    - "도움이 되기를 기도합니다" ❌
-    - "느끼시는 마음에" ❌
-    - "힘이 되었으면 좋겠습니다" ❌`;
-
-        const verseRefDescription = "성경 구절 참조. 단일 절(예: John 3:16) 또는 범위(예: Psalms 37:5-6, Romans 8:28-29) 형식 모두 가능.";
+🚨 모든 후보는 isInExcludeList: false여야 합니다!`;
 
         const responseFormat = {
           type: "json_schema" as const,
           json_schema: {
-            name: "VerseRecommendation",
+            name: "VerseRecommendationCandidates",
             strict: true,
             schema: {
               type: "object",
               properties: {
-                verseRef: { type: "string", description: verseRefDescription },
-                rationale: { type: "string", description: "추천 이유 (1-2문장)" },
+                candidates: {
+                  type: "array",
+                  description: "3개의 구절 후보",
+                  items: {
+                    type: "object",
+                    properties: {
+                      verseRef: {
+                        type: "string",
+                        description: "성경 구절 참조 (예: John 3:16, Psalms 37:5-6)",
+                      },
+                      isInExcludeList: {
+                        type: "boolean",
+                        description: "제외 목록에 있는가? (반드시 false)",
+                      },
+                      checkReasoning: {
+                        type: "string",
+                        description: "제외 목록 확인 과정 설명",
+                      },
+                      rationale: {
+                        type: "string",
+                        description: "추천 이유 (1-2문장)",
+                      },
+                    },
+                    required: ["verseRef", "isInExcludeList", "checkReasoning", "rationale"],
+                    additionalProperties: false,
+                  },
+                  minItems: 3,
+                  maxItems: 3,
+                },
               },
-              required: ["verseRef", "rationale"],
+              required: ["candidates"],
               additionalProperties: false,
             },
           },
         };
+
+        // 디버깅: System message 로깅
+        logger.info("[DEBUG] GPT Request", {
+          totalHistoryCount: recommendedVerses.length,
+          recentExcludeCount: recentVerses.length,
+          excludeListSample: recentVerses.slice(-5), // 마지막 5개만
+          systemMessageLength: systemMessage.length,
+          hasExcludeList: excludeList.length > 0,
+        });
 
         const completion = await openai.chat.completions.create({
           model: "gpt-4o-mini",
@@ -677,11 +687,11 @@ ${excludeList}
           messages: [
             {
               role: "system",
-              content: "당신은 성경 구절을 추천하는 목사입니다. 사용자가 입력한 내용의 영적 의미를 깊이 통찰하고, 하나님께서 이 특정한 말씀을 통해 사용자에게 전하시려는 메시지가 무엇인지 경건하게 해석하세요. '위로가 되기를', '바랍니다', '느끼시는', '믿습니다' 같은 일반적 표현을 피하고, 사용자의 현재 상황과 말씀 사이의 신학적이고 실제적인 연결점을 구체적으로 제시하세요.",
+              content: systemMessage,
             },
             {
               role: "user",
-              content: prompt,
+              content: userMessage,
             },
           ],
           response_format: responseFormat,
@@ -692,14 +702,45 @@ ${excludeList}
           throw new functions.https.HttpsError("internal", "Empty response from OpenAI");
         }
 
-        result = JSON.parse(content);
+        const parsedResponse = JSON.parse(content);
+        const candidates = parsedResponse.candidates;
 
-        // 제외 목록 위반 감지 (디버깅용 경고)
-        if (recommendedVerses.includes(result.verseRef)) {
-          logger.warn("⚠️ GPT가 제외 목록을 무시하고 이미 추천한 구절을 재추천함!", {
+        if (!candidates || candidates.length !== 3) {
+          throw new functions.https.HttpsError("internal", "Invalid GPT response: expected 3 candidates");
+        }
+
+        // 로깅: 후보 3개 정보
+        logger.info("[DEBUG] GPT Candidates", {
+          candidate1: { verseRef: candidates[0].verseRef, isInExcludeList: candidates[0].isInExcludeList },
+          candidate2: { verseRef: candidates[1].verseRef, isInExcludeList: candidates[1].isInExcludeList },
+          candidate3: { verseRef: candidates[2].verseRef, isInExcludeList: candidates[2].isInExcludeList },
+        });
+
+        // 1차 필터: GPT가 isInExcludeList: false라고 표시한 것들
+        const gptSafeCandidates = candidates.filter((c: any) => c.isInExcludeList === false);
+
+        // 2차 필터: 서버에서 실제로 exclude list에 없는지 재검증
+        const validCandidate = gptSafeCandidates.find((c: any) => !recentVerses.includes(c.verseRef));
+
+        if (validCandidate) {
+          // 성공: 유효한 후보 발견
+          result = {
+            verseRef: validCandidate.verseRef,
+            rationale: validCandidate.rationale,
+          };
+          logger.info("✅ 유효한 후보 선택됨", {
             verseRef: result.verseRef,
-            mood,
-            excludedCount: recommendedVerses.length,
+            checkReasoning: validCandidate.checkReasoning,
+          });
+        } else {
+          // 모든 후보가 exclude list에 있음 → 첫 번째 후보 선택 (fallback)
+          result = {
+            verseRef: candidates[0].verseRef,
+            rationale: candidates[0].rationale,
+          };
+          logger.warn("⚠️ 모든 후보가 exclude list에 있어서 첫 번째 선택 (fallback)", {
+            verseRef: result.verseRef,
+            allCandidates: candidates.map((c: any) => c.verseRef),
           });
         }
       }

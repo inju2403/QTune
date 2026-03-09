@@ -19,9 +19,12 @@ public enum VerseSearchAction: Equatable {
     // 해설 관련
     case tapFetchExplanation
     case dismissExplanationError
+    // 템플릿 선택 관련
+    case selectTemplate(TemplateKind)
+    case dismissTemplateSheet
 }
 
 /// 구절 직접 찾기 화면의 사이드 이펙트
 public enum VerseSearchEffect {
-    case navigateToQTEditor(verse: Verse, explanation: String?, suggestedPrayer: String?)
+    case navigateToQTEditor(verse: Verse, explanation: String?, template: TemplateKind)
 }

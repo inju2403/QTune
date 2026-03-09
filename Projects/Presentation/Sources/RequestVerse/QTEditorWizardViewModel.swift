@@ -17,6 +17,8 @@ public final class QTEditorWizardViewModel {
     // MARK: - Dependencies
     private let commitQTUseCase: CommitQTUseCase
     private let session: UserSession
+    private let fetchVersePrayerUseCase: FetchVersePrayerUseCase?
+    private let fetchVerseExplanationUseCase: FetchVerseExplanationUseCase?
 
     // MARK: - Callbacks
     public var onSaveComplete: (() -> Void)?
@@ -25,11 +27,17 @@ public final class QTEditorWizardViewModel {
     public init(
         commitQTUseCase: CommitQTUseCase,
         session: UserSession,
+        fetchVersePrayerUseCase: FetchVersePrayerUseCase? = nil,
+        fetchVerseExplanationUseCase: FetchVerseExplanationUseCase? = nil,
         initialState: QTEditorWizardState
     ) {
         self.commitQTUseCase = commitQTUseCase
         self.session = session
+        self.fetchVersePrayerUseCase = fetchVersePrayerUseCase
+        self.fetchVerseExplanationUseCase = fetchVerseExplanationUseCase
         self.state = initialState
+        self.state.isPrayerAvailable = fetchVersePrayerUseCase != nil
+        self.state.isExplanationAvailable = fetchVerseExplanationUseCase != nil
     }
 
     // MARK: - Send Action
@@ -49,6 +57,30 @@ public final class QTEditorWizardViewModel {
             state.freeContent = text
         case .save:
             Task { await saveQT() }
+        case .tapPrayerButton:
+            // 이미 생성된 기도문이 있으면 바로 시트 열기
+            if state.suggestedPrayer != nil {
+                state.showPrayerSheet = true
+            } else {
+                // 없으면 생성 시작
+                Task { await generatePrayer() }
+            }
+        case .dismissPrayerSheet:
+            state.showPrayerSheet = false
+        case .dismissPrayerError:
+            state.prayerError = nil
+        case .tapExplanationButton:
+            // 이미 생성된 해설이 있으면 바로 시트 열기
+            if !state.explKR.isEmpty {
+                state.showExplanationSheet = true
+            } else {
+                // 없으면 생성 시작
+                Task { await generateExplanation() }
+            }
+        case .dismissExplanationSheet:
+            state.showExplanationSheet = false
+        case .dismissExplanationError:
+            state.explanationError = nil
         }
     }
 
@@ -177,6 +209,88 @@ public final class QTEditorWizardViewModel {
             await MainActor.run {
                 state.isSaving = false
                 state.showSaveErrorAlert = true
+            }
+        }
+    }
+
+    // MARK: - Generate Prayer
+    private func generatePrayer() async {
+        guard let prayerUseCase = fetchVersePrayerUseCase else { return }
+        guard !state.isPrayerLoading else { return }
+
+        let englishText = state.verse.text
+        let verseRef = state.verseRef
+
+        state.isPrayerLoading = true
+        state.prayerError = nil
+
+        do {
+            let prayer = try await prayerUseCase.execute(
+                englishText: englishText,
+                verseRef: verseRef
+            )
+
+            await MainActor.run {
+                state.suggestedPrayer = prayer
+                state.isPrayerLoading = false
+                state.showPrayerSheet = true
+            }
+        } catch let error as DomainError {
+            await MainActor.run {
+                state.isPrayerLoading = false
+                state.showPrayerSheet = true
+                if case .rateLimited = error {
+                    state.prayerError = "오늘 AI 기도문을 10번 모두 사용했어요. 내일 다시 시도해주세요."
+                } else {
+                    state.prayerError = "기도문을 가져오지 못했어요. 잠시 후 다시 시도해주세요."
+                }
+            }
+        } catch {
+            await MainActor.run {
+                state.isPrayerLoading = false
+                state.showPrayerSheet = true
+                state.prayerError = "기도문을 가져오지 못했어요. 잠시 후 다시 시도해주세요."
+            }
+        }
+    }
+
+    // MARK: - Generate Explanation
+    private func generateExplanation() async {
+        guard let explanationUseCase = fetchVerseExplanationUseCase else { return }
+        guard !state.isExplanationLoading else { return }
+
+        let englishText = state.verse.text
+        let verseRef = state.verseRef
+
+        state.isExplanationLoading = true
+        state.explanationError = nil
+
+        do {
+            let explanation = try await explanationUseCase.execute(
+                englishText: englishText,
+                verseRef: verseRef
+            )
+
+            await MainActor.run {
+                state.explKR = explanation
+                state.isExplanationLoading = false
+                state.showExplanationSheet = true
+            }
+        } catch let error as DomainError {
+            await MainActor.run {
+                state.isExplanationLoading = false
+                state.showExplanationSheet = true
+                if case .rateLimited = error {
+                    state.explanationError = "오늘 AI 해설을 10번 모두 사용했어요. 내일 다시 시도해주세요."
+                } else {
+                    state.explanationError = "해설을 가져오지 못했어요. 잠시 후 다시 시도해주세요."
+                }
+            }
+        } catch {
+            await MainActor.run {
+                state.isExplanationLoading = false
+                state.showExplanationSheet = true
+                state.explanationError = "해설을 가져오지 못했어요. 잠시 후 다시 시도해주세요."
             }
         }
     }

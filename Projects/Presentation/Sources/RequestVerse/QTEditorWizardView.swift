@@ -31,12 +31,6 @@ public struct QTEditorWizardView: View {
     @FocusState private var soapFocus: SoapStep?
     @FocusState private var freeFocus: Bool?
 
-    // MARK: - Sheet State
-    @State private var showExplanationSheet = false
-    @State private var sheetHeight: CGFloat = 200
-    @State private var showPrayerSheet = false
-    @State private var prayerSheetHeight: CGFloat = 200
-
     // MARK: - Init
     public init(viewModel: QTEditorWizardViewModel) {
         _viewModel = State(wrappedValue: viewModel)
@@ -208,6 +202,20 @@ public struct QTEditorWizardView: View {
                         .ignoresSafeArea(edges: .bottom)
                 )
             }
+
+            // 기도문 로딩 오버레이
+            if viewModel.state.isPrayerLoading {
+                QTuneCrossOverlay(message: "추천 기도문을 생성하는 중")
+                    .transition(.opacity)
+                    .zIndex(100)
+            }
+
+            // 해설 로딩 오버레이
+            if viewModel.state.isExplanationLoading {
+                QTuneCrossOverlay(message: "말씀의 해설을 준비하는 중")
+                    .transition(.opacity)
+                    .zIndex(100)
+            }
         }
         .navigationBarTitleDisplayMode(.inline)
         .navigationTitle("QT 작성")
@@ -223,25 +231,25 @@ public struct QTEditorWizardView: View {
         } message: {
             Text("저장에 실패했어요. 다시 시도해 주세요.")
         }
-        .sheet(isPresented: $showExplanationSheet) {
-            ExplanationSheetView(
-                explanation: viewModel.state.explKR,
-                sheetHeight: $sheetHeight
-            )
-            .presentationDetents([.height(sheetHeight)])
-            .presentationDragIndicator(.visible)
-            .presentationCornerRadius(DS.Radius.xl)
-            .presentationBackground(DS.Color.canvas)
+        .sheet(isPresented: Binding(
+            get: { viewModel.state.showExplanationSheet },
+            set: { if !$0 { viewModel.send(.dismissExplanationSheet) } }
+        )) {
+            explanationSheetView()
+                .presentationDetents([.medium, .large])
+                .presentationDragIndicator(.visible)
+                .presentationCornerRadius(DS.Radius.xl)
+                .presentationBackground(DS.Color.canvas)
         }
-        .sheet(isPresented: $showPrayerSheet) {
-            PrayerSheetView(
-                prayer: viewModel.state.suggestedPrayer,
-                sheetHeight: $prayerSheetHeight
-            )
-            .presentationDetents([.height(prayerSheetHeight)])
-            .presentationDragIndicator(.visible)
-            .presentationCornerRadius(DS.Radius.xl)
-            .presentationBackground(DS.Color.canvas)
+        .sheet(isPresented: Binding(
+            get: { viewModel.state.showPrayerSheet },
+            set: { if !$0 { viewModel.send(.dismissPrayerSheet) } }
+        )) {
+            prayerSheetView()
+                .presentationDetents([.fraction(0.65), .large])
+                .presentationDragIndicator(.visible)
+                .presentationCornerRadius(DS.Radius.xl)
+                .presentationBackground(DS.Color.canvas)
         }
         .overlay(alignment: .bottom) {
             if viewModel.state.showSaveSuccessToast {
@@ -258,12 +266,13 @@ public struct QTEditorWizardView: View {
             }
         }
         .onAppear {
-            // 화면 진입 시 첫 번째 필드에 자동 포커스 (SOAP만 해당)
+            // 화면 진입 시 첫 번째 필드에 자동 포커스
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
                 if viewModel.state.template == .soap {
                     soapFocus = .observation
+                } else {
+                    freeFocus = true
                 }
-                // 자유 묵상은 단일 필드이므로 포커스 설정 불필요
             }
         }
     }
@@ -321,69 +330,73 @@ public struct QTEditorWizardView: View {
                 .background(DS.Color.canvas.opacity(0.9))
                 .cornerRadius(DS.Radius.m)
 
-                // 해설 + 기도문 버튼 (한글 해설이 있을 때만 표시)
-                if !viewModel.state.explKR.isEmpty {
+                // 해설 + 기도문 버튼 (조건별 표시)
+                if viewModel.state.isExplanationAvailable || viewModel.state.isPrayerAvailable {
                     HStack(spacing: 8) {
-                        // 해설 버튼
-                        Button {
-                            Haptics.tap()
-                            showExplanationSheet = true
-                        } label: {
-                            HStack(spacing: 4) {
-                                Image(systemName: "book.fill")
-                                    .font(.system(size: 12 * fontScale.multiplier, weight: .semibold))
-                                Text("해설")
-                                    .font(.system(size: 14 * fontScale.multiplier, weight: .semibold, design: .rounded))
-                            }
-                            .foregroundStyle(.white)
-                            .padding(.horizontal, 12)
-                            .padding(.vertical, 6)
-                            .background(
-                                Capsule()
-                                    .fill(
-                                        LinearGradient(
-                                            colors: [DS.Color.mocha, DS.Color.gold],
-                                            startPoint: .leading,
-                                            endPoint: .trailing
+                        // 해설 버튼 (UseCase가 있을 때)
+                        if viewModel.state.isExplanationAvailable {
+                            Button {
+                                Haptics.tap()
+                                viewModel.send(.tapExplanationButton)
+                            } label: {
+                                HStack(spacing: 4) {
+                                    Image(systemName: "book.fill")
+                                        .font(.system(size: 12 * fontScale.multiplier, weight: .semibold))
+                                    Text("해설")
+                                        .font(.system(size: 14 * fontScale.multiplier, weight: .semibold, design: .rounded))
+                                }
+                                .foregroundStyle(.white)
+                                .padding(.horizontal, 12)
+                                .padding(.vertical, 6)
+                                .background(
+                                    Capsule()
+                                        .fill(
+                                            LinearGradient(
+                                                colors: [DS.Color.mocha, DS.Color.gold],
+                                                startPoint: .leading,
+                                                endPoint: .trailing
+                                            )
                                         )
-                                    )
-                            )
-                            .overlay(
-                                Capsule()
-                                    .stroke(DS.Color.gold.opacity(0.3), lineWidth: 1)
-                            )
-                            .shadow(color: DS.Color.mocha.opacity(0.3), radius: 8, y: 2)
+                                )
+                                .overlay(
+                                    Capsule()
+                                        .stroke(DS.Color.gold.opacity(0.3), lineWidth: 1)
+                                )
+                                .shadow(color: DS.Color.mocha.opacity(0.3), radius: 8, y: 2)
+                            }
                         }
 
-                        // 기도문 버튼
-                        Button {
-                            Haptics.tap()
-                            showPrayerSheet = true
-                        } label: {
-                            HStack(spacing: 4) {
-                                Image(systemName: "hands.sparkles")
-                                    .font(.system(size: 12 * fontScale.multiplier, weight: .semibold))
-                                Text("기도문")
-                                    .font(.system(size: 14 * fontScale.multiplier, weight: .semibold, design: .rounded))
-                            }
-                            .foregroundStyle(.white)
-                            .padding(.horizontal, 12)
-                            .padding(.vertical, 6)
-                            .background(
-                                Capsule()
-                                    .fill(
-                                        LinearGradient(
-                                            colors: [DS.Color.mocha, DS.Color.gold],
-                                            startPoint: .leading,
-                                            endPoint: .trailing
+                        // 기도문 버튼 (UseCase가 있을 때만)
+                        if viewModel.state.isPrayerAvailable {
+                            Button {
+                                Haptics.tap()
+                                viewModel.send(.tapPrayerButton)
+                            } label: {
+                                HStack(spacing: 4) {
+                                    Image(systemName: "hands.sparkles")
+                                        .font(.system(size: 12 * fontScale.multiplier, weight: .semibold))
+                                    Text("기도문")
+                                        .font(.system(size: 14 * fontScale.multiplier, weight: .semibold, design: .rounded))
+                                }
+                                .foregroundStyle(.white)
+                                .padding(.horizontal, 12)
+                                .padding(.vertical, 6)
+                                .background(
+                                    Capsule()
+                                        .fill(
+                                            LinearGradient(
+                                                colors: [DS.Color.mocha, DS.Color.gold],
+                                                startPoint: .leading,
+                                                endPoint: .trailing
+                                            )
                                         )
-                                    )
-                            )
-                            .overlay(
-                                Capsule()
-                                    .stroke(DS.Color.gold.opacity(0.3), lineWidth: 1)
-                            )
-                            .shadow(color: DS.Color.mocha.opacity(0.3), radius: 8, y: 2)
+                                )
+                                .overlay(
+                                    Capsule()
+                                        .stroke(DS.Color.gold.opacity(0.3), lineWidth: 1)
+                                )
+                                .shadow(color: DS.Color.mocha.opacity(0.3), radius: 8, y: 2)
+                            }
                         }
                     }
                     .padding(.top, 12)
@@ -394,6 +407,204 @@ public struct QTEditorWizardView: View {
             .padding(.top, 12)
             .padding(.bottom, 12)
         }
+    }
+
+    // MARK: - Prayer Sheet
+
+    @ViewBuilder
+    private func explanationSheetView() -> some View {
+        VStack(spacing: 0) {
+            // 상단 아이콘과 타이틀
+            VStack(spacing: 16) {
+                // 아이콘
+                ZStack {
+                    Circle()
+                        .fill(
+                            LinearGradient(
+                                colors: [DS.Color.gold.opacity(0.2), DS.Color.mocha.opacity(0.1)],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            )
+                        )
+                        .frame(width: 60 * fontScale.multiplier, height: 60 * fontScale.multiplier)
+
+                    Image(systemName: "book.pages.fill")
+                        .font(.system(size: 26 * fontScale.multiplier, weight: .semibold))
+                        .foregroundStyle(
+                            LinearGradient(
+                                colors: [DS.Color.mocha, DS.Color.gold],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            )
+                        )
+                }
+
+                // 타이틀
+                Text("해설")
+                    .font(.system(size: 22 * fontScale.multiplier, weight: .bold, design: .rounded))
+                    .foregroundStyle(DS.Color.mocha)
+            }
+            .frame(maxWidth: .infinity)
+            .padding(.top, DS.Spacing.xxl)
+            .padding(.bottom, DS.Spacing.l)
+
+            // 구분선
+            Rectangle()
+                .fill(DS.Color.gold.opacity(0.2))
+                .frame(height: 1)
+                .padding(.horizontal, DS.Spacing.xl)
+
+            // 컨텐츠 영역
+            ScrollView {
+                VStack(spacing: DS.Spacing.l) {
+                    // 에러 메시지
+                    if let error = viewModel.state.explanationError {
+                        HStack(spacing: 8) {
+                            Image(systemName: "exclamationmark.circle.fill")
+                                .font(.system(size: 13))
+                                .foregroundStyle(.orange)
+
+                            DSText.bodyM(error)
+                                .foregroundStyle(DS.Color.textPrimary)
+                                .multilineTextAlignment(.leading)
+
+                            Spacer()
+                        }
+                        .padding(12)
+                        .background(
+                            RoundedRectangle(cornerRadius: 10)
+                                .fill(Color.orange.opacity(0.08))
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 10)
+                                        .stroke(Color.orange.opacity(0.25), lineWidth: 1)
+                                )
+                        )
+                    }
+
+                    // 해설 내용
+                    if !viewModel.state.explKR.isEmpty {
+                        let lines = viewModel.state.explKR.split(separator: "\n", maxSplits: 1, omittingEmptySubsequences: false)
+                        if lines.count == 2 {
+                            // 첫 줄은 강조
+                            Text(String(lines[0]))
+                                .font(.system(size: 19 * fontScale.multiplier, weight: .semibold, design: .rounded))
+                                .foregroundStyle(DS.Color.gold)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .fixedSize(horizontal: false, vertical: true)
+                                .textSelection(.enabled)
+
+                            // 나머지 내용
+                            DSText.bodyL(String(lines[1]))
+                                .foregroundStyle(DS.Color.textPrimary)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .fixedSize(horizontal: false, vertical: true)
+                                .textSelection(.enabled)
+                        } else {
+                            DSText.bodyL(viewModel.state.explKR)
+                                .foregroundStyle(DS.Color.textPrimary)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .fixedSize(horizontal: false, vertical: true)
+                                .textSelection(.enabled)
+                        }
+                    }
+                }
+                .padding(.horizontal, DS.Spacing.xl)
+                .padding(.top, DS.Spacing.l)
+                .padding(.bottom, DS.Spacing.xl)
+            }
+
+            Spacer(minLength: 0)
+        }
+        .frame(maxWidth: .infinity)
+    }
+
+    private func prayerSheetView() -> some View {
+        VStack(spacing: 0) {
+            // 상단 아이콘과 타이틀
+            VStack(spacing: 16) {
+                // 아이콘
+                ZStack {
+                    Circle()
+                        .fill(
+                            LinearGradient(
+                                colors: [DS.Color.gold.opacity(0.2), DS.Color.mocha.opacity(0.1)],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            )
+                        )
+                        .frame(width: 60 * fontScale.multiplier, height: 60 * fontScale.multiplier)
+
+                    Image(systemName: "hands.sparkles")
+                        .font(.system(size: 26 * fontScale.multiplier, weight: .semibold))
+                        .foregroundStyle(
+                            LinearGradient(
+                                colors: [DS.Color.mocha, DS.Color.gold],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            )
+                        )
+                }
+
+                // 타이틀
+                Text("추천 기도문")
+                    .font(.system(size: 22 * fontScale.multiplier, weight: .bold, design: .rounded))
+                    .foregroundStyle(DS.Color.mocha)
+            }
+            .frame(maxWidth: .infinity)
+            .padding(.top, DS.Spacing.xxl)
+            .padding(.bottom, DS.Spacing.l)
+
+            // 구분선
+            Rectangle()
+                .fill(DS.Color.gold.opacity(0.2))
+                .frame(height: 1)
+                .padding(.horizontal, DS.Spacing.xl)
+
+            // 컨텐츠 영역
+            ScrollView {
+                VStack(spacing: DS.Spacing.l) {
+                    // 에러 메시지
+                    if let error = viewModel.state.prayerError {
+                        HStack(spacing: 8) {
+                            Image(systemName: "exclamationmark.circle.fill")
+                                .font(.system(size: 13))
+                                .foregroundStyle(.orange)
+
+                            DSText.bodyM(error)
+                                .foregroundStyle(DS.Color.textPrimary)
+                                .multilineTextAlignment(.leading)
+
+                            Spacer()
+                        }
+                        .padding(12)
+                        .background(
+                            RoundedRectangle(cornerRadius: 10)
+                                .fill(Color.orange.opacity(0.08))
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 10)
+                                        .stroke(Color.orange.opacity(0.25), lineWidth: 1)
+                                )
+                        )
+                    }
+
+                    // 기도문 결과
+                    if let prayer = viewModel.state.suggestedPrayer {
+                        DSText.bodyL(prayer)
+                            .foregroundStyle(DS.Color.textPrimary)
+                            .lineSpacing(6)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .fixedSize(horizontal: false, vertical: true)
+                            .textSelection(.enabled)
+                    }
+                }
+                .padding(.horizontal, DS.Spacing.xl)
+                .padding(.top, DS.Spacing.l)
+                .padding(.bottom, DS.Spacing.xl)
+            }
+
+            Spacer(minLength: 0)
+        }
+        .frame(maxWidth: .infinity)
     }
 }
 
@@ -513,16 +724,14 @@ struct SingleFieldCard<FocusValue: Hashable>: View {
 
 // MARK: - ExplanationSheetView
 /// QT 작성 화면 전용 해설 바텀시트
-/// 해설 내용을 아름답게 표시하는 동적 높이 바텀시트
+/// 해설 내용을 아름답게 표시하는 바텀시트
 struct ExplanationSheetView: View {
     let explanation: String
-    @Binding var sheetHeight: CGFloat
 
     @Environment(\.fontScale) private var fontScale
 
     var body: some View {
-        GeometryReader { geometry in
-            VStack(spacing: 0) {
+        VStack(spacing: 0) {
                 // 상단 아이콘과 타이틀
                 VStack(spacing: 16) {
                     // 아이콘
@@ -598,67 +807,5 @@ struct ExplanationSheetView: View {
                 Spacer(minLength: 0)
             }
             .frame(maxWidth: .infinity)
-            .onAppear {
-                // 실제 컨텐츠 높이 측정 후 시트 높이 설정
-                DispatchQueue.main.async {
-                    let contentWidth = geometry.size.width - (DS.Spacing.xl * 2)
-                    let estimatedHeight = calculateTextHeight(
-                        text: explanation,
-                        width: contentWidth,
-                        font: .systemFont(ofSize: 17 * fontScale.multiplier)
-                    )
-                    // icon(60) + spacing(16) + title(22) + top padding(32) + bottom padding(16) + divider(1) + content padding(16) + content + bottom padding(24) + extra(60)
-                    let iconSize = 60 * fontScale.multiplier
-                    let titleSize = 22 * fontScale.multiplier
-                    let totalHeight = iconSize + 16 + titleSize + 32 + 16 + 1 + 16 + estimatedHeight + 24 + 60
-                    sheetHeight = min(max(totalHeight, 280), UIScreen.main.bounds.height * 0.7)
-                }
-            }
-        }
-    }
-
-    private func calculateTextHeight(text: String, width: CGFloat, font: UIFont) -> CGFloat {
-        let lines = text.split(separator: "\n", maxSplits: 1, omittingEmptySubsequences: false)
-        var totalHeight: CGFloat = 0
-
-        if lines.count == 2 {
-            // 첫 줄 (강조)
-            let firstFont = UIFont.systemFont(ofSize: 19 * fontScale.multiplier, weight: .semibold)
-            let firstHeight = String(lines[0]).boundingRect(
-                with: CGSize(width: width, height: .greatestFiniteMagnitude),
-                options: [.usesLineFragmentOrigin, .usesFontLeading],
-                attributes: [.font: firstFont],
-                context: nil
-            ).height
-
-            // 두 번째 줄 (본문) - dsBodyL 기본 행간 6pt 사용
-            let secondHeight = String(lines[1]).boundingRect(
-                with: CGSize(width: width, height: .greatestFiniteMagnitude),
-                options: [.usesLineFragmentOrigin, .usesFontLeading],
-                attributes: [.font: font],
-                context: nil
-            ).height
-
-            totalHeight = firstHeight + DS.Spacing.l + secondHeight + (6 * 3) // dsBodyL의 기본 행간 6pt 고려
-        } else {
-            totalHeight = text.boundingRect(
-                with: CGSize(width: width, height: .greatestFiniteMagnitude),
-                options: [.usesLineFragmentOrigin, .usesFontLeading],
-                attributes: [.font: font],
-                context: nil
-            ).height + (6 * 3) // dsBodyL의 기본 행간 6pt 고려
-        }
-
-        return totalHeight
-    }
-}
-
-// MARK: - ContentHeightKey
-/// 동적 높이 계산을 위한 PreferenceKey
-struct ContentHeightKey: PreferenceKey {
-    static var defaultValue: CGFloat = 0
-
-    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
-        value = max(value, nextValue())
     }
 }

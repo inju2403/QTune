@@ -30,9 +30,9 @@ public struct VerseRecommendationDTO: Codable {
 public struct KoreanExplanationDTO: Codable {
     public let korean: String           // 한글 해석 (영문 길이의 80~130%)
     public let rationale: String        // 추천 이유 (1-2문장)
-    public let suggestedPrayer: String  // AI 추천 기도문 (4-5문장)
+    public let suggestedPrayer: String? // AI 추천 기도문 (4-5문장, 옵셔널)
 
-    public init(korean: String, rationale: String, suggestedPrayer: String) {
+    public init(korean: String, rationale: String, suggestedPrayer: String? = nil) {
         self.korean = korean
         self.rationale = rationale
         self.suggestedPrayer = suggestedPrayer

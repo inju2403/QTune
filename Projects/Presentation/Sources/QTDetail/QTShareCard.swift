@@ -96,7 +96,7 @@ public struct QTShareCard: View {
                         }
                     } else if qt.template == "FREE" {
                         if let freeContent = qt.freeContent, !freeContent.isEmpty {
-                            Text("자유 묵상")
+                            Text("묵상")
                                 .font(.system(size: 32 * fontScale.multiplier, weight: .semibold))
                                 .foregroundStyle(Color.black.opacity(0.6))
                                 .frame(maxWidth: .infinity, alignment: .leading)

@@ -27,10 +27,8 @@ public struct VerseSearchState: Equatable {
     var isExplanationLoading: Bool = false
     var explanationError: String? = nil
 
-    // 기도문
-    var suggestedPrayer: String? = nil
-    var isPrayerLoading: Bool = false
-    var prayerError: String? = nil
+    // 템플릿 선택 시트
+    var showTemplateSheet: Bool = false
 
     /// 입력값 검증 (예: "시편 37:5", "요 3:16")
     var isValidInput: Bool {

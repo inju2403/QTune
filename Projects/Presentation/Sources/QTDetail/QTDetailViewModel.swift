@@ -212,7 +212,7 @@ public final class QTDetailViewModel {
             }
         } else if state.qt.template == "FREE" {
             if let freeContent = state.qt.freeContent, !freeContent.isEmpty {
-                text += "💭 자유 묵상\n\(freeContent)\n\n"
+                text += "💭 묵상\n\(freeContent)\n\n"
             }
         }
 
@@ -261,7 +261,7 @@ public final class QTDetailViewModel {
             }
         } else if state.qt.template == "FREE" {
             if let freeContent = state.qt.freeContent, !freeContent.isEmpty {
-                text += "💭 자유 묵상\n\(freeContent)\n\n"
+                text += "💭 묵상\n\(freeContent)\n\n"
             }
         }
 

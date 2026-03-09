@@ -185,11 +185,12 @@ public final class FirebaseFunctionsAIDataSource: OpenAIRemoteDataSource {
             }
 
             guard let korean = resultData["korean"] as? String,
-                  let rationale = resultData["rationale"] as? String,
-                  let suggestedPrayer = resultData["suggestedPrayer"] as? String else {
+                  let rationale = resultData["rationale"] as? String else {
                 print("🔴 [FirebaseFunctionsAIDataSource] Missing required fields")
                 throw OpenAIDataSourceError.invalidJSON
             }
+
+            let suggestedPrayer = resultData["suggestedPrayer"] as? String
 
             let dto = KoreanExplanationDTO(
                 korean: korean,
@@ -304,16 +305,68 @@ public final class FirebaseFunctionsAIDataSource: OpenAIRemoteDataSource {
     }
 
     public func getVersePrayer(englishText: String, verseRef: String, nickname: String?, gender: String?) async throws -> String {
-        // generateKoreanExplanation 호출 후 suggestedPrayer만 반환
-        // mood는 "직접 검색한 구절"로 전달
-        let dto = try await generateKoreanExplanation(
-            englishText: englishText,
-            verseRef: verseRef,
-            mood: "이 말씀으로 기도하고 싶습니다",
-            note: nil,
-            nickname: nickname,
-            gender: gender
-        )
-        return dto.suggestedPrayer
+        guard let currentUser = Auth.auth().currentUser else {
+            print("🔴 [FirebaseFunctionsAIDataSource] User not authenticated")
+            throw OpenAIDataSourceError.apiKeyNotFound
+        }
+
+        print("🔥 [FirebaseFunctionsAIDataSource] Calling generateSuggestedPrayer function")
+        print("   VerseRef: \(verseRef)")
+        print("   UID: \(currentUser.uid)")
+
+        var data: [String: Any] = [
+            "englishText": englishText,
+            "verseRef": verseRef,
+            "isSandbox": isSandboxEnvironment
+        ]
+
+        if let nickname = nickname {
+            data["nickname"] = nickname
+        }
+        if let gender = gender {
+            data["gender"] = gender
+        }
+
+        if isSandboxEnvironment {
+            print("🏖️ [FirebaseFunctionsAIDataSource] Running in SANDBOX environment")
+        }
+
+        do {
+            let callable = functions.httpsCallable("generateSuggestedPrayer")
+            let result = try await callable.call(data)
+
+            print("✅ [FirebaseFunctionsAIDataSource] generateSuggestedPrayer successful")
+
+            guard let resultData = result.data as? [String: Any],
+                  let prayer = resultData["suggestedPrayer"] as? String else {
+                print("🔴 [FirebaseFunctionsAIDataSource] Invalid response format")
+                throw OpenAIDataSourceError.invalidJSON
+            }
+
+            print("✅ [FirebaseFunctionsAIDataSource] Prayer: \(prayer.prefix(80))...")
+            return prayer
+
+        } catch let error as NSError {
+            print("🔴 [FirebaseFunctionsAIDataSource] generateSuggestedPrayer error")
+            print("   Domain: \(error.domain)")
+            print("   Code: \(error.code)")
+            print("   Description: \(error.localizedDescription)")
+
+            if error.domain == FunctionsErrorDomain {
+                let code = FunctionsErrorCode(rawValue: error.code)
+                switch code {
+                case .unauthenticated:
+                    throw OpenAIDataSourceError.apiKeyNotFound
+                case .invalidArgument:
+                    throw OpenAIDataSourceError.invalidJSON
+                case .resourceExhausted:
+                    throw OpenAIDataSourceError.dailyLimitExceeded
+                default:
+                    throw OpenAIDataSourceError.unknown
+                }
+            }
+
+            throw OpenAIDataSourceError.unknown
+        }
     }
 }

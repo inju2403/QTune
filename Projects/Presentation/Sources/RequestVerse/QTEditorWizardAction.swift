@@ -23,4 +23,14 @@ public enum QTEditorWizardAction: Equatable {
 
     // 저장
     case save
+
+    // 기도문 관련
+    case tapPrayerButton
+    case dismissPrayerSheet
+    case dismissPrayerError
+
+    // 해설 관련
+    case tapExplanationButton
+    case dismissExplanationSheet
+    case dismissExplanationError
 }

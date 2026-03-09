@@ -198,18 +198,17 @@ public struct RequestVerseView: View {
             VerseSearchView(
                 viewModel: VerseSearchViewModel(
                     fetchVerseDirectUseCase: fetchVerseDirectUseCase,
-                    fetchVerseExplanationUseCase: fetchVerseExplanationUseCase,
-                    fetchVersePrayerUseCase: fetchVersePrayerUseCase
+                    fetchVerseExplanationUseCase: fetchVerseExplanationUseCase
                 )
-            ) { verse, explanation, suggestedPrayer in
-                // 직접 찾은 구절로 QT 에디터로 이동 (해설 & 기도문이 있으면 같이 전달)
+            ) { verse, explanation, template in
+                // 직접 찾은 구절로 QT 에디터로 이동 (해설이 있으면 같이 전달)
                 path.append(QTRoute.editor(
-                    template: .soap,
+                    template: template,
                     verseEN: verse.text,
                     verseRef: verse.localizedId,
                     explKR: explanation ?? "",
                     rationale: "",
-                    suggestedPrayer: suggestedPrayer ?? "",
+                    suggestedPrayer: nil,
                     verse: verse,
                     secondaryVerse: nil
                 ))
@@ -549,7 +548,7 @@ private extension RequestVerseView {
         verseRef: String,
         explKR: String,
         rationale: String,
-        suggestedPrayer: String,
+        suggestedPrayer: String?,
         verse: Verse,
         secondaryVerse: Verse?
     ) -> some View {
@@ -564,6 +563,8 @@ private extension RequestVerseView {
             secondaryVerse: secondaryVerse,
             commitQTUseCase: commitQTUseCase,
             session: session,
+            fetchVersePrayerUseCase: fetchVersePrayerUseCase,
+            fetchVerseExplanationUseCase: fetchVerseExplanationUseCase,
             onSaveComplete: {
                 // 네비게이션 스택 초기화
                 self.path = NavigationPath()
@@ -621,11 +622,13 @@ struct QTEditorWizardViewWrapper: View {
     let verseRef: String
     let explKR: String
     let rationale: String
-    let suggestedPrayer: String
+    let suggestedPrayer: String?
     let verse: Verse
     let secondaryVerse: Verse?
     let commitQTUseCase: CommitQTUseCase
     let session: UserSession
+    let fetchVersePrayerUseCase: FetchVersePrayerUseCase?
+    let fetchVerseExplanationUseCase: FetchVerseExplanationUseCase?
     let onSaveComplete: () -> Void
 
     var body: some View {
@@ -642,6 +645,8 @@ struct QTEditorWizardViewWrapper: View {
         let wizardViewModel = QTEditorWizardViewModel(
             commitQTUseCase: commitQTUseCase,
             session: session,
+            fetchVersePrayerUseCase: fetchVersePrayerUseCase,
+            fetchVerseExplanationUseCase: fetchVerseExplanationUseCase,
             initialState: initialState
         )
         wizardViewModel.onSaveComplete = onSaveComplete

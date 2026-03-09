@@ -44,14 +44,38 @@ public struct QTEditorView: View {
                 .padding(.bottom, 80) // 저장 버튼 공간 확보
             }
 
-            // 하단 저장 버튼
+            // 하단 버튼 영역
             VStack {
                 Spacer()
-                saveButton()
+                HStack(spacing: DS.Spacing.m) {
+                    // 기도문 버튼 (UseCase가 있을 때만)
+                    if viewModel.state.isPrayerAvailable {
+                        prayerButton()
+                    }
+                    // 저장 버튼
+                    saveButton()
+                }
+            }
+
+            // 기도문 로딩 오버레이
+            if viewModel.state.isPrayerLoading {
+                QTuneCrossOverlay(message: "추천 기도문을 생성하는 중")
+                    .transition(.opacity)
+                    .zIndex(100)
             }
         }
         .navigationTitle("QT 수정")
         .navigationBarTitleDisplayMode(.inline)
+        .sheet(isPresented: Binding(
+            get: { viewModel.state.showPrayerSheet },
+            set: { if !$0 { viewModel.send(.dismissPrayerSheet) } }
+        )) {
+            prayerSheetView()
+                .presentationDetents([.fraction(0.65), .large])
+                .presentationDragIndicator(.visible)
+                .presentationCornerRadius(DS.Radius.xl)
+                .presentationBackground(DS.Color.canvas)
+        }
         .onTapGesture {
             self.endTextEditing()
         }
@@ -226,6 +250,37 @@ struct EditableVerseCard: View {
     }
 }
 
+// MARK: - Prayer Button
+
+private extension QTEditorView {
+    @ViewBuilder
+    func prayerButton() -> some View {
+        Button {
+            Haptics.tap()
+            viewModel.send(.tapPrayerButton)
+        } label: {
+            HStack(spacing: DS.Spacing.s) {
+                Image(systemName: "hands.sparkles")
+                    .font(.system(size: 14, weight: .semibold))
+                DSText.bodyM("기도문", weight: .semibold)
+            }
+            .foregroundStyle(DS.Color.accent)
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, DS.Spacing.m)
+            .background(
+                RoundedRectangle(cornerRadius: DS.Radius.m)
+                    .fill(DS.Color.accent.opacity(0.1))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: DS.Radius.m)
+                            .stroke(DS.Color.accent.opacity(0.3), lineWidth: 1)
+                    )
+            )
+        }
+        .padding(.horizontal, DS.Spacing.l)
+        .padding(.vertical, DS.Spacing.s)
+    }
+}
+
 // MARK: - Save Button
 
 private extension QTEditorView {
@@ -241,6 +296,100 @@ private extension QTEditorView {
         }
         .padding(.horizontal, DS.Spacing.l)
         .padding(.vertical, DS.Spacing.s)
+    }
+}
+
+// MARK: - Prayer Sheet
+
+private extension QTEditorView {
+    @ViewBuilder
+    func prayerSheetView() -> some View {
+        VStack(spacing: 0) {
+            // 상단 아이콘과 타이틀
+            VStack(spacing: 16) {
+                // 아이콘
+                ZStack {
+                    Circle()
+                        .fill(
+                            LinearGradient(
+                                colors: [DS.Color.gold.opacity(0.2), DS.Color.mocha.opacity(0.1)],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            )
+                        )
+                        .frame(width: 60, height: 60)
+
+                    Image(systemName: "hands.sparkles")
+                        .font(.system(size: 26, weight: .semibold))
+                        .foregroundStyle(
+                            LinearGradient(
+                                colors: [DS.Color.mocha, DS.Color.gold],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            )
+                        )
+                }
+
+                // 타이틀
+                Text("추천 기도문")
+                    .font(.system(size: 22, weight: .bold, design: .rounded))
+                    .foregroundStyle(DS.Color.mocha)
+            }
+            .frame(maxWidth: .infinity)
+            .padding(.top, DS.Spacing.xxl)
+            .padding(.bottom, DS.Spacing.l)
+
+            // 구분선
+            Rectangle()
+                .fill(DS.Color.gold.opacity(0.2))
+                .frame(height: 1)
+                .padding(.horizontal, DS.Spacing.xl)
+
+            // 컨텐츠 영역
+            ScrollView {
+                VStack(spacing: DS.Spacing.l) {
+                    // 에러 메시지
+                    if let error = viewModel.state.prayerError {
+                        HStack(spacing: 8) {
+                            Image(systemName: "exclamationmark.circle.fill")
+                                .font(.system(size: 13))
+                                .foregroundStyle(.orange)
+
+                            DSText.bodyM(error)
+                                .foregroundStyle(DS.Color.textPrimary)
+                                .multilineTextAlignment(.leading)
+
+                            Spacer()
+                        }
+                        .padding(12)
+                        .background(
+                            RoundedRectangle(cornerRadius: 10)
+                                .fill(Color.orange.opacity(0.08))
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 10)
+                                        .stroke(Color.orange.opacity(0.25), lineWidth: 1)
+                                )
+                        )
+                    }
+
+                    // 기도문 결과
+                    if let prayer = viewModel.state.suggestedPrayer {
+                        DSText.bodyL(prayer)
+                            .foregroundStyle(DS.Color.textPrimary)
+                            .lineSpacing(6)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .fixedSize(horizontal: false, vertical: true)
+                            .textSelection(.enabled)
+                    }
+                }
+                .padding(.horizontal, DS.Spacing.xl)
+                .padding(.top, DS.Spacing.l)
+                .padding(.bottom, DS.Spacing.xl)
+            }
+
+            Spacer(minLength: 0)
+        }
+        .frame(maxWidth: .infinity)
     }
 }
 

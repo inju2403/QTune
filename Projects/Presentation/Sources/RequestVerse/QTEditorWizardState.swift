@@ -16,7 +16,7 @@ public struct QTEditorWizardState: Equatable {
     public var verseRef: String
     public var explKR: String
     public var rationale: String
-    public var suggestedPrayer: String
+    public var suggestedPrayer: String?
     public var verse: Verse
     public var secondaryVerse: Verse?
 
@@ -36,13 +36,25 @@ public struct QTEditorWizardState: Equatable {
     public var showSaveSuccessToast: Bool
     public var showSaveErrorAlert: Bool
 
+    // 기도문 생성 상태
+    public var isPrayerAvailable: Bool
+    public var isPrayerLoading: Bool
+    public var prayerError: String?
+    public var showPrayerSheet: Bool
+
+    // 해설 생성 상태
+    public var isExplanationAvailable: Bool
+    public var isExplanationLoading: Bool
+    public var explanationError: String?
+    public var showExplanationSheet: Bool
+
     public init(
         template: TemplateKind,
         verseEN: String,
         verseRef: String,
         explKR: String,
         rationale: String,
-        suggestedPrayer: String,
+        suggestedPrayer: String?,
         verse: Verse,
         secondaryVerse: Verse? = nil,
         soapStep: SoapStep = .observation,
@@ -52,7 +64,15 @@ public struct QTEditorWizardState: Equatable {
         freeContent: String = "",
         isSaving: Bool = false,
         showSaveSuccessToast: Bool = false,
-        showSaveErrorAlert: Bool = false
+        showSaveErrorAlert: Bool = false,
+        isPrayerAvailable: Bool = false,
+        isPrayerLoading: Bool = false,
+        prayerError: String? = nil,
+        showPrayerSheet: Bool = false,
+        isExplanationAvailable: Bool = false,
+        isExplanationLoading: Bool = false,
+        explanationError: String? = nil,
+        showExplanationSheet: Bool = false
     ) {
         self.template = template
         self.verseEN = verseEN
@@ -70,6 +90,14 @@ public struct QTEditorWizardState: Equatable {
         self.isSaving = isSaving
         self.showSaveSuccessToast = showSaveSuccessToast
         self.showSaveErrorAlert = showSaveErrorAlert
+        self.isPrayerAvailable = isPrayerAvailable
+        self.isPrayerLoading = isPrayerLoading
+        self.prayerError = prayerError
+        self.showPrayerSheet = showPrayerSheet
+        self.isExplanationAvailable = isExplanationAvailable
+        self.isExplanationLoading = isExplanationLoading
+        self.explanationError = explanationError
+        self.showExplanationSheet = showExplanationSheet
     }
 
     /// 현재 스텝의 입력값이 유효한지 확인

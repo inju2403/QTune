@@ -15,9 +15,9 @@ public struct VerseSearchView: View {
     @State private var viewModel: VerseSearchViewModel
     @FocusState private var isSearchFocused: Bool
     @Environment(\.dismiss) private var dismiss
-    let onGoToQT: (Verse, String?, String?) -> Void
+    let onGoToQT: (Verse, String?, TemplateKind) -> Void
 
-    public init(viewModel: VerseSearchViewModel, onGoToQT: @escaping (Verse, String?, String?) -> Void) {
+    public init(viewModel: VerseSearchViewModel, onGoToQT: @escaping (Verse, String?, TemplateKind) -> Void) {
         _viewModel = State(wrappedValue: viewModel)
         self.onGoToQT = onGoToQT
     }
@@ -93,12 +93,22 @@ public struct VerseSearchView: View {
         }
         .onReceive(viewModel.effect) { eff in
             switch eff {
-            case .navigateToQTEditor(let verse, let explanation, let suggestedPrayer):
+            case .navigateToQTEditor(let verse, let explanation, let template):
                 dismiss()
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-                    onGoToQT(verse, explanation, suggestedPrayer)
+                    onGoToQT(verse, explanation, template)
                 }
             }
+        }
+        .sheet(isPresented: Binding(
+            get: { viewModel.state.showTemplateSheet },
+            set: { if !$0 { viewModel.send(.dismissTemplateSheet) } }
+        )) {
+            TemplatePickerSheet { template in
+                Haptics.tap()
+                viewModel.send(.selectTemplate(template))
+            }
+            .presentationDetents([.height(605)])
         }
         .onTapGesture {
             isSearchFocused = false
@@ -443,7 +453,7 @@ private extension VerseSearchView {
                     .scaleEffect(0.8)
                     .tint(DS.Color.gold)
 
-                DSText.caption("AI가 말씀을 해설하는 중...")
+                DSText.caption("말씀의 해설을 준비하는 중")
                     .foregroundStyle(DS.Color.textSec)
 
                 Spacer()
