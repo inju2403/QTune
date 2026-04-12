@@ -304,7 +304,7 @@ private extension QTListView {
                     .foregroundStyle(DS.Color.gold)
                     .font(DS.Font.bodyL())
 
-                TextField("말씀, 태그, 내용으로 검색", text: Binding(
+                TextField("말씀, 내용으로 검색", text: Binding(
                     get: { viewModel.state.searchText },
                     set: { viewModel.send(.updateSearchText($0, isSearchMode: false)) }
                 ))

@@ -28,6 +28,14 @@ public enum SOAPField: Equatable {
     case prayer      // 기도
 }
 
+/// ACTS 필드 선택
+public enum ACTSField: Equatable {
+    case adoration     // 찬양
+    case confession    // 고백
+    case thanksgiving  // 감사
+    case supplication  // 간구
+}
+
 /// QT 상세 화면 State
 public struct QTDetailState: Equatable {
     public var qt: QuietTime
@@ -45,6 +53,7 @@ public struct QTDetailState: Equatable {
     public var selectedShareFormat: ShareFormat?
     public var selectedShareType: ShareType?
     public var selectedSOAPField: SOAPField?
+    public var selectedACTSField: ACTSField?
     public var sharedImage: UIImage?
 
     public init(
@@ -61,6 +70,7 @@ public struct QTDetailState: Equatable {
         selectedShareFormat: ShareFormat? = nil,
         selectedShareType: ShareType? = nil,
         selectedSOAPField: SOAPField? = nil,
+        selectedACTSField: ACTSField? = nil,
         sharedImage: UIImage? = nil
     ) {
         self.qt = qt
@@ -76,6 +86,7 @@ public struct QTDetailState: Equatable {
         self.selectedShareFormat = selectedShareFormat
         self.selectedShareType = selectedShareType
         self.selectedSOAPField = selectedSOAPField
+        self.selectedACTSField = selectedACTSField
         self.sharedImage = sharedImage
     }
 }

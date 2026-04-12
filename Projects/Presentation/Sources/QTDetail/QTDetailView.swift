@@ -113,6 +113,8 @@ private extension QTDetailView {
                     // 템플릿 본문
                     if viewModel.state.qt.template == "SOAP" {
                         soapContentSection()
+                    } else if viewModel.state.qt.template == "ACTS" {
+                        actsContentSection()
                     } else if viewModel.state.qt.template == "FREE" {
                         freeContentSection()
                     }
@@ -144,13 +146,17 @@ private extension QTDetailView {
 
                 Text(viewModel.state.qt.template)
                     .font(DS.Font.caption(.medium))
-                    .foregroundStyle(viewModel.state.qt.template == "SOAP" ? DS.Color.olive : DS.Color.gold)
+                    .foregroundStyle(
+                        viewModel.state.qt.template == "SOAP" ? DS.Color.olive :
+                        viewModel.state.qt.template == "ACTS" ? DS.Color.deepCocoa :
+                        DS.Color.gold
+                    )
                     .padding(.horizontal, DS.Spacing.m)
                     .padding(.vertical, DS.Spacing.xs)
                     .background(
-                        viewModel.state.qt.template == "SOAP"
-                            ? DS.Color.olive.opacity(0.15)
-                            : DS.Color.gold.opacity(0.15)
+                        viewModel.state.qt.template == "SOAP" ? DS.Color.olive.opacity(0.15) :
+                        viewModel.state.qt.template == "ACTS" ? DS.Color.deepCocoa.opacity(0.15) :
+                        DS.Color.gold.opacity(0.15)
                     )
                     .clipShape(Capsule())
             }
@@ -216,6 +222,41 @@ private extension QTDetailView {
             if let prayer = viewModel.state.qt.soapPrayer, !prayer.isEmpty {
                 VerseCardView(title: "Prayer · 기도") {
                     DSText.bodyM(prayer)
+                        .textSelection(.enabled)
+                }
+            }
+        }
+    }
+
+    @ViewBuilder
+    func actsContentSection() -> some View {
+        VStack(alignment: .leading, spacing: 11) {
+            SectionHeader(icon: "square.and.pencil", title: "나의 묵상")
+
+            if let adoration = viewModel.state.qt.actsAdoration, !adoration.isEmpty {
+                VerseCardView(title: "Adoration · 찬양") {
+                    DSText.bodyM(adoration)
+                        .textSelection(.enabled)
+                }
+            }
+
+            if let confession = viewModel.state.qt.actsConfession, !confession.isEmpty {
+                VerseCardView(title: "Confession · 고백") {
+                    DSText.bodyM(confession)
+                        .textSelection(.enabled)
+                }
+            }
+
+            if let thanksgiving = viewModel.state.qt.actsThanksgiving, !thanksgiving.isEmpty {
+                VerseCardView(title: "Thanksgiving · 감사") {
+                    DSText.bodyM(thanksgiving)
+                        .textSelection(.enabled)
+                }
+            }
+
+            if let supplication = viewModel.state.qt.actsSupplication, !supplication.isEmpty {
+                VerseCardView(title: "Supplication · 간구") {
+                    DSText.bodyM(supplication)
                         .textSelection(.enabled)
                 }
             }
@@ -450,9 +491,11 @@ struct FieldSelectionSheet: View {
             .padding(.top, DS.Spacing.xl)
             .padding(.bottom, DS.Spacing.l)
 
-            // SOAP 또는 Free 필드 선택
+            // SOAP, ACTS 또는 Free 필드 선택
             if viewModel.state.qt.template == "SOAP" {
                 soapFieldSelection()
+            } else if viewModel.state.qt.template == "ACTS" {
+                actsFieldSelection()
             } else if viewModel.state.qt.template == "FREE" {
                 // 자유 묵상은 필드 선택 불필요 (단일 컨텐츠)
                 EmptyView()
@@ -475,6 +518,28 @@ struct FieldSelectionSheet: View {
 
             fieldButton(icon: "hands.sparkles", title: "기도", subtitle: "Prayer", color: DS.Color.olive) {
                 viewModel.send(.selectSOAPField(.prayer))
+            }
+        }
+        .padding(.horizontal, DS.Spacing.l)
+    }
+
+    @ViewBuilder
+    func actsFieldSelection() -> some View {
+        VStack(spacing: DS.Spacing.s) {
+            fieldButton(icon: "hands.sparkles", title: "찬양", subtitle: "Adoration", color: DS.Color.deepCocoa) {
+                viewModel.send(.selectACTSField(.adoration))
+            }
+
+            fieldButton(icon: "heart.fill", title: "고백", subtitle: "Confession", color: DS.Color.deepCocoa) {
+                viewModel.send(.selectACTSField(.confession))
+            }
+
+            fieldButton(icon: "star.fill", title: "감사", subtitle: "Thanksgiving", color: DS.Color.deepCocoa) {
+                viewModel.send(.selectACTSField(.thanksgiving))
+            }
+
+            fieldButton(icon: "bell.fill", title: "간구", subtitle: "Supplication", color: DS.Color.deepCocoa) {
+                viewModel.send(.selectACTSField(.supplication))
             }
         }
         .padding(.horizontal, DS.Spacing.l)
@@ -547,7 +612,11 @@ struct ShareSheetsModifier: ViewModifier {
             }
             .sheet(isPresented: fieldSelectionBinding) {
                 FieldSelectionSheet(viewModel: viewModel)
-                    .presentationDetents([.height(viewModel.state.qt.template == "SOAP" ? 340 : 450)])
+                    .presentationDetents([.height(
+                        viewModel.state.qt.template == "SOAP" ? 340 :
+                        viewModel.state.qt.template == "ACTS" ? 450 :
+                        300
+                    )])
                     .presentationDragIndicator(.visible)
             }
             .sheet(isPresented: textShareSheetBinding) {

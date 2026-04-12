@@ -17,6 +17,7 @@ public enum QTDetailAction: Equatable {
     case selectShareFormat(ShareFormat)
     case selectShareType(ShareType)
     case selectSOAPField(SOAPField)
+    case selectACTSField(ACTSField)
     case cancelShare
     case closeShareSheet
     case shareImageToSystem(UIImage)
