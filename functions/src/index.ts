@@ -597,34 +597,16 @@ ${excludeList}
         const userMessage = `사용자: ${userLabel}
 입력: "${mood}${noteSection}"
 
-위 사용자에게 적합한 성경 구절 후보 3개를 추천하세요.
-
-⚠️ 중요: 각 후보마다 제외 목록 확인을 **반드시** 수행하세요!
-
-[각 후보 작성 절차]
-1️⃣ verseRef 선택 (사용자 입력에 적합한 구절)
-2️⃣ 제외 목록 확인: 위 시스템 메시지의 제외 목록에 이 구절이 있는가?
-3️⃣ checkReasoning 작성: "제외 목록 확인 → [verseRef]는 목록에 없음 ✅" 형식으로
-4️⃣ rationale 작성: 추천 이유 (1-2문장)
+위 사용자에게 적합한 성경 구절 후보 2개를 추천하세요.
+각 후보는 반드시 제외 목록에 **없는** 구절이어야 합니다.
 
 [출력 형식]
-3개의 후보를 배열로 반환:
+2개의 후보를 배열로 반환:
 - verseRef: 영어 책명 + 장:절 (예: "John 3:16", 범위: "Psalms 37:5-6")
-- isInExcludeList: 제외 목록에 있는가? (반드시 false여야 함!)
-- checkReasoning: 제외 목록 확인 과정 설명
+- isInExcludeList: 제외 목록에 있는가? (반드시 false)
 - rationale: 이 말씀이 주어진 이유 (1-2문장)
-  * 사용자가 입력한 내용을 깊이 이해하고, 그 마음의 상태와 이 말씀이 어떻게 연결되는지 경건하게 설명
-  * 일반적인 위로나 축복이 아닌, 말씀과 사용자 입력 사이의 실제적 연결점을 발견하여 설명
-
-rationale 좋은 예시:
-  - 입력: "주님만을 의지하고 싶어" → "${userLabel}께서 세상의 것이 아닌 주님만을 의지하려는 결단 속에서, 이 말씀은 그 신뢰가 헛되지 않음을 증거합니다."
-  - 입력: "일상의 소중함" → "평범한 일상 속에서도 하나님의 은혜를 발견하려는 ${userLabel}의 영적 감수성에 이 말씀이 응답합니다."
-
-rationale 나쁜 예시 (절대 사용 금지):
-  - "위로가 되기를 바랍니다" ❌
-  - "도움이 되기를 기도합니다" ❌
-  - "느끼시는 마음에" ❌
-  - "힘이 되었으면 좋겠습니다" ❌
+  * 사용자 입력의 영적 의미를 통찰하여, 말씀과의 실제적 연결점을 경건하게 설명
+  * "위로가 되기를", "바랍니다", "느끼시는" 등 일반적 표현 금지
 
 🚨 모든 후보는 isInExcludeList: false여야 합니다!`;
 
@@ -638,7 +620,7 @@ rationale 나쁜 예시 (절대 사용 금지):
               properties: {
                 candidates: {
                   type: "array",
-                  description: "3개의 구절 후보",
+                  description: "2개의 구절 후보",
                   items: {
                     type: "object",
                     properties: {
@@ -650,20 +632,16 @@ rationale 나쁜 예시 (절대 사용 금지):
                         type: "boolean",
                         description: "제외 목록에 있는가? (반드시 false)",
                       },
-                      checkReasoning: {
-                        type: "string",
-                        description: "제외 목록 확인 과정 설명",
-                      },
                       rationale: {
                         type: "string",
                         description: "추천 이유 (1-2문장)",
                       },
                     },
-                    required: ["verseRef", "isInExcludeList", "checkReasoning", "rationale"],
+                    required: ["verseRef", "isInExcludeList", "rationale"],
                     additionalProperties: false,
                   },
-                  minItems: 3,
-                  maxItems: 3,
+                  minItems: 2,
+                  maxItems: 2,
                 },
               },
               required: ["candidates"],
@@ -705,15 +683,13 @@ rationale 나쁜 예시 (절대 사용 금지):
         const parsedResponse = JSON.parse(content);
         const candidates = parsedResponse.candidates;
 
-        if (!candidates || candidates.length !== 3) {
-          throw new functions.https.HttpsError("internal", "Invalid GPT response: expected 3 candidates");
+        if (!candidates || candidates.length < 1) {
+          throw new functions.https.HttpsError("internal", "Invalid GPT response: no candidates");
         }
 
-        // 로깅: 후보 3개 정보
+        // 로깅: 후보 정보
         logger.info("[DEBUG] GPT Candidates", {
-          candidate1: { verseRef: candidates[0].verseRef, isInExcludeList: candidates[0].isInExcludeList },
-          candidate2: { verseRef: candidates[1].verseRef, isInExcludeList: candidates[1].isInExcludeList },
-          candidate3: { verseRef: candidates[2].verseRef, isInExcludeList: candidates[2].isInExcludeList },
+          candidates: candidates.map((c: any) => ({ verseRef: c.verseRef, isInExcludeList: c.isInExcludeList })),
         });
 
         // 1차 필터: GPT가 isInExcludeList: false라고 표시한 것들
@@ -730,7 +706,6 @@ rationale 나쁜 예시 (절대 사용 금지):
           };
           logger.info("✅ 유효한 후보 선택됨", {
             verseRef: result.verseRef,
-            checkReasoning: validCandidate.checkReasoning,
           });
         } else {
           // 모든 후보가 exclude list에 있음 → 첫 번째 후보 선택 (fallback)
@@ -860,97 +835,22 @@ ${englishText}
 
 당신은 "QTune" 앱의 성경 해설가입니다.
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 [작업 1: 객관적 성경 해설 (korean)]
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-위 성경 구절의 의미를 객관적으로 해설해 주세요.
-사용자의 상황이나 입력과 무관하게, 이 구절이 성경에서 전달하는
-본래의 메시지와 신학적 의미를 설명합니다.
+위 구절의 의미를 객관적으로 해설하세요. 사용자 상황과 무관하게, 본래의 메시지와 신학적 의미를 설명합니다.
 
-1) 형식
-- 정확히 3개의 문장으로만 구성된 해설
-- 구절명이나 제목 없이 바로 해설 시작
+규칙:
+- 정확히 3문장: ① 핵심 메시지 ② 신학적/영적 의미 ③ 오늘날 보편적 교훈
+- 쉼표 최소화, 마침표 종결, 경건하되 딱딱하지 않은 톤
+- 금지: 개역개정 직접 인용, 설교체, 영어 단어, 특정 개인 상황 언급
 
-2) 해설 내용 (반드시 3문장)
-- 1문장: 이 구절이 말하는 핵심 메시지
-- 2문장: 그 메시지의 신학적/영적 의미
-- 3문장: 오늘날 우리에게 주는 보편적 교훈
-
-3) 문장 규칙
-- 쉼표 사용 최소화 (문장당 1개 이하)
-- 각 문장은 마침표로 종결
-- 명확하고 간결한 문체
-- 경건하되 딱딱하지 않은 톤
-
-4) 금지 사항
-- 개역개정 직접 인용 금지
-- 설교체나 훈계조 금지
-- 지나친 감정 표현 금지
-- 영어 단어 사용 금지
-- 특정 개인의 상황 언급 금지
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 [작업 2: 사용자 맞춤 적용 (rationale)]
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 사용자: ${userLabel}
-사용자 입력: "${mood}${noteSection}"
+입력: "${mood}${noteSection}"
 
-위에서 해설한 말씀이 이 사용자에게 주어진 이유를 설명해 주세요.
-사용자가 입력한 "${mood}${noteSection}" 내용을 분석하여,
-이 구절이 사용자의 현재 상황/마음과 어떻게 연결되는지 구체적으로 설명합니다.
-
-rationale 작성 규칙 (1-2문장):
-- 사용자가 입력한 내용의 영적 의미를 깊이 통찰하여, 이 말씀이 주어진 이유를 경건하게 설명
-- 하나님께서 이 특정한 시점에 이 말씀을 통해 전하시는 메시지가 무엇인지 구체적으로 해석
-- 일반적인 축복이나 위로가 아닌, 사용자의 상황과 말씀 사이의 신학적 연결점을 제시
-- 경건하고 진정성 있는 톤으로, 말씀이 사용자의 현재 상황에 주는 실제적 의미를 전달
-
-rationale 예시:
-좋은 예시:
-- 입력: "주님만을 의지하고 싶어" → "${userLabel}께서 세상의 것이 아닌 주님만을 의지하려는 결단 속에서, 이 말씀은 그 신뢰가 헛되지 않음을 증거합니다."
-- 입력: "일상의 소중함" → "평범한 일상 속에서도 하나님의 은혜를 발견하려는 ${userLabel}의 영적 감수성에 이 말씀이 응답합니다."
-- 입력: "범사에 감사하라" → "감사를 삶의 원칙으로 삼으려는 ${userLabel}의 결단에, 이 말씀은 감사가 단순한 감정이 아닌 신앙의 고백임을 일깨웁니다."
-
-나쁜 예시 (절대 사용 금지):
-- "이 말씀이 위로가 되기를 바랍니다" ❌
-- "도움이 되기를 기도합니다" ❌
-- "느끼시는 마음에" ❌
-- "힘이 되었으면 좋겠습니다" ❌
-- "느껴질 것이라 믿습니다" ❌
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-[작업 3: 추천 기도문 (suggestedPrayer)]
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-위 성경 구절의 핵심 메시지를 중심으로, **내가 직접 드리는 1인칭 기도문**을 작성해 주세요.
-
-기도문 작성 규칙:
-- 6-7문장으로 구성 (묵상적이면서도 간결하게)
-- "주님," 또는 "하나님 아버지," 로 시작
-- 반드시 "예수님의 이름으로 기도합니다. 아멘." 으로 종료
-- **반드시 1인칭 관점**: "제", "제가", "저를", "저의", "제 안에", "제 삶" 등 사용
-- **말씀 중심의 객관적 기도**: 말씀의 구체적 내용을 언급하며 기도
-- **유저 중심 표현 절대 금지**: "(사용자)의", "(사용자)가", "그의", "그녀의" 등 3인칭 표현 사용 금지
-- 형식적이지 않고, 말씀이 실제 삶에 적용되도록 구체적이고 진정성 있게 기도
-- 경건하되 자연스러운 톤
-
-기도문 예시:
-좋은 예시 (6-7문장, 1인칭 + 말씀 중심):
-- "주님, 이 말씀을 통해 하나님의 크신 사랑을 다시 한번 깨닫게 하소서. 독생자를 보내주신 그 사랑이 제 삶 속에서 실제가 되게 하시고, 제가 이 사랑 안에서 영생의 소망을 굳게 붙잡게 하소서. 세상의 것이 아닌 주님만을 의지하며, 말씀대로 믿음으로 살아갈 수 있도록 인도해 주소서. 예수님의 이름으로 기도합니다. 아멘."
-- "하나님 아버지, 이 말씀처럼 제 모든 염려를 기도로 아뢰기 원합니다. 아무것도 염려하지 말고 오직 감사함으로 주님께 구할 수 있도록 도와주소서. 제 마음과 생각을 그리스도 예수 안에서 지키시는 하나님의 평강을 경험하게 하시고, 어떤 상황에서도 주님을 신뢰하며 평안을 누리게 하소서. 예수님의 이름으로 기도합니다. 아멘."
-- "주님, 제 안에 있는 부자 청년 같은 마음을 내려놓습니다. 놓기 싫어 붙들고 있던 것들을 주님 앞에 내려놓고, 사람으로는 할 수 없지만 하나님으로는 하실 수 있다고 하신 말씀을 믿습니다. 제 안의 교만을 꺾어 주시고 어린아이처럼 의지하는 믿음을 주십시오. 능력보다 관계를, 성과보다 순종을 택하게 하옵소서. 예수님의 이름으로 기도합니다. 아멘."
-
-나쁜 예시 (절대 사용 금지):
-- "주님, (사용자)의 마음을 위로해 주소서. 아멘." ❌ (3인칭 표현 사용)
-- "하나님, ${userLabel}이 평안을 얻게 하소서." ❌ (유저 중심, 3인칭)
-- "주님, 축복하여 주세요. 아멘." ❌ (너무 짧고 형식적, 말씀 언급 없음)
-- "하나님, 모든 일이 잘 되게 해주세요." ❌ (말씀과 연결 없음, 마무리 없음)
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-[출력 형식]
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-- korean: 객관적인 성경 해설 3문장 (사용자 입력과 무관)
-- rationale: 이 말씀이 사용자에게 주어진 이유 (1-2문장, 사용자 입력과 연관)
-- suggestedPrayer: 추천 기도문 (6-7문장, 1인칭 관점, 말씀 중심, 반드시 "예수님의 이름으로 기도합니다. 아멘." 으로 종료)
+이 말씀이 사용자에게 주어진 이유를 1-2문장으로 설명하세요.
+- 사용자 입력의 영적 의미를 통찰하여, 말씀과의 신학적 연결점을 제시
+- "위로가 되기를", "바랍니다", "느끼시는" 등 일반적 표현 금지
+- 예시: "주님만을 의지하고 싶어" → "${userLabel}께서 주님만을 의지하려는 결단 속에서, 이 말씀은 그 신뢰가 헛되지 않음을 증거합니다."
 
 반드시 JSON Schema에 맞춰 응답해 주세요.
 `;
@@ -965,18 +865,14 @@ rationale 예시:
             properties: {
               korean: {
                 type: "string",
-                description: "한국어 해석 (영문 길이의 80~130%, 의역)",
+                description: "한국어 해석 (3문장)",
               },
               rationale: {
                 type: "string",
                 description: "추천 이유 (1-2문장)",
               },
-              suggestedPrayer: {
-                type: "string",
-                description: "추천 기도문 (4-5문장, '예수님의 이름으로 기도합니다. 아멘.' 으로 종료)",
-              },
             },
-            required: ["korean", "rationale", "suggestedPrayer"],
+            required: ["korean", "rationale"],
             additionalProperties: false,
           },
         },
@@ -1155,6 +1051,132 @@ ${englishText}
       return result;
     } catch (error: any) {
       logger.error("getVerseExplanation error", {
+        message: error?.message,
+        name: error?.name,
+        code: (error as any)?.code,
+        stack: error?.stack,
+      });
+
+      if (error instanceof functions.https.HttpsError) {
+        throw error;
+      }
+
+      throw new functions.https.HttpsError(
+        "internal",
+        error?.message ?? "Unknown error"
+      );
+    }
+  }
+);
+
+// =========================================
+// 추천 기도문 생성 함수 (generateSuggestedPrayer)
+// generateKoreanExplanation에서 분리 → 병렬 호출 가능, 필요할 때만 호출
+// =========================================
+interface GenerateSuggestedPrayerRequest {
+  englishText: string;
+  verseRef: string;
+  nickname?: string;
+  gender?: string;
+}
+
+export const generateSuggestedPrayer = onCall(
+  { secrets: [OPENAI_API_KEY] },
+  async (request) => {
+    try {
+      const data = request.data as GenerateSuggestedPrayerRequest;
+      const { englishText, verseRef, nickname, gender } = data;
+
+      if (!englishText || typeof englishText !== "string") {
+        throw new functions.https.HttpsError(
+          "invalid-argument",
+          "englishText is required"
+        );
+      }
+      if (!verseRef || typeof verseRef !== "string") {
+        throw new functions.https.HttpsError(
+          "invalid-argument",
+          "verseRef is required"
+        );
+      }
+
+      const callerId = getCallerId(request);
+
+      // 기도문 전용 카운터 (하루 10회)
+      await checkDailyQuota(callerId, nickname, gender, "usage_prayer");
+
+      logger.info("generateSuggestedPrayer called", {
+        verseRef,
+        callerId,
+      });
+
+      // 프로필 정보로 userLabel 생성
+      const userLabel = (nickname && gender)
+        ? `${nickname} ${gender}님`
+        : `${gender || "형제"}님`;
+
+      const prompt = `성경 구절: ${verseRef}
+영어 본문:
+${englishText}
+
+사용자: ${userLabel}
+
+위 말씀을 바탕으로 기도문을 작성하세요.
+
+규칙:
+- 4-5문장, 마지막은 "예수님의 이름으로 기도합니다. 아멘."
+- 말씀의 핵심 메시지를 기도에 자연스럽게 녹여낼 것
+- 사용자를 1인칭("저")으로 표현
+- 경건하되 딱딱하지 않은 톤
+- 금지: 개역개정 직접 인용, 영어 단어`;
+
+      const responseFormat = {
+        type: "json_schema" as const,
+        json_schema: {
+          name: "SuggestedPrayer",
+          strict: true,
+          schema: {
+            type: "object",
+            properties: {
+              suggestedPrayer: {
+                type: "string",
+                description: "추천 기도문 (4-5문장)",
+              },
+            },
+            required: ["suggestedPrayer"],
+            additionalProperties: false,
+          },
+        },
+      };
+
+      const openai = await getOpenAIClient(OPENAI_API_KEY.value());
+
+      const completion = await openai.chat.completions.create({
+        model: "gpt-4o-mini",
+        temperature: 0.4,
+        messages: [
+          {
+            role: "user",
+            content: prompt,
+          },
+        ],
+        response_format: responseFormat,
+      });
+
+      const content = completion.choices[0]?.message?.content;
+      if (!content) {
+        throw new functions.https.HttpsError(
+          "internal",
+          "Empty response from OpenAI"
+        );
+      }
+
+      const result = JSON.parse(content);
+      logger.info("generateSuggestedPrayer success", { verseRef });
+
+      return result;
+    } catch (error: any) {
+      logger.error("generateSuggestedPrayer error", {
         message: error?.message,
         name: error?.name,
         code: (error as any)?.code,
