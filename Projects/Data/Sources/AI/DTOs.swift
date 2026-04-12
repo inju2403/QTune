@@ -47,7 +47,6 @@ public struct GeneratedVerseDTO: Codable {
     public let verseText: String      // 현지화된 번역본 텍스트
     public let verseTextEN: String?   // 영어 텍스트 (선택)
     public let rationale: String      // 추천 이유 (2문장 이내)
-    public let tags: [String]?        // 태그 (선택)
     public let safety: Safety         // 안전성 정보
 
     public init(
@@ -55,14 +54,12 @@ public struct GeneratedVerseDTO: Codable {
         verseText: String,
         verseTextEN: String?,
         rationale: String,
-        tags: [String]?,
         safety: Safety
     ) {
         self.verseRef = verseRef
         self.verseText = verseText
         self.verseTextEN = verseTextEN
         self.rationale = rationale
-        self.tags = tags
         self.safety = safety
     }
 }

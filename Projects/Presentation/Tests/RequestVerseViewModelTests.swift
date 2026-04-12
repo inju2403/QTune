@@ -125,7 +125,7 @@ final class RequestVerseViewModelTests: XCTestCase {
             memo: "테스트 메모",
             date: Date(),
             status: .draft,
-            tags: [],
+
             isFavorite: false,
             updatedAt: Date()
         )
@@ -152,7 +152,7 @@ final class RequestVerseViewModelTests: XCTestCase {
             memo: "",
             date: Date(),
             status: .draft,
-            tags: [],
+
             isFavorite: false,
             updatedAt: Date()
         )

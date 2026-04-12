@@ -64,7 +64,6 @@ public final class DefaultQTRepository: QTRepository {
                 let matchesVerse = model.verseRef.lowercased().contains(searchLower)
                 let matchesKorean = (model.korean ?? "").lowercased().contains(searchLower)
                 let matchesRationale = (model.rationale ?? "").lowercased().contains(searchLower)
-                let matchesTags = model.tags.contains { $0.lowercased().contains(searchLower) }
 
                 var matchesTemplate = false
                 if model.template == "SOAP" {
@@ -75,7 +74,7 @@ public final class DefaultQTRepository: QTRepository {
                     matchesTemplate = (model.freeContent ?? "").lowercased().contains(searchLower)
                 }
 
-                return matchesVerse || matchesKorean || matchesRationale || matchesTags || matchesTemplate
+                return matchesVerse || matchesKorean || matchesRationale || matchesTemplate
             }
         }
 

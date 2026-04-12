@@ -17,7 +17,6 @@ public final class QTEntryModel {
     public var createdAt: Date
     public var updatedAt: Date
     public var isFavorite: Bool
-    public var tags: [String]
 
     // MARK: - 말씀
     public var verseRef: String
@@ -45,26 +44,21 @@ public final class QTEntryModel {
     public var status: String  // "draft" | "committed"
 
     // MARK: - 템플릿
-    public var template: String  // "SOAP" | "FREE"
+    public var template: String  // "SOAP" | "ACTS" | "FREE"
 
     // MARK: - SOAP 필드
     public var soapObservation: String?
     public var soapApplication: String?
     public var soapPrayer: String?
 
+    // MARK: - ACTS 필드
+    public var actsAdoration: String?
+    public var actsConfession: String?
+    public var actsThanksgiving: String?
+    public var actsSupplication: String?
+
     // MARK: - 자유 묵상 필드
     public var freeContent: String?
-
-    // MARK: - ACTS 필드 (Deprecated - 마이그레이션 후 제거 예정)
-    /// 기존 ACTS 템플릿 데이터 보존용 (자동으로 FREE로 변환됨)
-    @available(*, deprecated, message: "ACTS 템플릿은 더 이상 사용되지 않습니다. FREE로 자동 변환됩니다.")
-    public var actsAdoration: String?
-    @available(*, deprecated, message: "ACTS 템플릿은 더 이상 사용되지 않습니다. FREE로 자동 변환됩니다.")
-    public var actsConfession: String?
-    @available(*, deprecated, message: "ACTS 템플릿은 더 이상 사용되지 않습니다. FREE로 자동 변환됩니다.")
-    public var actsThanksgiving: String?
-    @available(*, deprecated, message: "ACTS 템플릿은 더 이상 사용되지 않습니다. FREE로 자동 변환됩니다.")
-    public var actsSupplication: String?
 
     // MARK: - Init
     public init(
@@ -72,7 +66,6 @@ public final class QTEntryModel {
         createdAt: Date,
         updatedAt: Date,
         isFavorite: Bool,
-        tags: [String],
         verseRef: String,
         verseBook: String,
         verseChapter: Int,
@@ -104,7 +97,6 @@ public final class QTEntryModel {
         self.createdAt = createdAt
         self.updatedAt = updatedAt
         self.isFavorite = isFavorite
-        self.tags = tags
         self.verseRef = verseRef
         self.verseBook = verseBook
         self.verseChapter = verseChapter

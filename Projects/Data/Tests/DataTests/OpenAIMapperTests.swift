@@ -20,7 +20,6 @@ final class OpenAIMapperTests: XCTestCase {
             verseText: "여호와는 나의 목자시니 내게 부족함이 없으리로다",
             verseTextEN: "The LORD is my shepherd; I shall not want.",
             rationale: "힘든 시간을 보내시는 당신에게 위로가 되길 바랍니다.",
-            tags: ["위로", "감사"],
             safety: Safety(status: "ok", code: 0, reason: "정상 처리되었습니다")
         )
 
@@ -45,7 +44,6 @@ final class OpenAIMapperTests: XCTestCase {
             verseText: "For God so loved the world that he gave his one and only Son.",
             verseTextEN: "For God so loved the world that he gave his one and only Son.",
             rationale: "God's love is eternal.",
-            tags: ["love", "salvation"],
             safety: Safety(status: "ok", code: 0, reason: "Processed successfully")
         )
 
@@ -70,7 +68,6 @@ final class OpenAIMapperTests: XCTestCase {
             verseText: "사랑은 오래 참고 사랑은 온유하며",
             verseTextEN: nil,
             rationale: "사랑의 의미를 되새겨보세요.",
-            tags: ["사랑"],
             safety: Safety(status: "ok", code: 0, reason: "정상")
         )
 
@@ -94,7 +91,6 @@ final class OpenAIMapperTests: XCTestCase {
             verseText: "Some text",
             verseTextEN: nil,
             rationale: "Some reason",
-            tags: nil,
             safety: Safety(status: "ok", code: 0, reason: "ok")
         )
 
@@ -117,7 +113,6 @@ final class OpenAIMapperTests: XCTestCase {
             verseText: "Some text",
             verseTextEN: nil,
             rationale: "Some reason",
-            tags: nil,
             safety: Safety(status: "ok", code: 0, reason: "ok")
         )
 

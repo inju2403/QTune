@@ -53,13 +53,16 @@ extension QTEntryModel {
             suggestedPrayer: suggestedPrayer,
             date: createdAt,
             status: qtStatus,
-            tags: tags,
             isFavorite: isFavorite,
             updatedAt: updatedAt,
             template: template,
             soapObservation: soapObservation,
             soapApplication: soapApplication,
             soapPrayer: soapPrayer,
+            actsAdoration: actsAdoration,
+            actsConfession: actsConfession,
+            actsThanksgiving: actsThanksgiving,
+            actsSupplication: actsSupplication,
             freeContent: freeContent
         )
     }
@@ -73,7 +76,6 @@ extension QTEntryModel {
             createdAt: qt.date,
             updatedAt: qt.updatedAt,
             isFavorite: qt.isFavorite,
-            tags: qt.tags,
             verseRef: qt.verse.id,
             verseBook: qt.verse.book,
             verseChapter: qt.verse.chapter,
@@ -95,7 +97,11 @@ extension QTEntryModel {
             soapObservation: qt.soapObservation,
             soapApplication: qt.soapApplication,
             soapPrayer: qt.soapPrayer,
-            freeContent: qt.freeContent
+            freeContent: qt.freeContent,
+            actsAdoration: qt.actsAdoration,
+            actsConfession: qt.actsConfession,
+            actsThanksgiving: qt.actsThanksgiving,
+            actsSupplication: qt.actsSupplication
         )
     }
 
@@ -103,7 +109,6 @@ extension QTEntryModel {
     func updateFrom(_ qt: QuietTime) {
         self.updatedAt = qt.updatedAt
         self.isFavorite = qt.isFavorite
-        self.tags = qt.tags
         self.secondaryVerseBook = qt.secondaryVerse?.book
         self.secondaryVerseChapter = qt.secondaryVerse?.chapter
         self.secondaryVerseNumber = qt.secondaryVerse?.verse
@@ -118,6 +123,10 @@ extension QTEntryModel {
         self.soapObservation = qt.soapObservation
         self.soapApplication = qt.soapApplication
         self.soapPrayer = qt.soapPrayer
+        self.actsAdoration = qt.actsAdoration
+        self.actsConfession = qt.actsConfession
+        self.actsThanksgiving = qt.actsThanksgiving
+        self.actsSupplication = qt.actsSupplication
         self.freeContent = qt.freeContent
     }
 }

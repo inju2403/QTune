@@ -31,17 +31,22 @@ public struct QuietTime: Identifiable, Equatable, Hashable {
     public var suggestedPrayer: String?  // AI 추천 기도문
     public var date: Date
     public var status: QuietTimeStatus
-    public var tags: [String]
     public var isFavorite: Bool
     public var updatedAt: Date
 
     // MARK: - 템플릿
-    public var template: String      // "SOAP" | "FREE"
+    public var template: String      // "SOAP" | "ACTS" | "FREE"
 
     // MARK: - SOAP 필드
     public var soapObservation: String?
     public var soapApplication: String?
     public var soapPrayer: String?
+
+    // MARK: - ACTS 필드
+    public var actsAdoration: String?
+    public var actsConfession: String?
+    public var actsThanksgiving: String?
+    public var actsSupplication: String?
 
     // MARK: - 자유 묵상 필드
     public var freeContent: String?
@@ -56,13 +61,16 @@ public struct QuietTime: Identifiable, Equatable, Hashable {
         suggestedPrayer: String? = nil,
         date: Date,
         status: QuietTimeStatus,
-        tags: [String] = [],
         isFavorite: Bool = false,
         updatedAt: Date = .now,
         template: String = "SOAP",
         soapObservation: String? = nil,
         soapApplication: String? = nil,
         soapPrayer: String? = nil,
+        actsAdoration: String? = nil,
+        actsConfession: String? = nil,
+        actsThanksgiving: String? = nil,
+        actsSupplication: String? = nil,
         freeContent: String? = nil
     ) {
         self.id = id
@@ -74,13 +82,16 @@ public struct QuietTime: Identifiable, Equatable, Hashable {
         self.suggestedPrayer = suggestedPrayer
         self.date = date
         self.status = status
-        self.tags = tags
         self.isFavorite = isFavorite
         self.updatedAt = updatedAt
         self.template = template
         self.soapObservation = soapObservation
         self.soapApplication = soapApplication
         self.soapPrayer = soapPrayer
+        self.actsAdoration = actsAdoration
+        self.actsConfession = actsConfession
+        self.actsThanksgiving = actsThanksgiving
+        self.actsSupplication = actsSupplication
         self.freeContent = freeContent
     }
 
@@ -89,6 +100,8 @@ public struct QuietTime: Identifiable, Equatable, Hashable {
         let content: String
         if template == "SOAP" {
             content = soapObservation ?? soapApplication ?? soapPrayer ?? ""
+        } else if template == "ACTS" {
+            content = actsAdoration ?? actsConfession ?? actsThanksgiving ?? actsSupplication ?? ""
         } else if template == "FREE" {
             content = freeContent ?? ""
         } else {

@@ -48,7 +48,7 @@ final class QTManagementUseCasesTests: XCTestCase {
             memo: "오늘의 묵상",
             date: Date(),
             status: .draft,
-            tags: [],
+
             isFavorite: false,
             updatedAt: Date()
         )
@@ -59,7 +59,7 @@ final class QTManagementUseCasesTests: XCTestCase {
             memo: draft.memo,
             date: draft.date,
             status: .committed,
-            tags: draft.tags,
+
             isFavorite: draft.isFavorite,
             updatedAt: Date()
         )
@@ -83,7 +83,7 @@ final class QTManagementUseCasesTests: XCTestCase {
             memo: "메모",
             date: Date(),
             status: .committed,
-            tags: [],
+
             isFavorite: false,
             updatedAt: Date()
         )
@@ -228,7 +228,7 @@ final class QTManagementUseCasesTests: XCTestCase {
             memo: "감사",
             date: Date(),
             status: .draft,
-            tags: [],
+
             isFavorite: false,
             updatedAt: Date()
         )
@@ -238,7 +238,7 @@ final class QTManagementUseCasesTests: XCTestCase {
             memo: draft.memo,
             date: draft.date,
             status: .committed,
-            tags: draft.tags,
+
             isFavorite: false,
             updatedAt: Date()
         )
@@ -272,7 +272,7 @@ final class QTManagementUseCasesTests: XCTestCase {
             memo: memo,
             date: Date(),
             status: .committed,
-            tags: [],
+
             isFavorite: isFavorite,
             updatedAt: Date()
         )
