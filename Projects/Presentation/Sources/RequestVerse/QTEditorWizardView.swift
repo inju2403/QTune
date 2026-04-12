@@ -16,6 +16,13 @@ public enum SoapStep: Int, CaseIterable, Equatable {
     case prayer
 }
 
+public enum ACTSStep: Int, CaseIterable, Equatable {
+    case adoration
+    case confession
+    case thanksgiving
+    case supplication
+}
+
 // MARK: - QTEditorWizardView
 /// QT 작성 화면 (새로운 QT를 작성할 때 사용)
 /// 말씀 추천을 받은 후 SOAP/Free 템플릿으로 묵상을 기록
@@ -29,6 +36,7 @@ public struct QTEditorWizardView: View {
 
     // MARK: - Focus State
     @FocusState private var soapFocus: SoapStep?
+    @FocusState private var actsFocus: ACTSStep?
     @FocusState private var freeFocus: Bool?
 
     // MARK: - Init
@@ -89,6 +97,59 @@ public struct QTEditorWizardView: View {
                                             ),
                                             focused: $soapFocus,
                                             focusValue: SoapStep.prayer
+                                        )
+                                    }
+                                }
+                            } else if viewModel.state.template == .acts {
+                                StepPager(currentIndex: viewModel.currentStepIndex, total: viewModel.totalSteps) {
+                                    switch viewModel.state.actsStep {
+                                    case .adoration:
+                                        SingleFieldCard(
+                                            title: "Adoration · 찬양",
+                                            description: "하나님의 성품과 하신 일을 찬양해보세요.",
+                                            placeholder: "오늘 말씀에서 발견한 하나님의 모습은 무엇인가요?",
+                                            text: Binding(
+                                                get: { viewModel.state.adoration },
+                                                set: { viewModel.send(.updateAdoration($0)) }
+                                            ),
+                                            focused: $actsFocus,
+                                            focusValue: ACTSStep.adoration
+                                        )
+                                    case .confession:
+                                        SingleFieldCard(
+                                            title: "Confession · 고백",
+                                            description: "말씀을 통해 깨닫게 된 나의 모습을 고백해보세요.",
+                                            placeholder: "회개하고 싶은 마음이나 변화가 필요한 부분은 무엇인가요?",
+                                            text: Binding(
+                                                get: { viewModel.state.confession },
+                                                set: { viewModel.send(.updateConfession($0)) }
+                                            ),
+                                            focused: $actsFocus,
+                                            focusValue: ACTSStep.confession
+                                        )
+                                    case .thanksgiving:
+                                        SingleFieldCard(
+                                            title: "Thanksgiving · 감사",
+                                            description: "하나님께 감사한 일들을 떠올려보세요.",
+                                            placeholder: "오늘 어떤 것들에 감사하나요?",
+                                            text: Binding(
+                                                get: { viewModel.state.thanksgiving },
+                                                set: { viewModel.send(.updateThanksgiving($0)) }
+                                            ),
+                                            focused: $actsFocus,
+                                            focusValue: ACTSStep.thanksgiving
+                                        )
+                                    case .supplication:
+                                        SingleFieldCard(
+                                            title: "Supplication · 간구",
+                                            description: "하나님께 기도하고 싶은 제목을 적어보세요.",
+                                            placeholder: "간절히 기도하고 싶은 것은 무엇인가요?",
+                                            text: Binding(
+                                                get: { viewModel.state.supplication },
+                                                set: { viewModel.send(.updateSupplication($0)) }
+                                            ),
+                                            focused: $actsFocus,
+                                            focusValue: ACTSStep.supplication
                                         )
                                     }
                                 }
@@ -155,6 +216,8 @@ public struct QTEditorWizardView: View {
                         DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
                             if viewModel.state.template == .soap {
                                 soapFocus = viewModel.state.soapStep
+                            } else if viewModel.state.template == .acts {
+                                actsFocus = viewModel.state.actsStep
                             }
                             // 자유 묵상은 단일 필드이므로 포커스 이동 불필요
                         }
@@ -270,6 +333,8 @@ public struct QTEditorWizardView: View {
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
                 if viewModel.state.template == .soap {
                     soapFocus = .observation
+                } else if viewModel.state.template == .acts {
+                    actsFocus = .adoration
                 } else {
                     freeFocus = true
                 }
@@ -308,104 +373,135 @@ public struct QTEditorWizardView: View {
     private func verseHeaderContent() -> some View {
         VStack(alignment: .leading, spacing: 0) {
             // 영어 말씀 (말씀 카드)
-            ZStack(alignment: .topTrailing) {
-                VStack(alignment: .leading, spacing: 20) {
-                    // 성경 구절 참조
-                    HStack(spacing: 6) {
-                        Image(systemName: "book.closed.fill")
-                            .foregroundStyle(DS.Color.gold)
-                            .font(.system(size: 16 * fontScale.multiplier))
-                        Text(viewModel.state.verseRef)
-                            .font(.system(size: 16 * fontScale.multiplier, weight: .semibold, design: .rounded))
-                            .foregroundStyle(DS.Color.deepCocoa)
+            VStack(alignment: .leading, spacing: 20) {
+                // 성경 구절 참조 + 해설/기도문 버튼
+                verseRefWithButtons()
+
+                DSText.verse(viewModel.state.verseEN.trimmingCharacters(in: .whitespacesAndNewlines), size: 16)
+                    .foregroundStyle(DS.Color.textPrimary)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .textSelection(.enabled)
+            }
+            .padding(20)
+            .background(DS.Color.canvas.opacity(0.9))
+            .cornerRadius(DS.Radius.m)
+        }
+        .padding(.horizontal, 20)
+        .padding(.top, 12)
+        .padding(.bottom, 12)
+    }
+
+    // MARK: - Verse Ref + Action Buttons
+
+    @ViewBuilder
+    private func verseRefLabel() -> some View {
+        HStack(spacing: 6) {
+            Image(systemName: "book.closed.fill")
+                .foregroundStyle(DS.Color.gold)
+                .font(.system(size: 16 * fontScale.multiplier))
+            Text(viewModel.state.verseRef)
+                .font(.system(size: 16 * fontScale.multiplier, weight: .semibold, design: .rounded))
+                .foregroundStyle(DS.Color.deepCocoa)
+        }
+    }
+
+    @ViewBuilder
+    private func actionButtons() -> some View {
+        HStack(spacing: 8) {
+            // 해설 버튼
+            if viewModel.state.isExplanationAvailable {
+                Button {
+                    Haptics.tap()
+                    viewModel.send(.tapExplanationButton)
+                } label: {
+                    HStack(spacing: 4) {
+                        Image(systemName: "book.fill")
+                            .font(.system(size: 12 * fontScale.multiplier, weight: .semibold))
+                        Text("해설")
+                            .font(.system(size: 14 * fontScale.multiplier, weight: .semibold, design: .rounded))
                     }
-
-                    DSText.verse(viewModel.state.verseEN.trimmingCharacters(in: .whitespacesAndNewlines), size: 16)
-                        .foregroundStyle(DS.Color.textPrimary)
-                        .fixedSize(horizontal: false, vertical: true)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .textSelection(.enabled)
-                }
-                .padding(20)
-                .background(DS.Color.canvas.opacity(0.9))
-                .cornerRadius(DS.Radius.m)
-
-                // 해설 + 기도문 버튼 (조건별 표시)
-                if viewModel.state.isExplanationAvailable || viewModel.state.isPrayerAvailable {
-                    HStack(spacing: 8) {
-                        // 해설 버튼 (UseCase가 있을 때)
-                        if viewModel.state.isExplanationAvailable {
-                            Button {
-                                Haptics.tap()
-                                viewModel.send(.tapExplanationButton)
-                            } label: {
-                                HStack(spacing: 4) {
-                                    Image(systemName: "book.fill")
-                                        .font(.system(size: 12 * fontScale.multiplier, weight: .semibold))
-                                    Text("해설")
-                                        .font(.system(size: 14 * fontScale.multiplier, weight: .semibold, design: .rounded))
-                                }
-                                .foregroundStyle(.white)
-                                .padding(.horizontal, 12)
-                                .padding(.vertical, 6)
-                                .background(
-                                    Capsule()
-                                        .fill(
-                                            LinearGradient(
-                                                colors: [DS.Color.mocha, DS.Color.gold],
-                                                startPoint: .leading,
-                                                endPoint: .trailing
-                                            )
-                                        )
+                    .foregroundStyle(.white)
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 6)
+                    .background(
+                        Capsule()
+                            .fill(
+                                LinearGradient(
+                                    colors: [DS.Color.mocha, DS.Color.gold],
+                                    startPoint: .leading,
+                                    endPoint: .trailing
                                 )
-                                .overlay(
-                                    Capsule()
-                                        .stroke(DS.Color.gold.opacity(0.3), lineWidth: 1)
-                                )
-                                .shadow(color: DS.Color.mocha.opacity(0.3), radius: 8, y: 2)
-                            }
-                        }
-
-                        // 기도문 버튼 (UseCase가 있을 때만)
-                        if viewModel.state.isPrayerAvailable {
-                            Button {
-                                Haptics.tap()
-                                viewModel.send(.tapPrayerButton)
-                            } label: {
-                                HStack(spacing: 4) {
-                                    Image(systemName: "hands.sparkles")
-                                        .font(.system(size: 12 * fontScale.multiplier, weight: .semibold))
-                                    Text("기도문")
-                                        .font(.system(size: 14 * fontScale.multiplier, weight: .semibold, design: .rounded))
-                                }
-                                .foregroundStyle(.white)
-                                .padding(.horizontal, 12)
-                                .padding(.vertical, 6)
-                                .background(
-                                    Capsule()
-                                        .fill(
-                                            LinearGradient(
-                                                colors: [DS.Color.mocha, DS.Color.gold],
-                                                startPoint: .leading,
-                                                endPoint: .trailing
-                                            )
-                                        )
-                                )
-                                .overlay(
-                                    Capsule()
-                                        .stroke(DS.Color.gold.opacity(0.3), lineWidth: 1)
-                                )
-                                .shadow(color: DS.Color.mocha.opacity(0.3), radius: 8, y: 2)
-                            }
-                        }
-                    }
-                    .padding(.top, 12)
-                    .padding(.trailing, 12)
+                            )
+                    )
+                    .overlay(
+                        Capsule()
+                            .stroke(DS.Color.gold.opacity(0.3), lineWidth: 1)
+                    )
+                    .shadow(color: DS.Color.mocha.opacity(0.3), radius: 8, y: 2)
                 }
             }
-            .padding(.horizontal, 20)
-            .padding(.top, 12)
-            .padding(.bottom, 12)
+
+            // 기도문 버튼
+            if viewModel.state.isPrayerAvailable {
+                Button {
+                    Haptics.tap()
+                    viewModel.send(.tapPrayerButton)
+                } label: {
+                    HStack(spacing: 4) {
+                        Image(systemName: "hands.sparkles")
+                            .font(.system(size: 12 * fontScale.multiplier, weight: .semibold))
+                        Text("기도문")
+                            .font(.system(size: 14 * fontScale.multiplier, weight: .semibold, design: .rounded))
+                    }
+                    .foregroundStyle(.white)
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 6)
+                    .background(
+                        Capsule()
+                            .fill(
+                                LinearGradient(
+                                    colors: [DS.Color.mocha, DS.Color.gold],
+                                    startPoint: .leading,
+                                    endPoint: .trailing
+                                )
+                            )
+                    )
+                    .overlay(
+                        Capsule()
+                            .stroke(DS.Color.gold.opacity(0.3), lineWidth: 1)
+                    )
+                    .shadow(color: DS.Color.mocha.opacity(0.3), radius: 8, y: 2)
+                }
+            }
+        }
+        .fixedSize()
+    }
+
+    @ViewBuilder
+    private func verseRefWithButtons() -> some View {
+        let hasButtons = viewModel.state.isExplanationAvailable || viewModel.state.isPrayerAvailable
+
+        if hasButtons {
+            ViewThatFits(in: .horizontal) {
+                // 1순위: 한 줄 레이아웃 (짧은 구절명)
+                HStack {
+                    verseRefLabel()
+                    Spacer()
+                    actionButtons()
+                }
+
+                // 2순위: 2줄 레이아웃 (긴 구절명)
+                VStack(alignment: .leading, spacing: 10) {
+                    verseRefLabel()
+                    HStack {
+                        Spacer()
+                        actionButtons()
+                    }
+                }
+            }
+        } else {
+            verseRefLabel()
         }
     }
 

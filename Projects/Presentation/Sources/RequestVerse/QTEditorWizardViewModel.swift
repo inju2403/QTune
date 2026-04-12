@@ -53,6 +53,14 @@ public final class QTEditorWizardViewModel {
             state.application = text
         case .updatePrayer(let text):
             state.prayer = text
+        case .updateAdoration(let text):
+            state.adoration = text
+        case .updateConfession(let text):
+            state.confession = text
+        case .updateThanksgiving(let text):
+            state.thanksgiving = text
+        case .updateSupplication(let text):
+            state.supplication = text
         case .updateFreeContent(let text):
             state.freeContent = text
         case .save:
@@ -89,6 +97,8 @@ public final class QTEditorWizardViewModel {
         switch state.template {
         case .soap:
             return state.soapStep == .observation
+        case .acts:
+            return state.actsStep == .adoration
         case .free:
             return true
         }
@@ -98,6 +108,8 @@ public final class QTEditorWizardViewModel {
         switch state.template {
         case .soap:
             return state.soapStep == .prayer
+        case .acts:
+            return state.actsStep == .supplication
         case .free:
             return true
         }
@@ -111,6 +123,8 @@ public final class QTEditorWizardViewModel {
         switch state.template {
         case .soap:
             return state.soapStep.rawValue
+        case .acts:
+            return state.actsStep.rawValue
         case .free:
             return 0
         }
@@ -120,6 +134,8 @@ public final class QTEditorWizardViewModel {
         switch state.template {
         case .soap:
             return SoapStep.allCases.count
+        case .acts:
+            return ACTSStep.allCases.count
         case .free:
             return 1
         }
@@ -131,6 +147,13 @@ public final class QTEditorWizardViewModel {
         case .soap:
             if let next = SoapStep(rawValue: state.soapStep.rawValue + 1) {
                 state.soapStep = next
+            } else {
+                // 마지막 단계에서 저장
+                send(.save)
+            }
+        case .acts:
+            if let next = ACTSStep(rawValue: state.actsStep.rawValue + 1) {
+                state.actsStep = next
             } else {
                 // 마지막 단계에서 저장
                 send(.save)
@@ -147,6 +170,10 @@ public final class QTEditorWizardViewModel {
             if let prev = SoapStep(rawValue: state.soapStep.rawValue - 1) {
                 state.soapStep = prev
             }
+        case .acts:
+            if let prev = ACTSStep(rawValue: state.actsStep.rawValue - 1) {
+                state.actsStep = prev
+            }
         case .free:
             // 자유 묵상은 단일 단계이므로 이전 단계 없음
             break
@@ -162,6 +189,17 @@ public final class QTEditorWizardViewModel {
         }
 
         do {
+            // 템플릿 문자열 결정
+            let templateString: String
+            switch state.template {
+            case .soap:
+                templateString = "SOAP"
+            case .acts:
+                templateString = "ACTS"
+            case .free:
+                templateString = "FREE"
+            }
+
             // QuietTime 생성
             var qt = QuietTime(
                 verse: state.verse,
@@ -171,15 +209,21 @@ public final class QTEditorWizardViewModel {
                 suggestedPrayer: state.suggestedPrayer,
                 date: Date(),
                 status: .draft,
-                template: state.template == .soap ? "SOAP" : "FREE"
+                template: templateString
             )
 
             // 템플릿별 필드 설정
-            if state.template == .soap {
+            switch state.template {
+            case .soap:
                 qt.soapObservation = state.observation
                 qt.soapApplication = state.application
                 qt.soapPrayer = state.prayer
-            } else {
+            case .acts:
+                qt.actsAdoration = state.adoration
+                qt.actsConfession = state.confession
+                qt.actsThanksgiving = state.thanksgiving
+                qt.actsSupplication = state.supplication
+            case .free:
                 qt.freeContent = state.freeContent
             }
 
@@ -234,6 +278,12 @@ public final class QTEditorWizardViewModel {
                 state.suggestedPrayer = prayer
                 state.isPrayerLoading = false
                 state.showPrayerSheet = true
+
+                // 기도문 캐싱 알림 (템플릿 변경 후 재진입 시 재사용)
+                NotificationCenter.default.post(
+                    name: .prayerDidGenerate,
+                    object: prayer
+                )
             }
         } catch let error as DomainError {
             await MainActor.run {

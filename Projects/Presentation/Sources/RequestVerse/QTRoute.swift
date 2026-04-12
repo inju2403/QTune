@@ -18,5 +18,6 @@ public enum QTRoute: Hashable {
 /// 템플릿 종류
 public enum TemplateKind: String, Hashable {
     case soap
+    case acts
     case free
 }

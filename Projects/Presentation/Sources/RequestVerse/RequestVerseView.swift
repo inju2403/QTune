@@ -595,6 +595,7 @@ struct ProfileEditViewWrapper: View {
 struct ResultViewWrapper: View {
     let result: GeneratedVerseResult
     @Binding var path: NavigationPath
+    @State private var cachedPrayer: String?
 
     var body: some View {
         let resultState = ResultState(result: result)
@@ -606,13 +607,18 @@ struct ResultViewWrapper: View {
                 verseRef: result.verseRef,
                 explKR: result.korean,
                 rationale: result.rationale,
-                suggestedPrayer: result.suggestedPrayer,
+                suggestedPrayer: cachedPrayer ?? result.suggestedPrayer,
                 verse: result.verse,
                 secondaryVerse: result.secondaryVerse
             )
             path.append(editorRoute)
         }
         return ResultView(viewModel: resultViewModel)
+            .onReceive(NotificationCenter.default.publisher(for: .prayerDidGenerate)) { notification in
+                if let prayer = notification.object as? String {
+                    cachedPrayer = prayer
+                }
+            }
     }
 }
 
