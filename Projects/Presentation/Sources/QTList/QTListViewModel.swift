@@ -323,11 +323,34 @@ public final class QTListViewModel {
     }
 
     private func calculateStreak() async -> Int {
-        // 오늘부터 역순으로 committed QT가 있는 연속 일수 계산
+        // 어제부터 역순으로 committed QT가 있는 연속 일수 계산
+        // (오늘은 아직 진행 중이므로 제외, 오늘 QT가 있으면 별도로 +1)
         var streak = 0
-        var checkDate = Date()
 
-        // 최근 90일까지 확인
+        // 오늘 QT 여부 먼저 확인
+        let todayStart = calendar.startOfDay(for: Date())
+        let todayEnd = calendar.date(byAdding: .day, value: 1, to: todayStart) ?? todayStart
+
+        let hasTodayQT: Bool
+        do {
+            let query = QTQuery(
+                dateRange: DateRange(start: todayStart, end: todayEnd),
+                limit: 1,
+                offset: 0
+            )
+            let todayQTs = try await fetchQTListUseCase.execute(query: query, session: session)
+            hasTodayQT = todayQTs.contains { $0.status == .committed }
+        } catch {
+            hasTodayQT = false
+        }
+
+        if hasTodayQT {
+            streak = 1
+        }
+
+        // 어제부터 역순으로 연속 일수 계산
+        var checkDate = calendar.date(byAdding: .day, value: -1, to: todayStart) ?? todayStart
+
         for _ in 0..<90 {
             let dayStart = calendar.startOfDay(for: checkDate)
             let dayEnd = calendar.date(byAdding: .day, value: 1, to: dayStart) ?? dayStart
@@ -343,8 +366,6 @@ public final class QTListViewModel {
 
                 if hasCommitted {
                     streak += 1
-                } else if calendar.isDateInToday(checkDate) {
-                    // 오늘은 아직 안 했어도 스트릭 유지
                 } else {
                     break
                 }

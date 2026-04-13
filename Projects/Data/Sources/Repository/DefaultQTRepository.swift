@@ -53,7 +53,7 @@ public final class DefaultQTRepository: QTRepository {
 
         if let dateRange = query.dateRange {
             filtered = filtered.filter {
-                $0.createdAt >= dateRange.start && $0.createdAt <= dateRange.end
+                $0.createdAt >= dateRange.start && $0.createdAt < dateRange.end
             }
         }
 
