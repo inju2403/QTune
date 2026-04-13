@@ -309,7 +309,7 @@ public final class QTListViewModel {
             // 이번 달 완료 횟수
             let completedCount = calendarMap.values.filter { $0 == .completed }.count
 
-            // 연속 QT 일수 계산
+            // 오늘 기준 연속 QT 일수 계산
             let streak = await calculateStreak()
 
             await MainActor.run {
@@ -322,62 +322,51 @@ public final class QTListViewModel {
         }
     }
 
+    /// 오늘 기준 역순 연속 QT 일수 계산 (한 번의 쿼리로 처리)
     private func calculateStreak() async -> Int {
-        // 어제부터 역순으로 committed QT가 있는 연속 일수 계산
-        // (오늘은 아직 진행 중이므로 제외, 오늘 QT가 있으면 별도로 +1)
-        var streak = 0
-
-        // 오늘 QT 여부 먼저 확인
         let todayStart = calendar.startOfDay(for: Date())
-        let todayEnd = calendar.date(byAdding: .day, value: 1, to: todayStart) ?? todayStart
+        guard let ninetyDaysAgo = calendar.date(byAdding: .day, value: -90, to: todayStart),
+              let tomorrow = calendar.date(byAdding: .day, value: 1, to: todayStart) else { return 0 }
 
-        let hasTodayQT: Bool
         do {
             let query = QTQuery(
-                dateRange: DateRange(start: todayStart, end: todayEnd),
-                limit: 1,
+                dateRange: DateRange(start: ninetyDaysAgo, end: tomorrow),
+                limit: 200,
                 offset: 0
             )
-            let todayQTs = try await fetchQTListUseCase.execute(query: query, session: session)
-            hasTodayQT = todayQTs.contains { $0.status == .committed }
-        } catch {
-            hasTodayQT = false
-        }
+            let qts = try await fetchQTListUseCase.execute(query: query, session: session)
 
-        if hasTodayQT {
-            streak = 1
-        }
+            // committed QT가 있는 날짜 Set (qt.date 기준)
+            var committedDates: Set<String> = []
+            for qt in qts where qt.status == .committed {
+                committedDates.insert(Self.dateKeyFormatter.string(from: qt.date))
+            }
 
-        // 어제부터 역순으로 연속 일수 계산
-        var checkDate = calendar.date(byAdding: .day, value: -1, to: todayStart) ?? todayStart
+            var streak = 0
 
-        for _ in 0..<90 {
-            let dayStart = calendar.startOfDay(for: checkDate)
-            let dayEnd = calendar.date(byAdding: .day, value: 1, to: dayStart) ?? dayStart
+            // 오늘 QT가 있으면 카운트, 없으면 어제부터 시작 (오늘은 아직 안 끝났으므로)
+            let todayKey = Self.dateKeyFormatter.string(from: todayStart)
+            if committedDates.contains(todayKey) {
+                streak = 1
+            }
 
-            do {
-                let query = QTQuery(
-                    dateRange: DateRange(start: dayStart, end: dayEnd),
-                    limit: 1,
-                    offset: 0
-                )
-                let dayQTs = try await fetchQTListUseCase.execute(query: query, session: session)
-                let hasCommitted = dayQTs.contains { $0.status == .committed }
-
-                if hasCommitted {
+            // 어제부터 역순으로 연속 확인
+            var checkDate = calendar.date(byAdding: .day, value: -1, to: todayStart) ?? todayStart
+            for _ in 0..<90 {
+                let key = Self.dateKeyFormatter.string(from: checkDate)
+                if committedDates.contains(key) {
                     streak += 1
                 } else {
                     break
                 }
-            } catch {
-                break
+                guard let prevDay = calendar.date(byAdding: .day, value: -1, to: checkDate) else { break }
+                checkDate = prevDay
             }
 
-            guard let prevDay = calendar.date(byAdding: .day, value: -1, to: checkDate) else { break }
-            checkDate = prevDay
+            return streak
+        } catch {
+            return 0
         }
-
-        return streak
     }
 
     // MARK: - Filter Logic
