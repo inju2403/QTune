@@ -24,18 +24,30 @@ public final class QTListViewModel {
     private var searchTask: Task<Void, Never>?
 
     // MARK: - Init
+    private static let calendarExpandedKey = "isCalendarExpanded"
+
     public init(
         fetchQTListUseCase: FetchQTListUseCase,
         toggleFavoriteUseCase: ToggleFavoriteUseCase,
         deleteQTUseCase: DeleteQTUseCase,
         session: UserSession
     ) {
-        self.state = QTListState()
+        let savedExpanded = UserDefaults.standard.object(forKey: Self.calendarExpandedKey) as? Bool ?? true
+        self.state = QTListState(isCalendarExpanded: savedExpanded)
         self.fetchQTListUseCase = fetchQTListUseCase
         self.toggleFavoriteUseCase = toggleFavoriteUseCase
         self.deleteQTUseCase = deleteQTUseCase
         self.session = session
     }
+
+    // MARK: - Calendar Helpers
+    private static let dateKeyFormatter: DateFormatter = {
+        let f = DateFormatter()
+        f.dateFormat = "yyyy-MM-dd"
+        return f
+    }()
+
+    private let calendar = Calendar.current
 
     // MARK: - Send Action
     public func send(_ action: QTListAction) {
@@ -127,6 +139,24 @@ public final class QTListViewModel {
 
         case .clearNewlyAddedId:
             state.newlyAddedQTId = nil
+
+        // MARK: - Calendar Actions
+        case .loadCalendar:
+            Task { await loadCalendar() }
+
+        case .changeMonth(let offset):
+            if let newMonth = calendar.date(byAdding: .month, value: offset, to: state.displayedMonth) {
+                state.displayedMonth = newMonth
+                state.selectedDate = nil
+                Task { await loadCalendar() }
+            }
+
+        case .selectDate(let date):
+            state.selectedDate = date
+
+        case .toggleCalendar:
+            state.isCalendarExpanded.toggle()
+            UserDefaults.standard.set(state.isCalendarExpanded, forKey: Self.calendarExpandedKey)
         }
     }
 
@@ -250,9 +280,93 @@ public final class QTListViewModel {
         }
     }
 
+    // MARK: - Calendar Logic
+
+    private func loadCalendar() async {
+        do {
+            // 현재 표시 중인 월의 전체 QT 가져오기
+            guard let monthInterval = calendar.dateInterval(of: .month, for: state.displayedMonth) else { return }
+
+            let query = QTQuery(
+                dateRange: DateRange(start: monthInterval.start, end: monthInterval.end),
+                limit: 100,
+                offset: 0
+            )
+            let monthQTs = try await fetchQTListUseCase.execute(query: query, session: session)
+
+            // 날짜별 상태 계산
+            var calendarMap: [String: QTDayStatus] = [:]
+            for qt in monthQTs {
+                let key = Self.dateKeyFormatter.string(from: qt.date)
+                let existing = calendarMap[key] ?? .none
+                if qt.status == .committed {
+                    calendarMap[key] = .completed  // committed 우선
+                } else if existing != .completed {
+                    calendarMap[key] = .verseOnly
+                }
+            }
+
+            // 이번 달 완료 횟수
+            let completedCount = calendarMap.values.filter { $0 == .completed }.count
+
+            // 연속 QT 일수 계산
+            let streak = await calculateStreak()
+
+            await MainActor.run {
+                state.calendarData = calendarMap
+                state.monthlyCount = completedCount
+                state.currentStreak = streak
+            }
+        } catch {
+            // 실패 시 빈 데이터
+        }
+    }
+
+    private func calculateStreak() async -> Int {
+        // 오늘부터 역순으로 committed QT가 있는 연속 일수 계산
+        var streak = 0
+        var checkDate = Date()
+
+        // 최근 90일까지 확인
+        for _ in 0..<90 {
+            let dayStart = calendar.startOfDay(for: checkDate)
+            let dayEnd = calendar.date(byAdding: .day, value: 1, to: dayStart) ?? dayStart
+
+            do {
+                let query = QTQuery(
+                    dateRange: DateRange(start: dayStart, end: dayEnd),
+                    limit: 1,
+                    offset: 0
+                )
+                let dayQTs = try await fetchQTListUseCase.execute(query: query, session: session)
+                let hasCommitted = dayQTs.contains { $0.status == .committed }
+
+                if hasCommitted {
+                    streak += 1
+                } else if calendar.isDateInToday(checkDate) {
+                    // 오늘은 아직 안 했어도 스트릭 유지
+                } else {
+                    break
+                }
+            } catch {
+                break
+            }
+
+            guard let prevDay = calendar.date(byAdding: .day, value: -1, to: checkDate) else { break }
+            checkDate = prevDay
+        }
+
+        return streak
+    }
+
     // MARK: - Filter Logic
     public var filteredAndSortedList: [QuietTime] {
         var filtered = state.qtList
+
+        // 날짜 필터 (달력에서 선택)
+        if let selectedDate = state.selectedDate {
+            filtered = filtered.filter { calendar.isDate($0.date, inSameDayAs: selectedDate) }
+        }
 
         // 템플릿 필터는 로컬에서 처리 (서버에서는 검색/즐겨찾기만 처리)
         switch state.selectedFilter {

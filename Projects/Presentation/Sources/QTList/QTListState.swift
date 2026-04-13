@@ -8,6 +8,13 @@
 import Foundation
 import Domain
 
+/// QT 달력에서 하루의 상태
+public enum QTDayStatus: Equatable {
+    case none           // 아무것도 안 한 날
+    case verseOnly      // 말씀 추천만 받음 (draft)
+    case completed      // QT 완료 (committed)
+}
+
 /// QT 리스트 화면 State
 public struct QTListState: Equatable {
     public var searchText: String
@@ -23,6 +30,14 @@ public struct QTListState: Equatable {
     public var lastLoadTime: Date?
     public var newlyAddedQTId: UUID?  // 새로 추가된 QT ID (스크롤용)
 
+    // MARK: - Calendar State
+    public var displayedMonth: Date   // 현재 표시 중인 월 (1일 기준)
+    public var selectedDate: Date?    // 선택된 날짜 (nil이면 전체)
+    public var calendarData: [String: QTDayStatus]  // "yyyy-MM-dd" → 상태
+    public var currentStreak: Int     // 연속 QT 일수
+    public var monthlyCount: Int      // 이번 달 QT 횟수
+    public var isCalendarExpanded: Bool  // 달력 펼침 상태
+
     public init(
         searchText: String = "",
         selectedFilter: FilterType = .all,
@@ -35,7 +50,13 @@ public struct QTListState: Equatable {
         hasMoreData: Bool = true,
         currentPage: Int = 0,
         lastLoadTime: Date? = nil,
-        newlyAddedQTId: UUID? = nil
+        newlyAddedQTId: UUID? = nil,
+        displayedMonth: Date = Date(),
+        selectedDate: Date? = nil,
+        calendarData: [String: QTDayStatus] = [:],
+        currentStreak: Int = 0,
+        monthlyCount: Int = 0,
+        isCalendarExpanded: Bool = true
     ) {
         self.searchText = searchText
         self.selectedFilter = selectedFilter
@@ -49,6 +70,12 @@ public struct QTListState: Equatable {
         self.currentPage = currentPage
         self.lastLoadTime = lastLoadTime
         self.newlyAddedQTId = newlyAddedQTId
+        self.displayedMonth = displayedMonth
+        self.selectedDate = selectedDate
+        self.calendarData = calendarData
+        self.currentStreak = currentStreak
+        self.monthlyCount = monthlyCount
+        self.isCalendarExpanded = isCalendarExpanded
     }
 
     // MARK: - Filter Types

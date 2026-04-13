@@ -23,4 +23,10 @@ public enum QTListAction: Equatable {
     case updateItem(QuietTime)
     case removeItem(UUID)
     case clearNewlyAddedId
+
+    // MARK: - Calendar Actions
+    case loadCalendar            // 달력 데이터 로드
+    case changeMonth(Int)        // 월 이동 (-1: 이전, +1: 다음)
+    case selectDate(Date?)       // 날짜 선택 (nil이면 전체)
+    case toggleCalendar          // 달력 펼침/접기
 }
