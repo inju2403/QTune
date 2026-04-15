@@ -118,6 +118,7 @@ public final class RequestVerseViewModel {
                 verseTextEN: nil,  // TODO: OpenAI API에서 verseTextEN 받아오면 사용
                 korean: generated.korean,
                 rationale: generated.reason,
+                suggestedPrayer: generated.suggestedPrayer,
                 verse: generated.verse,
                 secondaryVerse: generated.secondaryVerse,
                 isSafe: true  // DomainError.moderationBlocked가 throw되지 않았으므로 안전

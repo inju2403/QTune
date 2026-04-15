@@ -11,6 +11,7 @@ import Domain
 // MARK: - Notification Names
 public extension Notification.Name {
     static let qtDidChange = Notification.Name("qtDidChange")
+    static let prayerDidGenerate = Notification.Name("prayerDidGenerate")
 }
 
 // MARK: - QT Change Type

@@ -129,7 +129,8 @@ public final class DefaultAIRepository: AIRepository {
             verse: verse,
             secondaryVerse: secondaryVerse,
             korean: koreanExplanation.korean,
-            reason: koreanExplanation.rationale
+            reason: koreanExplanation.rationale,
+            suggestedPrayer: koreanExplanation.suggestedPrayer
         )
 
         print("✅ [DefaultAIRepository] Pipeline completed successfully")
@@ -164,6 +165,34 @@ public final class DefaultAIRepository: AIRepository {
             }
         } catch {
             print("🔴 [DefaultAIRepository] Verse explanation failed: \(error)")
+            throw AIRepositoryError.koreanExplanationFailed(reason: error.localizedDescription)
+        }
+    }
+
+    public func fetchPrayer(englishText: String, verseRef: String, nickname: String?, gender: String?) async throws -> String {
+        print("🔄 [DefaultAIRepository] Fetching verse prayer for \(verseRef)")
+
+        do {
+            let prayer = try await openAIDataSource.getVersePrayer(
+                englishText: englishText,
+                verseRef: verseRef,
+                nickname: nickname,
+                gender: gender
+            )
+            print("✅ [DefaultAIRepository] Verse prayer fetched")
+            return prayer
+        } catch let error as OpenAIDataSourceError {
+            print("🔴 [DefaultAIRepository] Verse prayer failed: \(error)")
+            switch error {
+            case .dailyLimitExceeded:
+                throw AIRepositoryError.dailyLimitExceeded
+            case .apiKeyNotFound:
+                throw AIRepositoryError.apiKeyNotConfigured
+            default:
+                throw AIRepositoryError.koreanExplanationFailed(reason: error.localizedDescription)
+            }
+        } catch {
+            print("🔴 [DefaultAIRepository] Verse prayer failed: \(error)")
             throw AIRepositoryError.koreanExplanationFailed(reason: error.localizedDescription)
         }
     }

@@ -21,4 +21,5 @@ public protocol OpenAIRemoteDataSource {
     func recommendVerse(_ request: GenerateVerseRequest) async throws -> VerseRecommendationDTO
     func generateKoreanExplanation(englishText: String, verseRef: String, mood: String, note: String?, nickname: String?, gender: String?) async throws -> KoreanExplanationDTO
     func getVerseExplanation(englishText: String, verseRef: String, nickname: String?, gender: String?) async throws -> String
+    func getVersePrayer(englishText: String, verseRef: String, nickname: String?, gender: String?) async throws -> String
 }

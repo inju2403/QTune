@@ -30,8 +30,8 @@ public enum SOAPField: Equatable {
 
 /// ACTS 필드 선택
 public enum ACTSField: Equatable {
-    case adoration     // 경배
-    case confession    // 회개
+    case adoration     // 찬양
+    case confession    // 고백
     case thanksgiving  // 감사
     case supplication  // 간구
 }

@@ -28,14 +28,14 @@ public struct QuietTime: Identifiable, Equatable, Hashable {
     public var memo: String          // Deprecated: 템플릿 필드로 대체됨
     public var korean: String?       // GPT 한글 해설
     public var rationale: String?    // 추천 이유
+    public var suggestedPrayer: String?  // AI 추천 기도문
     public var date: Date
     public var status: QuietTimeStatus
-    public var tags: [String]
     public var isFavorite: Bool
     public var updatedAt: Date
 
     // MARK: - 템플릿
-    public var template: String      // "SOAP" | "ACTS"
+    public var template: String      // "SOAP" | "ACTS" | "FREE"
 
     // MARK: - SOAP 필드
     public var soapObservation: String?
@@ -48,6 +48,9 @@ public struct QuietTime: Identifiable, Equatable, Hashable {
     public var actsThanksgiving: String?
     public var actsSupplication: String?
 
+    // MARK: - 자유 묵상 필드
+    public var freeContent: String?
+
     public init(
         id: UUID = UUID(),
         verse: Verse,
@@ -55,9 +58,9 @@ public struct QuietTime: Identifiable, Equatable, Hashable {
         memo: String = "",
         korean: String? = nil,
         rationale: String? = nil,
+        suggestedPrayer: String? = nil,
         date: Date,
         status: QuietTimeStatus,
-        tags: [String] = [],
         isFavorite: Bool = false,
         updatedAt: Date = .now,
         template: String = "SOAP",
@@ -67,7 +70,8 @@ public struct QuietTime: Identifiable, Equatable, Hashable {
         actsAdoration: String? = nil,
         actsConfession: String? = nil,
         actsThanksgiving: String? = nil,
-        actsSupplication: String? = nil
+        actsSupplication: String? = nil,
+        freeContent: String? = nil
     ) {
         self.id = id
         self.verse = verse
@@ -75,9 +79,9 @@ public struct QuietTime: Identifiable, Equatable, Hashable {
         self.memo = memo
         self.korean = korean
         self.rationale = rationale
+        self.suggestedPrayer = suggestedPrayer
         self.date = date
         self.status = status
-        self.tags = tags
         self.isFavorite = isFavorite
         self.updatedAt = updatedAt
         self.template = template
@@ -88,6 +92,7 @@ public struct QuietTime: Identifiable, Equatable, Hashable {
         self.actsConfession = actsConfession
         self.actsThanksgiving = actsThanksgiving
         self.actsSupplication = actsSupplication
+        self.freeContent = freeContent
     }
 
     /// 리스트용 미리보기 텍스트 (최대 120자)
@@ -95,8 +100,12 @@ public struct QuietTime: Identifiable, Equatable, Hashable {
         let content: String
         if template == "SOAP" {
             content = soapObservation ?? soapApplication ?? soapPrayer ?? ""
-        } else {
+        } else if template == "ACTS" {
             content = actsAdoration ?? actsConfession ?? actsThanksgiving ?? actsSupplication ?? ""
+        } else if template == "FREE" {
+            content = freeContent ?? ""
+        } else {
+            content = ""
         }
 
         let trimmed = content.trimmingCharacters(in: .whitespacesAndNewlines)

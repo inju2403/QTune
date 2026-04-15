@@ -135,7 +135,10 @@ public struct QTuneCrossOverlay: View {
 
     @Environment(\.fontScale) private var fontScale
 
-    public init() {}
+    public init(message: String = "말씀을 기도로 준비하는 중", size: CGFloat = 84) {
+        self.message = message
+        self.size = size
+    }
 
     public var body: some View {
         ZStack {

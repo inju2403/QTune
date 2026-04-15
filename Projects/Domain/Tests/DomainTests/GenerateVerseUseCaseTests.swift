@@ -119,7 +119,8 @@ final class GenerateVerseUseCaseTests: XCTestCase {
                 translation: "개역개정"
             ),
             korean: "이 구절은 하나님께서 우리의 목자가 되어 보호하고 인도하신다는 의미입니다. 힘든 시기에도 하나님이 함께하시므로 부족함이 없다는 확신을 줍니다.",
-            reason: "오늘 힘든 하루를 보내신 당신에게 위로가 되길 바랍니다"
+            reason: "오늘 힘든 하루를 보내신 당신에게 위로가 되길 바랍니다",
+            suggestedPrayer: "하나님 아버지, 제가 오늘 힘든 시간을 보냈습니다. 저의 목자가 되어 주시니 감사합니다."
         )
 
         // When
@@ -146,7 +147,8 @@ final class GenerateVerseUseCaseTests: XCTestCase {
         spyAIRepository.generatedVerse = GeneratedVerse(
             verse: Verse(book: "시편", chapter: 1, verse: 1, text: "복 있는 사람", translation: "개역개정"),
             korean: "테스트 한글 해설입니다.",
-            reason: "테스트"
+            reason: "테스트",
+            suggestedPrayer: "테스트 기도문입니다."
         )
 
         // When: 두 명의 다른 사용자가 요청
@@ -182,6 +184,14 @@ final class SpyAIRepository: AIRepository {
         }
 
         return verse
+    }
+
+    func explainVerse(englishText: String, verseRef: String, nickname: String?, gender: String?) async throws -> String {
+        return "테스트용 해설"
+    }
+
+    func fetchPrayer(englishText: String, verseRef: String, nickname: String?, gender: String?) async throws -> String {
+        return "테스트용 기도문"
     }
 }
 

@@ -20,6 +20,7 @@ public final class QTEditorViewModel {
     // MARK: - Dependencies
     private let commitQTUseCase: CommitQTUseCase
     private let updateQTUseCase: UpdateQTUseCase
+    private let fetchVersePrayerUseCase: FetchVersePrayerUseCase?
     private let session: UserSession
 
     // MARK: - Init
@@ -27,12 +28,15 @@ public final class QTEditorViewModel {
         commitQTUseCase: CommitQTUseCase,
         updateQTUseCase: UpdateQTUseCase,
         session: UserSession,
+        fetchVersePrayerUseCase: FetchVersePrayerUseCase? = nil,
         initialState: QTEditorState = QTEditorState()
     ) {
         self.commitQTUseCase = commitQTUseCase
         self.updateQTUseCase = updateQTUseCase
+        self.fetchVersePrayerUseCase = fetchVersePrayerUseCase
         self.session = session
         self.state = initialState
+        self.state.isPrayerAvailable = fetchVersePrayerUseCase != nil
     }
 
     // MARK: - Send Action
@@ -53,17 +57,8 @@ public final class QTEditorViewModel {
         case .updateSOAPPrayer(let text):
             state.soapTemplate.prayer = text
 
-        case .updateACTSAdoration(let text):
-            state.actsTemplate.adoration = text
-
-        case .updateACTSConfession(let text):
-            state.actsTemplate.confession = text
-
-        case .updateACTSThanksgiving(let text):
-            state.actsTemplate.thanksgiving = text
-
-        case .updateACTSSupplication(let text):
-            state.actsTemplate.supplication = text
+        case .updateFreeContent(let text):
+            state.freeTemplate.content = text
 
         case .saveQT(let draft):
             // 이미 저장 중이면 무시
@@ -72,37 +67,37 @@ public final class QTEditorViewModel {
                 return
             }
             Task { await saveQT(draft: draft) }
+
+        case .tapPrayerButton:
+            // 이미 생성된 기도문이 있으면 바로 시트 열기
+            if state.suggestedPrayer != nil {
+                state.showPrayerSheet = true
+            } else {
+                // 없으면 생성 시작
+                Task { await generatePrayer() }
+            }
+
+        case .dismissPrayerSheet:
+            state.showPrayerSheet = false
+
+        case .dismissPrayerError:
+            state.prayerError = nil
         }
     }
 
     // MARK: - 편집 모드 초기화
     private func loadQT(_ qt: QuietTime) {
-        // status가 draft이고 템플릿 필드가 비어있으면 신규 작성
-        let isNewDraft = qt.status == .draft &&
-            qt.soapObservation == nil &&
-            qt.soapApplication == nil &&
-            qt.soapPrayer == nil &&
-            qt.actsAdoration == nil &&
-            qt.actsConfession == nil &&
-            qt.actsThanksgiving == nil &&
-            qt.actsSupplication == nil
+        // 항상 editingQT 설정 (기도문 생성 등에서 verse 정보가 필요함)
+        state.editingQT = qt
 
-        // 신규 작성이 아닐 때만 editingQT 설정 (UPDATE 모드)
-        if !isNewDraft {
-            state.editingQT = qt
-        }
-
-        state.selectedTemplate = qt.template == "SOAP" ? .soap : .acts
+        state.selectedTemplate = qt.template == "SOAP" ? .soap : .free
 
         if qt.template == "SOAP" {
             state.soapTemplate.observation = qt.soapObservation ?? ""
             state.soapTemplate.application = qt.soapApplication ?? ""
             state.soapTemplate.prayer = qt.soapPrayer ?? ""
-        } else {
-            state.actsTemplate.adoration = qt.actsAdoration ?? ""
-            state.actsTemplate.confession = qt.actsConfession ?? ""
-            state.actsTemplate.thanksgiving = qt.actsThanksgiving ?? ""
-            state.actsTemplate.supplication = qt.actsSupplication ?? ""
+        } else if qt.template == "FREE" {
+            state.freeTemplate.content = qt.freeContent ?? ""
         }
     }
 
@@ -146,23 +141,23 @@ public final class QTEditorViewModel {
                 qtToSave.soapObservation = state.soapTemplate.observation
                 qtToSave.soapApplication = state.soapTemplate.application
                 qtToSave.soapPrayer = state.soapTemplate.prayer
-                qtToSave.actsAdoration = nil
-                qtToSave.actsConfession = nil
-                qtToSave.actsThanksgiving = nil
-                qtToSave.actsSupplication = nil
-            } else {
-                print("   ACTS - A: \(state.actsTemplate.adoration.count), C: \(state.actsTemplate.confession.count), T: \(state.actsTemplate.thanksgiving.count), S: \(state.actsTemplate.supplication.count)")
-                qtToSave.actsAdoration = state.actsTemplate.adoration
-                qtToSave.actsConfession = state.actsTemplate.confession
-                qtToSave.actsThanksgiving = state.actsTemplate.thanksgiving
-                qtToSave.actsSupplication = state.actsTemplate.supplication
+                qtToSave.freeContent = nil
+            } else if state.selectedTemplate == .free {
+                print("   FREE - Content: \(state.freeTemplate.content.count)")
+                qtToSave.freeContent = state.freeTemplate.content
                 qtToSave.soapObservation = nil
                 qtToSave.soapApplication = nil
                 qtToSave.soapPrayer = nil
             }
 
+            // 신규 작성 여부 판단 (editingQT의 내용이 비어있는지로 판단)
+            let isNewDraft = state.editingQT?.soapObservation == nil &&
+                state.editingQT?.soapApplication == nil &&
+                state.editingQT?.soapPrayer == nil &&
+                state.editingQT?.freeContent == nil
+
             let savedQT: QuietTime
-            if let existingQT = state.editingQT {
+            if let existingQT = state.editingQT, !isNewDraft {
                 // 편집 모드: 업데이트
                 print("   Mode: UPDATE existing QT")
                 var updated = existingQT
@@ -170,10 +165,7 @@ public final class QTEditorViewModel {
                 updated.soapObservation = qtToSave.soapObservation
                 updated.soapApplication = qtToSave.soapApplication
                 updated.soapPrayer = qtToSave.soapPrayer
-                updated.actsAdoration = qtToSave.actsAdoration
-                updated.actsConfession = qtToSave.actsConfession
-                updated.actsThanksgiving = qtToSave.actsThanksgiving
-                updated.actsSupplication = qtToSave.actsSupplication
+                updated.freeContent = qtToSave.freeContent
                 updated.updatedAt = Date()
 
                 print("   Calling updateQTUseCase...")
@@ -204,6 +196,48 @@ public final class QTEditorViewModel {
                 print("   Reason: \(localizedError.failureReason ?? "none")")
             }
             state.showSaveErrorAlert = true
+        }
+    }
+
+    // MARK: - Generate Prayer
+    private func generatePrayer() async {
+        guard let prayerUseCase = fetchVersePrayerUseCase,
+              let qt = state.editingQT else { return }
+        guard !state.isPrayerLoading else { return }
+
+        let englishText = qt.verse.text
+        let verseRef = "\(qt.verse.book) \(qt.verse.chapter):\(qt.verse.verse)"
+
+        state.isPrayerLoading = true
+        state.prayerError = nil
+
+        do {
+            let prayer = try await prayerUseCase.execute(
+                englishText: englishText,
+                verseRef: verseRef
+            )
+
+            await MainActor.run {
+                state.suggestedPrayer = prayer
+                state.isPrayerLoading = false
+                state.showPrayerSheet = true
+            }
+        } catch let error as DomainError {
+            await MainActor.run {
+                state.isPrayerLoading = false
+                state.showPrayerSheet = true
+                if case .rateLimited = error {
+                    state.prayerError = "오늘 AI 기도문을 10번 모두 사용했어요. 내일 다시 시도해주세요."
+                } else {
+                    state.prayerError = "기도문을 가져오지 못했어요. 잠시 후 다시 시도해주세요."
+                }
+            }
+        } catch {
+            await MainActor.run {
+                state.isPrayerLoading = false
+                state.showPrayerSheet = true
+                state.prayerError = "기도문을 가져오지 못했어요. 잠시 후 다시 시도해주세요."
+            }
         }
     }
 }

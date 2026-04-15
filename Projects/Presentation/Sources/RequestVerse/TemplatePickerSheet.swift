@@ -8,7 +8,7 @@
 import SwiftUI
 import Domain
 
-/// 템플릿 선택 바텀시트 (SOAP / ACTS)
+/// 템플릿 선택 바텀시트 (SOAP / ACTS / 자유 묵상)
 public struct TemplatePickerSheet: View {
     let onSelect: (TemplateKind) -> Void
     @Environment(\.dismiss) private var dismiss
@@ -24,26 +24,26 @@ public struct TemplatePickerSheet: View {
                 .fill(Color(white: 0.8))
                 .frame(width: 36, height: 5)
                 .padding(.top, 12)
-                .padding(.bottom, 28)
+                .padding(.bottom, 20)
 
-            // Main question
-            VStack(spacing: 8) {
+            // Title
+            VStack(spacing: 4) {
                 DSText.titleM("오늘 어떤 방식으로", weight: .semibold)
                     .foregroundStyle(DS.Color.deepCocoa)
-                DSText.titleM("말씀을 묵상하고 싶으신가요?", weight: .semibold)
+                DSText.titleM("묵상하고 싶으신가요?", weight: .semibold)
                     .foregroundStyle(DS.Color.deepCocoa)
             }
             .multilineTextAlignment(.center)
-            .padding(.bottom, 28)
+            .padding(.bottom, 20)
 
-            // Template cards
-            VStack(spacing: 14) {
+            // 3개 카드 — 균등 분배로 화면 꽉 채우기
+            VStack(spacing: 10) {
                 TemplateCard(
                     icon: "book.closed.fill",
                     title: "SOAP",
                     subtitle: "말씀의 본질에 집중",
-                    description: "말씀을 차분히 이해하고, 오늘의 삶에 연결하는 묵상. 생각을 정리하며 묵상하고 싶을 때 추천해요.",
-                    buttonTitle: "SOAP 묵상하기"
+                    description: "말씀을 관찰하고, 적용점을 찾아 기도로 마무리하는 체계적인 묵상",
+                    accentColor: DS.Color.gold
                 ) {
                     Haptics.tap()
                     onSelect(.soap)
@@ -51,19 +51,31 @@ public struct TemplatePickerSheet: View {
                 }
 
                 TemplateCard(
-                    icon: "hands.and.sparkles.fill",
+                    icon: "hands.sparkles.fill",
                     title: "ACTS",
-                    subtitle: "기도로 대화하는 묵상",
-                    description: "마음을 돌아보며 기도로 이어가는 묵상. 마음을 풀어놓고 묵상하고 싶을 때 추천해요.",
-                    buttonTitle: "ACTS 묵상하기"
+                    subtitle: "기도로 시작하는 묵상",
+                    description: "찬양, 고백, 감사, 간구의 흐름으로 하나님께 나아가는 기도 묵상",
+                    accentColor: DS.Color.gold
                 ) {
                     Haptics.tap()
                     onSelect(.acts)
                     dismiss()
                 }
+
+                TemplateCard(
+                    icon: "heart.text.square.fill",
+                    title: "자유 묵상",
+                    subtitle: "나만의 방식으로",
+                    description: "정해진 형식 없이, 오늘 말씀에서 받은 은혜를 자유롭게 기록",
+                    accentColor: DS.Color.gold
+                ) {
+                    Haptics.tap()
+                    onSelect(.free)
+                    dismiss()
+                }
             }
             .padding(.horizontal, 20)
-            .padding(.bottom, 32)
+            .padding(.bottom, 24)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(DS.Color.canvas)
@@ -77,56 +89,85 @@ private struct TemplateCard: View {
     let title: String
     let subtitle: String
     let description: String
-    let buttonTitle: String
+    let accentColor: Color
     let action: () -> Void
 
+    @State private var isPressed = false
+
     var body: some View {
-        VStack(alignment: .leading, spacing: 18) {
-            // Icon + Title + Subtitle
-            HStack(spacing: 14) {
-                Image(systemName: icon)
-                    .font(.system(size: 32))
-                    .foregroundStyle(DS.Color.gold)
-                    .frame(width: 48, height: 48)
+        Button(action: action) {
+            VStack(alignment: .leading, spacing: 0) {
+                // 상단: 아이콘 + 제목 + 부제
+                HStack(spacing: 14) {
+                    // 아이콘 (accent 배경 원)
+                    ZStack {
+                        Circle()
+                            .fill(accentColor.opacity(0.12))
+                            .frame(width: 44, height: 44)
 
-                VStack(alignment: .leading, spacing: 4) {
-                    DSText.titleM(title, weight: .bold)
-                        .foregroundStyle(DS.Color.deepCocoa)
-                    DSText.bodyM(subtitle, weight: .medium)
-                        .foregroundStyle(DS.Color.textSecondary)
+                        Image(systemName: icon)
+                            .font(.system(size: 20, weight: .semibold))
+                            .foregroundStyle(accentColor)
+                    }
+
+                    VStack(alignment: .leading, spacing: 3) {
+                        DSText.bodyL(title, weight: .bold)
+                            .foregroundStyle(DS.Color.deepCocoa)
+                        DSText.caption(subtitle)
+                            .foregroundStyle(DS.Color.textSecondary)
+                    }
+
+                    Spacer()
+
+                    // 선택 pill
+                    Text("선택")
+                        .font(.system(size: 13, weight: .semibold))
+                        .foregroundStyle(.white)
+                        .padding(.horizontal, 14)
+                        .padding(.vertical, 6)
+                        .background(
+                            Capsule()
+                                .fill(accentColor)
+                        )
                 }
+
+                Spacer(minLength: 10)
+
+                // 설명
+                DSText.bodyM(description)
+                    .foregroundStyle(DS.Color.textSecondary)
+                    .lineSpacing(3)
+                    .fixedSize(horizontal: false, vertical: true)
+
+                Spacer(minLength: 0)
             }
-
-            // Description
-            DSText.bodyM(description)
-                .foregroundStyle(DS.Color.textSecondary)
-                .fixedSize(horizontal: false, vertical: true)
-                .padding(.leading, 4)
-                .padding(.bottom, 6)
-
-            // Button
-            Button(action: action) {
-                DSText.bodyL(buttonTitle, weight: .semibold)
-                    .foregroundStyle(.white)
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 16)
-                    .background(
-                        RoundedRectangle(cornerRadius: 12)
-                            .fill(DS.Color.gold)
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
+            .padding(.horizontal, 18)
+            .padding(.vertical, 16)
+            .background(
+                RoundedRectangle(cornerRadius: 14)
+                    .fill(DS.Color.background)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 14)
+                            .stroke(accentColor.opacity(0.15), lineWidth: 1)
                     )
-            }
-            .buttonStyle(.plain)
+            )
+            .scaleEffect(isPressed ? 0.97 : 1.0)
+            .animation(.spring(response: 0.25, dampingFraction: 0.7), value: isPressed)
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(.horizontal, 18)
-        .padding(.vertical, 16)
-        .background(
-            RoundedRectangle(cornerRadius: 14)
-                .fill(DS.Color.background)
-                .overlay(
-                    RoundedRectangle(cornerRadius: 14)
-                        .stroke(DS.Color.gold.opacity(0.2), lineWidth: 1)
-                )
-        )
+        .buttonStyle(CardPressStyle(isPressed: $isPressed))
+    }
+}
+
+// MARK: - Card Press Style (눌림 피드백)
+
+private struct CardPressStyle: ButtonStyle {
+    @Binding var isPressed: Bool
+
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .onChange(of: configuration.isPressed) { _, newValue in
+                isPressed = newValue
+            }
     }
 }

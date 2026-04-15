@@ -65,6 +65,22 @@ public struct QTListView: View {
 
             ScrollViewReader { scrollProxy in
                 List {
+                // MARK: - 달력
+                QTCalendarView(
+                    displayedMonth: viewModel.state.displayedMonth,
+                    selectedDate: viewModel.state.selectedDate,
+                    calendarData: viewModel.state.calendarData,
+                    currentStreak: viewModel.state.currentStreak,
+                    monthlyCount: viewModel.state.monthlyCount,
+                    isExpanded: viewModel.state.isCalendarExpanded,
+                    onChangeMonth: { offset in viewModel.send(.changeMonth(offset)) },
+                    onSelectDate: { date in viewModel.send(.selectDate(date)) },
+                    onToggle: { viewModel.send(.toggleCalendar) }
+                )
+                .listRowSeparator(.hidden)
+                .listRowBackground(Color.clear)
+                .listRowInsets(EdgeInsets(top: DS.Spacing.m, leading: 0, bottom: 0, trailing: 0))
+
                 if !hideSearchBar {
                     searchBar()
                         .listRowSeparator(.hidden)
@@ -143,6 +159,9 @@ public struct QTListView: View {
             .scrollContentBackground(.hidden)
             .scrollPosition(id: $scrollPosition, anchor: .center)
             .onAppear {
+                // 달력 데이터는 항상 최신으로 로드
+                viewModel.send(.loadCalendar)
+
                 // 1. 먼저 pendingNewQTId 체크 (NotificationCenter 못 받았을 경우)
                 if let pendingId = pendingNewQTId, !pendingId.isEmpty {
                     // UserDefaults 클리어
@@ -201,6 +220,7 @@ public struct QTListView: View {
             guard let changeType = notification.object as? QTChangeType else {
                 // 타입 정보 없으면 전체 로드 (하위 호환)
                 viewModel.send(.load)
+                viewModel.send(.loadCalendar)
                 return
             }
 
@@ -208,6 +228,7 @@ public struct QTListView: View {
             case .created(let qt):
                 // 새 QT 작성: 맨 위에 추가
                 viewModel.send(.insertAtTop(qt))
+                viewModel.send(.loadCalendar)
                 // newlyAddedQTId는 ViewModel에서 설정됨
 
                 // pendingNewQTId 클리어 (혹시 남아있을 경우)
@@ -246,6 +267,7 @@ public struct QTListView: View {
                 }
                 // 리스트에서 제거
                 viewModel.send(.removeItem(uuid))
+                viewModel.send(.loadCalendar)
             }
         }
         .alert("기록 삭제", isPresented: Binding(
@@ -304,7 +326,7 @@ private extension QTListView {
                     .foregroundStyle(DS.Color.gold)
                     .font(DS.Font.bodyL())
 
-                TextField("말씀, 태그, 내용으로 검색", text: Binding(
+                TextField("말씀, 내용으로 검색", text: Binding(
                     get: { viewModel.state.searchText },
                     set: { viewModel.send(.updateSearchText($0, isSearchMode: false)) }
                 ))
@@ -537,18 +559,9 @@ private extension QTListView {
             if let prayer = qt.soapPrayer?.trimmingCharacters(in: .whitespacesAndNewlines), !prayer.isEmpty {
                 return prayer
             }
-        } else {
-            if let adoration = qt.actsAdoration?.trimmingCharacters(in: .whitespacesAndNewlines), !adoration.isEmpty {
-                return adoration
-            }
-            if let confession = qt.actsConfession?.trimmingCharacters(in: .whitespacesAndNewlines), !confession.isEmpty {
-                return confession
-            }
-            if let thanksgiving = qt.actsThanksgiving?.trimmingCharacters(in: .whitespacesAndNewlines), !thanksgiving.isEmpty {
-                return thanksgiving
-            }
-            if let supplication = qt.actsSupplication?.trimmingCharacters(in: .whitespacesAndNewlines), !supplication.isEmpty {
-                return supplication
+        } else if qt.template == "FREE" {
+            if let freeContent = qt.freeContent?.trimmingCharacters(in: .whitespacesAndNewlines), !freeContent.isEmpty {
+                return freeContent
             }
         }
         return nil

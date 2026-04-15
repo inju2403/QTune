@@ -51,7 +51,7 @@ final class DraftUseCasesTests: XCTestCase {
             memo: "오늘 힘든 하루였어요",
             date: testDate,
             status: .draft,
-            tags: [],
+
             isFavorite: false,
             updatedAt: testDate
         )
@@ -90,7 +90,7 @@ final class DraftUseCasesTests: XCTestCase {
             memo: "새로운 메모",
             date: testDate,
             status: .draft,
-            tags: [],
+
             isFavorite: false,
             updatedAt: testDate
         )
@@ -112,7 +112,7 @@ final class DraftUseCasesTests: XCTestCase {
             memo: "메모",
             date: testDate,
             status: .committed,
-            tags: [],
+
             isFavorite: false,
             updatedAt: testDate
         )
@@ -143,7 +143,7 @@ final class DraftUseCasesTests: XCTestCase {
             memo: "메모",
             date: testDate,
             status: .draft,
-            tags: [],
+
             isFavorite: false,
             updatedAt: testDate
         )
@@ -166,7 +166,7 @@ final class DraftUseCasesTests: XCTestCase {
             memo: "감사합니다",
             date: testDate,
             status: .draft,
-            tags: [],
+
             isFavorite: false,
             updatedAt: testDate
         )
@@ -202,7 +202,7 @@ final class DraftUseCasesTests: XCTestCase {
             memo: "세션1 메모",
             date: testDate,
             status: .draft,
-            tags: [],
+
             isFavorite: false,
             updatedAt: testDate
         )

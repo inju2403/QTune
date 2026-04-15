@@ -21,6 +21,7 @@ public struct MainTabViewWrapper: View {
     let saveUserProfileUseCase: SaveUserProfileUseCase
     let fetchVerseDirectUseCase: FetchVerseDirectUseCase
     let fetchVerseExplanationUseCase: FetchVerseExplanationUseCase?
+    let fetchVersePrayerUseCase: FetchVersePrayerUseCase?
     let updateNotificationSettingsUseCase: UpdateNotificationSettingsUseCase?
     let session: UserSession
 
@@ -48,6 +49,7 @@ public struct MainTabViewWrapper: View {
         saveUserProfileUseCase: SaveUserProfileUseCase,
         fetchVerseDirectUseCase: FetchVerseDirectUseCase,
         fetchVerseExplanationUseCase: FetchVerseExplanationUseCase? = nil,
+        fetchVersePrayerUseCase: FetchVersePrayerUseCase? = nil,
         updateNotificationSettingsUseCase: UpdateNotificationSettingsUseCase? = nil,
         session: UserSession,
         userProfile: Binding<UserProfile?>
@@ -63,6 +65,7 @@ public struct MainTabViewWrapper: View {
         self.saveUserProfileUseCase = saveUserProfileUseCase
         self.fetchVerseDirectUseCase = fetchVerseDirectUseCase
         self.fetchVerseExplanationUseCase = fetchVerseExplanationUseCase
+        self.fetchVersePrayerUseCase = fetchVersePrayerUseCase
         self.updateNotificationSettingsUseCase = updateNotificationSettingsUseCase
         self.session = session
         self._userProfile = userProfile
@@ -142,6 +145,7 @@ public struct MainTabViewWrapper: View {
                         saveUserProfileUseCase: saveUserProfileUseCase,
                         fetchVerseDirectUseCase: fetchVerseDirectUseCase,
                         fetchVerseExplanationUseCase: fetchVerseExplanationUseCase,
+                        fetchVersePrayerUseCase: fetchVersePrayerUseCase,
                         onNavigateToRecordTab: onNavigateToRecordTab,
                         onNavigateToMyPage: {
                             withAnimation(.easeInOut(duration: 0.35)) {
@@ -255,6 +259,7 @@ public struct MainTabViewWrapper: View {
                     saveUserProfileUseCase: saveUserProfileUseCase,
                     fetchVerseDirectUseCase: fetchVerseDirectUseCase,
                     fetchVerseExplanationUseCase: fetchVerseExplanationUseCase,
+                    fetchVersePrayerUseCase: fetchVersePrayerUseCase,
                     onNavigateToRecordTab: onNavigateToRecordTab,
                     onNavigateToMyPage: {
                         withAnimation(.easeInOut(duration: 0.35)) {

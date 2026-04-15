@@ -50,9 +50,9 @@ extension QTEntryModel {
             memo: "",  // Deprecated
             korean: korean,
             rationale: rationale,
+            suggestedPrayer: suggestedPrayer,
             date: createdAt,
             status: qtStatus,
-            tags: tags,
             isFavorite: isFavorite,
             updatedAt: updatedAt,
             template: template,
@@ -62,7 +62,8 @@ extension QTEntryModel {
             actsAdoration: actsAdoration,
             actsConfession: actsConfession,
             actsThanksgiving: actsThanksgiving,
-            actsSupplication: actsSupplication
+            actsSupplication: actsSupplication,
+            freeContent: freeContent
         )
     }
 
@@ -75,7 +76,6 @@ extension QTEntryModel {
             createdAt: qt.date,
             updatedAt: qt.updatedAt,
             isFavorite: qt.isFavorite,
-            tags: qt.tags,
             verseRef: qt.verse.id,
             verseBook: qt.verse.book,
             verseChapter: qt.verse.chapter,
@@ -91,11 +91,13 @@ extension QTEntryModel {
             secondaryVerseTranslation: qt.secondaryVerse?.translation,
             korean: qt.korean,
             rationale: qt.rationale,
+            suggestedPrayer: qt.suggestedPrayer,
             status: statusString,
             template: qt.template,
             soapObservation: qt.soapObservation,
             soapApplication: qt.soapApplication,
             soapPrayer: qt.soapPrayer,
+            freeContent: qt.freeContent,
             actsAdoration: qt.actsAdoration,
             actsConfession: qt.actsConfession,
             actsThanksgiving: qt.actsThanksgiving,
@@ -107,7 +109,6 @@ extension QTEntryModel {
     func updateFrom(_ qt: QuietTime) {
         self.updatedAt = qt.updatedAt
         self.isFavorite = qt.isFavorite
-        self.tags = qt.tags
         self.secondaryVerseBook = qt.secondaryVerse?.book
         self.secondaryVerseChapter = qt.secondaryVerse?.chapter
         self.secondaryVerseNumber = qt.secondaryVerse?.verse
@@ -116,6 +117,7 @@ extension QTEntryModel {
         self.secondaryVerseTranslation = qt.secondaryVerse?.translation
         self.korean = qt.korean
         self.rationale = qt.rationale
+        self.suggestedPrayer = qt.suggestedPrayer
         self.status = (qt.status == .committed) ? "committed" : "draft"
         self.template = qt.template
         self.soapObservation = qt.soapObservation
@@ -125,5 +127,6 @@ extension QTEntryModel {
         self.actsConfession = qt.actsConfession
         self.actsThanksgiving = qt.actsThanksgiving
         self.actsSupplication = qt.actsSupplication
+        self.freeContent = qt.freeContent
     }
 }

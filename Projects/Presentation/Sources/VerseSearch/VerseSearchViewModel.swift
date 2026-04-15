@@ -54,8 +54,16 @@ public final class VerseSearchViewModel {
             Task { await searchVerse() }
 
         case .tapGoToQT:
+            guard state.result != nil else { return }
+            state.showTemplateSheet = true
+
+        case .selectTemplate(let template):
             guard let verse = state.result else { return }
-            effect.send(.navigateToQTEditor(verse: verse, explanation: state.explanation))
+            state.showTemplateSheet = false
+            effect.send(.navigateToQTEditor(verse: verse, explanation: state.explanation, template: template))
+
+        case .dismissTemplateSheet:
+            state.showTemplateSheet = false
 
         case .dismissError:
             state.errorMessage = nil
@@ -108,13 +116,10 @@ public final class VerseSearchViewModel {
 
     private func fetchExplanation() async {
         guard let verse = state.result,
-              let useCase = fetchVerseExplanationUseCase else { return }
+              let explanationUseCase = fetchVerseExplanationUseCase else { return }
         guard !state.isExplanationLoading else { return }
 
         // WEB(영어) 본문이 있어야 해설 가능
-        // Verse.text가 영어(WEB/KJV) 본문 - 구절 조회 시 영어 API로 가져온 것
-        // selectedTranslation이 한글이면 영어 역본으로 별도 조회가 필요하지만,
-        // 현재는 verse.text를 그대로 사용 (API가 WEB/KJV 영어를 반환하므로)
         let englishText = verse.text
         let verseRef = "\(verse.book) \(verse.chapter):\(verse.verse)"
 
@@ -124,10 +129,11 @@ public final class VerseSearchViewModel {
         }
 
         do {
-            let explanation = try await useCase.execute(
+            let explanation = try await explanationUseCase.execute(
                 englishText: englishText,
                 verseRef: verseRef
             )
+
             await MainActor.run {
                 state.explanation = explanation
                 state.isExplanationLoading = false

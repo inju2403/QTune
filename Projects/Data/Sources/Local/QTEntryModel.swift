@@ -17,7 +17,6 @@ public final class QTEntryModel {
     public var createdAt: Date
     public var updatedAt: Date
     public var isFavorite: Bool
-    public var tags: [String]
 
     // MARK: - 말씀
     public var verseRef: String
@@ -39,12 +38,13 @@ public final class QTEntryModel {
     // MARK: - AI 생성 필드
     public var korean: String?
     public var rationale: String?
+    public var suggestedPrayer: String?
 
     // MARK: - 상태
     public var status: String  // "draft" | "committed"
 
     // MARK: - 템플릿
-    public var template: String  // "SOAP" | "ACTS"
+    public var template: String  // "SOAP" | "ACTS" | "FREE"
 
     // MARK: - SOAP 필드
     public var soapObservation: String?
@@ -57,13 +57,15 @@ public final class QTEntryModel {
     public var actsThanksgiving: String?
     public var actsSupplication: String?
 
+    // MARK: - 자유 묵상 필드
+    public var freeContent: String?
+
     // MARK: - Init
     public init(
         id: UUID,
         createdAt: Date,
         updatedAt: Date,
         isFavorite: Bool,
-        tags: [String],
         verseRef: String,
         verseBook: String,
         verseChapter: Int,
@@ -79,21 +81,22 @@ public final class QTEntryModel {
         secondaryVerseTranslation: String? = nil,
         korean: String?,
         rationale: String?,
+        suggestedPrayer: String?,
         status: String,
         template: String,
         soapObservation: String?,
         soapApplication: String?,
         soapPrayer: String?,
-        actsAdoration: String?,
-        actsConfession: String?,
-        actsThanksgiving: String?,
-        actsSupplication: String?
+        freeContent: String?,
+        actsAdoration: String? = nil,
+        actsConfession: String? = nil,
+        actsThanksgiving: String? = nil,
+        actsSupplication: String? = nil
     ) {
         self.id = id
         self.createdAt = createdAt
         self.updatedAt = updatedAt
         self.isFavorite = isFavorite
-        self.tags = tags
         self.verseRef = verseRef
         self.verseBook = verseBook
         self.verseChapter = verseChapter
@@ -109,11 +112,13 @@ public final class QTEntryModel {
         self.secondaryVerseTranslation = secondaryVerseTranslation
         self.korean = korean
         self.rationale = rationale
+        self.suggestedPrayer = suggestedPrayer
         self.status = status
         self.template = template
         self.soapObservation = soapObservation
         self.soapApplication = soapApplication
         self.soapPrayer = soapPrayer
+        self.freeContent = freeContent
         self.actsAdoration = actsAdoration
         self.actsConfession = actsConfession
         self.actsThanksgiving = actsThanksgiving

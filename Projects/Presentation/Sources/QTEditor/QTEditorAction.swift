@@ -15,9 +15,10 @@ public enum QTEditorAction: Equatable {
     case updateSOAPObservation(String)
     case updateSOAPApplication(String)
     case updateSOAPPrayer(String)
-    case updateACTSAdoration(String)
-    case updateACTSConfession(String)
-    case updateACTSThanksgiving(String)
-    case updateACTSSupplication(String)
+    case updateFreeContent(String)
     case saveQT(QuietTime)
+    // 기도문 관련
+    case tapPrayerButton
+    case dismissPrayerSheet
+    case dismissPrayerError
 }
