@@ -14,6 +14,7 @@ public struct MyPageView: View {
     @Binding var userProfile: UserProfile?
     @State private var showProfileEdit = false
     @State private var showFontSettings = false
+    @State private var showBibleAttribution = false
     @State private var notificationSheetHeight: CGFloat = 450
     @Environment(\.openURL) private var openURL
     @Environment(\.fontScale) private var fontScale
@@ -83,6 +84,11 @@ public struct MyPageView: View {
                     // 앱 정보
                     Section(header: sectionHeader("앱 정보")) {
                         versionInfoRow()
+                        menuRow(
+                            icon: "book",
+                            title: "성경 출처",
+                            action: { showBibleAttribution = true }
+                        )
                     }
                 }
                 .listStyle(.insetGrouped)
@@ -186,6 +192,68 @@ public struct MyPageView: View {
                 .presentationDetents([.height(notificationSheetHeight)])
                 .presentationDragIndicator(.visible)
             }
+            .sheet(isPresented: $showBibleAttribution) {
+                BibleAttributionSheet()
+                    .presentationDetents([.height(460)])
+                    .presentationDragIndicator(.visible)
+            }
+        }
+    }
+}
+
+// MARK: - Bible Attribution Sheet
+struct BibleAttributionSheet: View {
+    var body: some View {
+        VStack(alignment: .leading, spacing: 20) {
+            VStack(alignment: .leading, spacing: 6) {
+                DSText.titleS("성경 출처")
+                    .foregroundStyle(DS.Color.textPrimary)
+                DSText.bodyM("QTune 은 아래 역본 본문을 사용합니다.")
+                    .foregroundStyle(DS.Color.textSecondary)
+            }
+
+            VStack(alignment: .leading, spacing: 14) {
+                attributionRow(
+                    title: "개역한글 (KRV)",
+                    detail: "대한성서공회 · 저작권 만료 공개본"
+                )
+                attributionRow(
+                    title: "World English Bible (WEB)",
+                    detail: "Public Domain"
+                )
+                attributionRow(
+                    title: "King James Version (KJV)",
+                    detail: "Public Domain"
+                )
+            }
+
+            Spacer(minLength: 0)
+
+            DSText.caption("본문은 앱 내에 포함되어 있어 오프라인에서도 조회할 수 있습니다.")
+                .foregroundStyle(DS.Color.textSecondary)
+        }
+        .padding(.horizontal, 24)
+        .padding(.top, 28)
+        .padding(.bottom, 24)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(DS.Color.background)
+    }
+
+    @ViewBuilder
+    private func attributionRow(title: String, detail: String) -> some View {
+        HStack(alignment: .top, spacing: 12) {
+            Image(systemName: "book.closed.fill")
+                .font(.system(size: 16))
+                .foregroundStyle(DS.Color.gold)
+                .frame(width: 20, height: 20)
+                .padding(.top, 2)
+            VStack(alignment: .leading, spacing: 2) {
+                DSText.bodyL(title)
+                    .foregroundStyle(DS.Color.textPrimary)
+                DSText.caption(detail)
+                    .foregroundStyle(DS.Color.textSecondary)
+            }
+            Spacer()
         }
     }
 }

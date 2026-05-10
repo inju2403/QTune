@@ -11,6 +11,9 @@ let project = Project(
       deploymentTargets: .iOS("17.0"),
       infoPlist: .default,
       sources: nil,
+      resources: [
+        "Resources/bible.sqlite"
+      ],
       buildableFolders: [.folder("Sources")],
       dependencies: [
         .project(target: "Domain", path: "../Domain")
