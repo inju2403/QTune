@@ -1,0 +1,8 @@
+node_modules/
+.cache/
+bible.sqlite
+bible.sqlite-shm
+bible.sqlite-wal
+bible-test.sqlite
+ingest.log
+package-lock.json

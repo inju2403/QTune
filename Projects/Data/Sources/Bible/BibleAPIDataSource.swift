@@ -38,44 +38,84 @@ public final class BibleAPIDataSource {
     }
 
     /// 영어 본문 가져오기 (WEB 우선, KJV 폴백)
+    /// 번들된 로컬 DB 를 먼저 조회하고, 실패 시 네트워크로 폴백한다.
     public func getVerse(verseRef: String) async throws -> BibleVerseDTO {
-        print("📖 [BibleAPI] Fetching: \(verseRef)")
-
-        // 1. WEB 시도
-        do {
-            let dto = try await fetchVerse(verseRef: verseRef, translation: "web")
-            print("✅ [BibleAPI] Success with WEB")
-            return dto
-        } catch {
-            print("⚠️ [BibleAPI] WEB failed, trying KJV...")
+        if let local = localVerseDTO(verseRef: verseRef, translation: "WEB") {
+            return local
+        }
+        if let local = localVerseDTO(verseRef: verseRef, translation: "KJV") {
+            return local
         }
 
-        // 2. KJV 폴백
         do {
-            let dto = try await fetchVerse(verseRef: verseRef, translation: "kjv")
-            print("✅ [BibleAPI] Success with KJV")
-            return dto
+            return try await fetchVerse(verseRef: verseRef, translation: "web")
         } catch {
-            print("🔴 [BibleAPI] Both WEB and KJV failed")
-            throw error
+            return try await fetchVerse(verseRef: verseRef, translation: "kjv")
         }
     }
 
-    /// 특정 역본으로 본문 가져오기 (KRV는 bolls.life, WEB/KJV는 bible-api.com)
+    /// 특정 역본으로 본문 가져오기
+    /// 번들된 로컬 DB 를 먼저 조회하고, 실패 시 네트워크(KRV→bolls.life, 기타→bible-api.com)로 폴백.
     public func getVerseWithTranslation(verseRef: String, translation: String) async throws -> BibleVerseDTO {
-        print("📖 [BibleAPI] Fetching \(verseRef) with \(translation)")
-
-        // KRV (개역한글)이면 bolls.life 사용
-        if translation.uppercased() == "KRV" {
-            let dto = try await fetchFromBolls(verseRef: verseRef)
-            print("✅ [BibleAPI] Success with KRV (bolls.life)")
-            return dto
+        if let local = localVerseDTO(verseRef: verseRef, translation: translation) {
+            return local
         }
 
-        // WEB/KJV는 기존 bible-api.com 사용
-        let dto = try await fetchVerse(verseRef: verseRef, translation: translation.lowercased())
-        print("✅ [BibleAPI] Success with \(translation)")
-        return dto
+        if translation.uppercased() == "KRV" {
+            return try await fetchFromBolls(verseRef: verseRef)
+        }
+
+        return try await fetchVerse(verseRef: verseRef, translation: translation.lowercased())
+    }
+
+    /// 번들 DB 조회 → DTO 매핑. 책 미매핑/장절 파싱 실패/미스는 nil.
+    private func localVerseDTO(verseRef: String, translation: String) -> BibleVerseDTO? {
+        guard let parsed = parseVerseRef(verseRef) else { return nil }
+        guard let bookId = BibleBookMapper.toBookId(parsed.book) else { return nil }
+        guard let text = BibleLocalDB.shared.getVerseText(
+            bookId: bookId,
+            chapter: parsed.chapter,
+            startVerse: parsed.startVerse,
+            endVerse: parsed.endVerse,
+            translation: translation
+        ) else { return nil }
+
+        let trUpper = translation.uppercased()
+        let name: String
+        switch trUpper {
+        case "KRV": name = "개역한글"
+        case "WEB": name = "World English Bible"
+        case "KJV": name = "King James Version"
+        default: name = trUpper
+        }
+        return BibleVerseDTO(
+            reference: verseRef,
+            text: text,
+            translation_id: trUpper,
+            translation_name: name
+        )
+    }
+
+    /// "John 3:16" / "1 Corinthians 13:4-7" 형식의 ref 를 책/장/시작절/끝절로 분해.
+    private func parseVerseRef(_ verseRef: String) -> (book: String, chapter: Int, startVerse: Int, endVerse: Int)? {
+        let components = verseRef.split(separator: " ")
+        guard components.count >= 2 else { return nil }
+
+        let book = components[0..<components.count-1].joined(separator: " ")
+        let chapterVerse = String(components.last!)
+        let cv = chapterVerse.split(separator: ":")
+        guard cv.count == 2, let chapter = Int(cv[0]) else { return nil }
+
+        let verseString = String(cv[1])
+        if let dashIndex = verseString.firstIndex(of: "-") {
+            let startStr = String(verseString[..<dashIndex])
+            let endStr = String(verseString[verseString.index(after: dashIndex)...])
+            guard let start = Int(startStr), let end = Int(endStr) else { return nil }
+            return (book, chapter, start, end)
+        } else {
+            guard let v = Int(verseString) else { return nil }
+            return (book, chapter, v, v)
+        }
     }
 
     /// bolls.life API에서 한국어 성경 가져오기

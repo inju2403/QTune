@@ -57,6 +57,18 @@ public final class QTEditorViewModel {
         case .updateSOAPPrayer(let text):
             state.soapTemplate.prayer = text
 
+        case .updateACTSAdoration(let text):
+            state.actsTemplate.adoration = text
+
+        case .updateACTSConfession(let text):
+            state.actsTemplate.confession = text
+
+        case .updateACTSThanksgiving(let text):
+            state.actsTemplate.thanksgiving = text
+
+        case .updateACTSSupplication(let text):
+            state.actsTemplate.supplication = text
+
         case .updateFreeContent(let text):
             state.freeTemplate.content = text
 
@@ -90,13 +102,23 @@ public final class QTEditorViewModel {
         // 항상 editingQT 설정 (기도문 생성 등에서 verse 정보가 필요함)
         state.editingQT = qt
 
-        state.selectedTemplate = qt.template == "SOAP" ? .soap : .free
-
-        if qt.template == "SOAP" {
+        switch qt.template {
+        case "SOAP":
+            state.selectedTemplate = .soap
             state.soapTemplate.observation = qt.soapObservation ?? ""
             state.soapTemplate.application = qt.soapApplication ?? ""
             state.soapTemplate.prayer = qt.soapPrayer ?? ""
-        } else if qt.template == "FREE" {
+        case "ACTS":
+            state.selectedTemplate = .acts
+            state.actsTemplate.adoration = qt.actsAdoration ?? ""
+            state.actsTemplate.confession = qt.actsConfession ?? ""
+            state.actsTemplate.thanksgiving = qt.actsThanksgiving ?? ""
+            state.actsTemplate.supplication = qt.actsSupplication ?? ""
+        case "FREE":
+            state.selectedTemplate = .free
+            state.freeTemplate.content = qt.freeContent ?? ""
+        default:
+            state.selectedTemplate = .free
             state.freeTemplate.content = qt.freeContent ?? ""
         }
     }
@@ -135,25 +157,48 @@ public final class QTEditorViewModel {
             qtToSave.template = state.selectedTemplate.rawValue
             qtToSave.updatedAt = Date()
 
-            // 템플릿별 필드 설정
-            if state.selectedTemplate == .soap {
+            // 템플릿별 필드 설정 (다른 템플릿 필드는 nil로 클리어)
+            switch state.selectedTemplate {
+            case .soap:
                 print("   SOAP - O: \(state.soapTemplate.observation.count), A: \(state.soapTemplate.application.count), P: \(state.soapTemplate.prayer.count)")
                 qtToSave.soapObservation = state.soapTemplate.observation
                 qtToSave.soapApplication = state.soapTemplate.application
                 qtToSave.soapPrayer = state.soapTemplate.prayer
+                qtToSave.actsAdoration = nil
+                qtToSave.actsConfession = nil
+                qtToSave.actsThanksgiving = nil
+                qtToSave.actsSupplication = nil
                 qtToSave.freeContent = nil
-            } else if state.selectedTemplate == .free {
+            case .acts:
+                print("   ACTS - A: \(state.actsTemplate.adoration.count), C: \(state.actsTemplate.confession.count), T: \(state.actsTemplate.thanksgiving.count), S: \(state.actsTemplate.supplication.count)")
+                qtToSave.actsAdoration = state.actsTemplate.adoration
+                qtToSave.actsConfession = state.actsTemplate.confession
+                qtToSave.actsThanksgiving = state.actsTemplate.thanksgiving
+                qtToSave.actsSupplication = state.actsTemplate.supplication
+                qtToSave.soapObservation = nil
+                qtToSave.soapApplication = nil
+                qtToSave.soapPrayer = nil
+                qtToSave.freeContent = nil
+            case .free:
                 print("   FREE - Content: \(state.freeTemplate.content.count)")
                 qtToSave.freeContent = state.freeTemplate.content
                 qtToSave.soapObservation = nil
                 qtToSave.soapApplication = nil
                 qtToSave.soapPrayer = nil
+                qtToSave.actsAdoration = nil
+                qtToSave.actsConfession = nil
+                qtToSave.actsThanksgiving = nil
+                qtToSave.actsSupplication = nil
             }
 
             // 신규 작성 여부 판단 (editingQT의 내용이 비어있는지로 판단)
             let isNewDraft = state.editingQT?.soapObservation == nil &&
                 state.editingQT?.soapApplication == nil &&
                 state.editingQT?.soapPrayer == nil &&
+                state.editingQT?.actsAdoration == nil &&
+                state.editingQT?.actsConfession == nil &&
+                state.editingQT?.actsThanksgiving == nil &&
+                state.editingQT?.actsSupplication == nil &&
                 state.editingQT?.freeContent == nil
 
             let savedQT: QuietTime
@@ -165,6 +210,10 @@ public final class QTEditorViewModel {
                 updated.soapObservation = qtToSave.soapObservation
                 updated.soapApplication = qtToSave.soapApplication
                 updated.soapPrayer = qtToSave.soapPrayer
+                updated.actsAdoration = qtToSave.actsAdoration
+                updated.actsConfession = qtToSave.actsConfession
+                updated.actsThanksgiving = qtToSave.actsThanksgiving
+                updated.actsSupplication = qtToSave.actsSupplication
                 updated.freeContent = qtToSave.freeContent
                 updated.updatedAt = Date()
 

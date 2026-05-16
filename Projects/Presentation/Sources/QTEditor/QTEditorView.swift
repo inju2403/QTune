@@ -36,6 +36,8 @@ public struct QTEditorView: View {
                     // 편집 가능한 묵상/기도 섹션
                     if draft.template == "SOAP" {
                         soapEditSection()
+                    } else if draft.template == "ACTS" {
+                        actsEditSection()
                     } else if draft.template == "FREE" {
                         freeEditSection()
                     }
@@ -184,6 +186,53 @@ private extension QTEditorView {
                     set: { viewModel.send(.updateSOAPPrayer($0)) }
                 ),
                 placeholder: "이 말씀을 통해 떠오른 마음이나 바람을 자유롭게 적어보세요."
+            )
+        }
+    }
+}
+
+// MARK: - ACTS Edit Section
+
+private extension QTEditorView {
+    @ViewBuilder
+    func actsEditSection() -> some View {
+        VStack(alignment: .leading, spacing: 12) {
+            SectionHeader(icon: "square.and.pencil", title: "나의 묵상")
+
+            EditableVerseCard(
+                title: "Adoration · 찬양",
+                text: Binding(
+                    get: { viewModel.state.actsTemplate.adoration },
+                    set: { viewModel.send(.updateACTSAdoration($0)) }
+                ),
+                placeholder: "오늘 말씀에서 발견한 하나님의 모습을 찬양해보세요."
+            )
+
+            EditableVerseCard(
+                title: "Confession · 고백",
+                text: Binding(
+                    get: { viewModel.state.actsTemplate.confession },
+                    set: { viewModel.send(.updateACTSConfession($0)) }
+                ),
+                placeholder: "말씀에 비추어 회개할 부분을 적어보세요."
+            )
+
+            EditableVerseCard(
+                title: "Thanksgiving · 감사",
+                text: Binding(
+                    get: { viewModel.state.actsTemplate.thanksgiving },
+                    set: { viewModel.send(.updateACTSThanksgiving($0)) }
+                ),
+                placeholder: "오늘 감사한 일들을 적어보세요."
+            )
+
+            EditableVerseCard(
+                title: "Supplication · 간구",
+                text: Binding(
+                    get: { viewModel.state.actsTemplate.supplication },
+                    set: { viewModel.send(.updateACTSSupplication($0)) }
+                ),
+                placeholder: "주님께 구하고 싶은 기도 제목을 적어보세요."
             )
         }
     }

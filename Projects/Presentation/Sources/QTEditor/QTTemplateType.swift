@@ -10,11 +10,13 @@ import Foundation
 /// QT 템플릿 타입
 public enum QTTemplateType: String, CaseIterable {
     case soap = "SOAP"
+    case acts = "ACTS"
     case free = "FREE"
 
     var displayName: String {
         switch self {
         case .soap: return "S.O.A.P"
+        case .acts: return "A.C.T.S"
         case .free: return "자유 묵상"
         }
     }
@@ -38,6 +40,32 @@ public struct SOAPTemplate: Equatable {
 
     var prayerPlaceholder: String {
         "주님, 오늘 말씀대로 … 하게 해주세요."
+    }
+}
+
+/// A.C.T.S 템플릿 상태
+public struct ACTSTemplate: Equatable {
+    public var adoration: String = ""        // A: 찬양
+    public var confession: String = ""       // C: 고백
+    public var thanksgiving: String = ""     // T: 감사
+    public var supplication: String = ""     // S: 간구
+
+    public init() {}
+
+    var adorationPlaceholder: String {
+        "오늘 말씀에서 발견한 하나님의 모습을 찬양해보세요."
+    }
+
+    var confessionPlaceholder: String {
+        "말씀에 비추어 회개할 부분을 적어보세요."
+    }
+
+    var thanksgivingPlaceholder: String {
+        "오늘 감사한 일들을 적어보세요."
+    }
+
+    var supplicationPlaceholder: String {
+        "주님께 구하고 싶은 기도 제목을 적어보세요."
     }
 }
 

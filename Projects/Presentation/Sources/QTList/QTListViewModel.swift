@@ -384,6 +384,8 @@ public final class QTListViewModel {
             break
         case .soap:
             filtered = filtered.filter { $0.template == "SOAP" }
+        case .acts:
+            filtered = filtered.filter { $0.template == "ACTS" }
         case .free:
             filtered = filtered.filter { $0.template == "FREE" }
         }

@@ -489,13 +489,17 @@ private extension QTListView {
 
                 HStack(spacing: DS.Spacing.s) {
                     DSText.caption(qt.template, weight: .medium)
-                        .foregroundStyle(qt.template == "SOAP" ? DS.Color.olive : DS.Color.gold)
+                        .foregroundStyle(
+                            qt.template == "SOAP" ? DS.Color.olive :
+                            qt.template == "ACTS" ? DS.Color.deepCocoa :
+                            DS.Color.gold
+                        )
                         .padding(.horizontal, DS.Spacing.m)
                         .padding(.vertical, DS.Spacing.s)
                         .background(
-                            qt.template == "SOAP"
-                                ? DS.Color.olive.opacity(0.15)
-                                : DS.Color.gold.opacity(0.15)
+                            qt.template == "SOAP" ? DS.Color.olive.opacity(0.15) :
+                            qt.template == "ACTS" ? DS.Color.deepCocoa.opacity(0.15) :
+                            DS.Color.gold.opacity(0.15)
                         )
                         .clipShape(Capsule())
 
@@ -558,6 +562,19 @@ private extension QTListView {
             }
             if let prayer = qt.soapPrayer?.trimmingCharacters(in: .whitespacesAndNewlines), !prayer.isEmpty {
                 return prayer
+            }
+        } else if qt.template == "ACTS" {
+            if let adoration = qt.actsAdoration?.trimmingCharacters(in: .whitespacesAndNewlines), !adoration.isEmpty {
+                return adoration
+            }
+            if let confession = qt.actsConfession?.trimmingCharacters(in: .whitespacesAndNewlines), !confession.isEmpty {
+                return confession
+            }
+            if let thanksgiving = qt.actsThanksgiving?.trimmingCharacters(in: .whitespacesAndNewlines), !thanksgiving.isEmpty {
+                return thanksgiving
+            }
+            if let supplication = qt.actsSupplication?.trimmingCharacters(in: .whitespacesAndNewlines), !supplication.isEmpty {
+                return supplication
             }
         } else if qt.template == "FREE" {
             if let freeContent = qt.freeContent?.trimmingCharacters(in: .whitespacesAndNewlines), !freeContent.isEmpty {
