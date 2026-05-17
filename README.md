@@ -125,7 +125,6 @@ QTune은
 **LEE SEUNGJU (이승주)**
 
 - GitHub: [https://github.com/inju2403](https://github.com/inju2403)
-- Blog: [https://blog.naver.com/inju2403](https://blog.naver.com/inju2403)
 
 ---
 
